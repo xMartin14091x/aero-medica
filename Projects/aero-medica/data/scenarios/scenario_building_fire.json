@@ -1,0 +1,119 @@
+{
+	"scenario_id": "building_fire_01",
+	"scenario_name": "Building Fire — Smoke Inhalation",
+	"description": "A small fire broke out in a shophouse. One person has been pulled out by bystanders and is having difficulty breathing. Smoke and flames are still visible from the building.",
+	"environment_scene_path": "",
+	"difficulty_rating": 2,
+	"guided_hints": false,
+	"time_limit_seconds": 540,
+	"patients": [
+		{
+			"position": { "x": 10.0, "y": 0.0, "z": 8.0 },
+			"persona": {
+				"name": "Anong",
+				"age": 38,
+				"consciousness_level": "VERBAL",
+				"pain_level": 5,
+				"panic_level": 0.8,
+				"language_clarity": 0.5
+			},
+			"initial_state": "CONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 0,
+				"airway_status": "COMPROMISED",
+				"breathing_rate": 30.0,
+				"pulse_present": true
+			},
+			"vitals": {
+				"heart_rate": 118,
+				"blood_pressure_systolic": 142,
+				"blood_pressure_diastolic": 88,
+				"spo2": 88,
+				"temperature": 37.2,
+				"blood_glucose": 130,
+				"capillary_refill": 2.5,
+				"pupil_left_size": 4,
+				"pupil_right_size": 4,
+				"pupil_left_reactive": true,
+				"pupil_right_reactive": true,
+				"skin_color": "FLUSHED",
+				"skin_temperature": "HOT",
+				"skin_moisture": "DIAPHORETIC",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 4,
+				"gcs_verbal": 4,
+				"gcs_motor": 6,
+				"co_exposure": true
+			},
+			"examination_findings": {
+				"head": "Soot deposits around nostrils and mouth. Singed nasal hairs — sign of inhalation injury. No head trauma. Pupils equal 4mm, reactive. GCS 14 (E4V4M6). Hoarse voice.",
+				"neck": "No cervical injury. Trachea midline. Mild stridor audible on auscultation — upper airway oedema developing. No JVD.",
+				"chest": "⚠ Bilateral wheezing on auscultation. Intercostal recession visible. RR 30 /min — tachypnoea. SpO2 88% — hypoxia. High-flow oxygen required immediately. Note: SpO2 may be falsely elevated due to CO exposure — consider CO-oximetry.",
+				"abdomen": "Soft, non-tender. No trauma. No distension.",
+				"pelvis": "No injury. Stable.",
+				"back": "Superficial burns to posterior shoulders — first degree. No spinal tenderness.",
+				"extremities": "Minor burns to both forearms — first degree, erythematous, no blistering. Distal pulses present. CRT 2.5 sec. No circumferential burns."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "*coughing heavily* ...the fire... I was inside... the smoke...",
+					"where_hurts": "*wheezing* My chest... it burns when I breathe... my throat...",
+					"when_started": "The fire... maybe 10 minutes ago... someone pulled me out...",
+					"pain_scale": "*coughing* ...maybe 5... the breathing is the worst part..."
+				},
+				"allergies": {
+					"any_allergies": "*coughing* ...no... no allergies...",
+					"medication_allergies": "No..."
+				},
+				"medications": {
+					"current_meds": "I take... *cough* ...asthma inhaler sometimes...",
+					"what_meds": "Salbutamol inhaler... when I need it... *wheeze*"
+				},
+				"past_history": {
+					"medical_conditions": "Asthma... since I was a child... *cough*",
+					"surgeries": "No surgeries..."
+				},
+				"last_meal": {
+					"when_ate": "I had dinner... maybe 1 hour before the fire...",
+					"what_ate": "Rice and stir-fry..."
+				},
+				"events": {
+					"what_doing": "I was in the shop... closing up for the night... I smelled smoke... *cough* then the ceiling was on fire...",
+					"witnesses": "My neighbour... he pulled me out... *coughing* ...he's over there..."
+				}
+			},
+			"deterioration": {
+				"rate": 0.7,
+				"enabled": true,
+				"bleeding_interval": 0.0
+			},
+			"correct_protocol_sequence": [
+				"scene_safety_check",
+				"assess_consciousness",
+				"call_for_help",
+				"assess_airway",
+				"open_airway",
+				"assess_breathing",
+				"oxygen_mask",
+				"assess_pulse",
+				"reassess"
+			]
+		}
+	],
+	"bag_tier": "BLS",
+	"equipment": [],
+	"correct_diagnosis": ["Smoke Inhalation", "Acute Respiratory Distress"],
+	"hazards": [
+		{
+			"type": "FIRE",
+			"description": "Active fire in the shophouse — maintain safe distance",
+			"position": { "x": 10.0, "y": 0.0, "z": 2.0 }
+		},
+		{
+			"type": "SMOKE",
+			"description": "Smoke drifting from the building — stay upwind",
+			"position": { "x": 10.0, "y": 2.0, "z": 4.0 }
+		}
+	],
+	"random_events": []
+}

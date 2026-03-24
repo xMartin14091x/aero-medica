@@ -1,0 +1,23 @@
+## Overall Assessment
+Solid performance on the Building Fire scenario. Anong was assessed and treated with correct triage assignment. You identified the key smoke inhalation findings and managed the compromised airway. Protocol adherence: approximately 80%. Minor gaps in assessment completeness but no critical errors. 0 critical errors detected.
+
+## Strengths
+- Anong correctly triaged as RED — appropriate for compromised airway with smoke inhalation
+- Airway compromise identified and head-tilt chin-lift performed
+- Soot deposits and singed nasal hairs noted during head examination
+- Assessment performed within the 540-second time limit
+- Oxygen applied for low SpO2
+
+## Areas for Improvement
+- Time to first assessment could be improved — aim for under 15 seconds in single-patient scenarios
+- One or two ABCDE steps were rushed or incomplete — Anong's chest examination should include auscultation for wheeze and stridor
+- Consider performing a more thorough extremity check — burn patients may have injuries obscured by clothing
+- Documentation of GCS score should be explicit: E4V4M6 = 14
+
+## Critical Errors
+No critical errors detected.
+
+## Recommendations
+- Practice the airway management sequence until it becomes automatic: recognise compromise, head-tilt chin-lift, reassess, escalate if needed
+- In fire scenarios, always check for circumferential burns on extremities — these can cause compartment syndrome
+- Advance to multi-patient fire scenarios once this single-patient flow is consistently fast and complete

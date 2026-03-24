@@ -1,0 +1,51 @@
+{
+	"BLS": {
+		"items": [
+			{"key": "BANDAGE", "display": "Bandage Roll", "category": "Wound Care", "quantity": 4, "consumable": true},
+			{"key": "TOURNIQUET", "display": "Tourniquet", "category": "Wound Care", "quantity": 2, "consumable": true},
+			{"key": "PRESSURE_DRESSING", "display": "Pressure Dressing", "category": "Wound Care", "quantity": 3, "consumable": true},
+			{"key": "TRAUMA_DRESSING", "display": "Trauma Dressing (Israeli)", "category": "Wound Care", "quantity": 2, "consumable": true},
+			{"key": "GLOVES", "display": "Nitrile Gloves", "category": "PPE", "quantity": 10, "consumable": true},
+			{"key": "FACE_SHIELD", "display": "Face Shield / CPR Mask", "category": "PPE", "quantity": 2, "consumable": true},
+			{"key": "OPA", "display": "Oropharyngeal Airway (OPA)", "category": "Airway", "quantity": 3, "consumable": false},
+			{"key": "BVM", "display": "Bag-Valve-Mask (BVM)", "category": "Airway", "quantity": 1, "consumable": false},
+			{"key": "SUCTION_BULB", "display": "Suction Bulb", "category": "Airway", "quantity": 1, "consumable": false},
+			{"key": "OXYGEN_MASK", "display": "Oxygen Mask (Non-Rebreather)", "category": "Oxygen", "quantity": 2, "consumable": true},
+			{"key": "CPR", "display": "Perform CPR (30:2)", "category": "Cardiac", "quantity": 1, "consumable": false},
+			{"key": "AED", "display": "AED", "category": "Cardiac", "quantity": 1, "consumable": false},
+			{"key": "PULSE_OXIMETER", "display": "Pulse Oximeter", "category": "Diagnostics", "quantity": 1, "consumable": false},
+			{"key": "BP_CUFF", "display": "Blood Pressure Cuff", "category": "Diagnostics", "quantity": 1, "consumable": false},
+			{"key": "PENLIGHT", "display": "Penlight", "category": "Diagnostics", "quantity": 1, "consumable": false},
+			{"key": "THERMOMETER", "display": "Thermometer", "category": "Diagnostics", "quantity": 1, "consumable": false},
+			{"key": "GLUCOMETER", "display": "Glucometer", "category": "Diagnostics", "quantity": 1, "consumable": false},
+			{"key": "SPLINT_SAM", "display": "SAM Splint", "category": "Immobilisation", "quantity": 3, "consumable": false},
+			{"key": "CERVICAL_COLLAR", "display": "Cervical Collar (C-Collar)", "category": "Immobilisation", "quantity": 2, "consumable": false},
+			{"key": "TRIAGE_TAGS", "display": "Triage Tags (START)", "category": "Triage", "quantity": 10, "consumable": true},
+			{"key": "EPIPEN", "display": "Epinephrine Auto-Injector (EpiPen)", "category": "Medications", "quantity": 2, "consumable": true},
+			{"key": "ASPIRIN_TABLET", "display": "Aspirin 300mg (Chewable)", "category": "Medications", "quantity": 4, "consumable": true},
+			{"key": "GTN_SPRAY", "display": "GTN Spray 0.4mg", "category": "Medications", "quantity": 2, "consumable": true},
+			{"key": "ORAL_GLUCOSE", "display": "Oral Glucose Gel 15g", "category": "Medications", "quantity": 3, "consumable": true}
+		]
+	},
+	"ALS": {
+		"additional_items": [
+			{"key": "IV_ACCESS", "display": "IV Cannula + Giving Set", "category": "IV Access", "quantity": 4, "consumable": true},
+			{"key": "NORMAL_SALINE_500", "display": "Normal Saline 500mL", "category": "IV Fluids", "quantity": 4, "consumable": true},
+			{"key": "NORMAL_SALINE_1000", "display": "Normal Saline 1000mL", "category": "IV Fluids", "quantity": 2, "consumable": true},
+			{"key": "CARDIAC_MONITOR", "display": "Cardiac Monitor (12-lead)", "category": "Cardiac", "quantity": 1, "consumable": false},
+			{"key": "DEFIB_PADS", "display": "Defibrillator Pads", "category": "Cardiac", "quantity": 2, "consumable": true},
+			{"key": "EPINEPHRINE_IV_AMP", "display": "Epinephrine 1:10,000 (IV) 1mg/10mL", "category": "Cardiac Drugs", "quantity": 10, "consumable": true},
+			{"key": "AMIODARONE_AMP", "display": "Amiodarone 300mg/6mL", "category": "Cardiac Drugs", "quantity": 3, "consumable": true},
+			{"key": "ATROPINE_AMP", "display": "Atropine 1mg/mL", "category": "Cardiac Drugs", "quantity": 4, "consumable": true},
+			{"key": "MORPHINE_AMP", "display": "Morphine 10mg/mL", "category": "Analgesics", "quantity": 5, "consumable": true},
+			{"key": "KETAMINE_VIAL", "display": "Ketamine 50mg/mL (vial)", "category": "Analgesics", "quantity": 2, "consumable": true},
+			{"key": "NALOXONE_AMP", "display": "Naloxone 0.4mg/mL", "category": "Antidotes", "quantity": 4, "consumable": true},
+			{"key": "DEXTROSE_50", "display": "Dextrose 50% 50mL", "category": "Metabolic", "quantity": 3, "consumable": true},
+			{"key": "GLUCAGON_KIT", "display": "Glucagon 1mg Kit", "category": "Metabolic", "quantity": 2, "consumable": true},
+			{"key": "CHEST_SEAL", "display": "Chest Seal (vented)", "category": "Chest Trauma", "quantity": 4, "consumable": true},
+			{"key": "NEEDLE_DECOMPRESSION", "display": "Needle Decompression Kit (14G)", "category": "Chest Trauma", "quantity": 2, "consumable": true},
+			{"key": "IO_DRILL", "display": "IO Drill Kit (EZ-IO)", "category": "IV Access", "quantity": 1, "consumable": false},
+			{"key": "LMA", "display": "Laryngeal Mask Airway (LMA)", "category": "Advanced Airway", "quantity": 2, "consumable": false}
+		]
+	}
+}

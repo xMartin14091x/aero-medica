@@ -1,0 +1,336 @@
+{
+	"scenario_id": "rta_intersection_01",
+	"scenario_name": "Road Traffic Accident — Intersection Collision",
+	"description": "Multi-vehicle collision at a road intersection. Three casualties with varying severity. Practice primary survey (ABCDE), triage tagging, and resource prioritisation under time pressure.",
+	"environment_scene_path": "",
+	"difficulty_rating": 3,
+	"guided_hints": false,
+	"time_limit_seconds": 900,
+	"patients": [
+		{
+			"position": { "x": 3.96, "y": 0.0, "z": 2.81 },
+			"persona": {
+				"name": "Somchai",
+				"age": 35,
+				"consciousness_level": "ALERT",
+				"pain_level": 6,
+				"panic_level": 0.7,
+				"language_clarity": 0.9
+			},
+			"initial_state": "CONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 2,
+				"airway_status": "CLEAR",
+				"breathing_rate": 22.0,
+				"pulse_present": true
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "I was driving through the intersection... the other car ran the red light and hit my door...",
+					"where_hurts": "My left side... ribs... and my leg is bleeding badly from the glass...",
+					"when_started": "Just now... the crash just happened...",
+					"pain_scale": "Maybe a 6... the ribs are the worst when I breathe..."
+				},
+				"allergies": {
+					"any_allergies": "No allergies that I know of.",
+					"medication_allergies": "None."
+				},
+				"medications": {
+					"current_meds": "No, I don't take anything regularly.",
+					"what_meds": "Nothing."
+				},
+				"past_history": {
+					"medical_conditions": "I'm healthy... no problems before this...",
+					"surgeries": "I had my wisdom teeth out, that's it."
+				},
+				"last_meal": {
+					"when_ate": "Breakfast this morning, about 2 hours ago.",
+					"what_ate": "Toast and coffee."
+				},
+				"events": {
+					"what_doing": "Driving to work... I had the green light, I'm sure of it...",
+					"witnesses": "There were other cars... someone must have seen it..."
+				},
+				"opqrst": {
+					"onset": "I was driving... the crash happened suddenly... I had a green light...",
+					"provocation": "Breathing makes my ribs worse... worse when I move...",
+					"quality": "Sharp pain in my ribs... and a throbbing ache in my leg from the glass...",
+					"radiation": "The rib pain goes around to my back on the left side...",
+					"severity": "The ribs are about a 6... my leg is maybe a 4...",
+					"time_course": "Constant since the crash... the leg is bleeding steadily..."
+				}
+			},
+			"vitals": {
+				"heart_rate": 108,
+				"blood_pressure_systolic": 100,
+				"blood_pressure_diastolic": 65,
+				"spo2": 94.0,
+				"temperature": 36.9,
+				"blood_glucose": 105,
+				"capillary_refill": 2.8,
+				"pupil_left_size": 4,
+				"pupil_right_size": 4,
+				"pupil_left_reactive": true,
+				"pupil_right_reactive": true,
+				"skin_color": "PALE",
+				"skin_temperature": "COOL",
+				"skin_moisture": "MOIST",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 4,
+				"gcs_verbal": 5,
+				"gcs_motor": 6
+			},
+			"examination_findings": {
+				"head": "No head injury. No scalp laceration. GCS 15 (E4V5M6) — Alert. Pupils equal, 4mm, briskly reactive bilaterally. No facial trauma.",
+				"neck": "No midline cervical tenderness. Trachea midline. No JVD. No neck hematoma. C-spine clinically low risk.",
+				"chest": "Splinting of respiration on left side. Tenderness ribs 4-6 left lateral wall. Crepitus on palpation. Possible hemothorax — breath sounds reduced left base. RR 22 /min, SpO2 94%.",
+				"abdomen": "Soft. Mild left upper quadrant tenderness — possible splenic contusion. No guarding or rigidity. No distension.",
+				"pelvis": "Stable on single anterior compression. No pelvic tenderness.",
+				"back": "No midline spinal tenderness. No posterior rib deformity.",
+				"extremities": "Large laceration left lower leg — active arterial bleeding, severity 2. Glass fragments visible. Tourniquet site identified 2-3 inches proximal. Right leg intact. Distal pulses present bilaterally."
+			},
+			"deterioration": {
+				"rate": 0.8,
+				"enabled": true,
+				"bleeding_interval": 30.0
+			},
+			"correct_protocol_sequence": [
+				"scene_safety_check",
+				"assess_consciousness",
+				"assess_airway",
+				"assess_breathing",
+				"assess_pulse",
+				"control_bleeding",
+				"triage_assign",
+				"reassess"
+			]
+		},
+		{
+			"position": { "x": 7.96, "y": 0.0, "z": -1.19 },
+			"persona": {
+				"name": "Nanthida",
+				"age": 28,
+				"consciousness_level": "VERBAL",
+				"pain_level": 8,
+				"panic_level": 0.4,
+				"language_clarity": 0.6
+			},
+			"initial_state": "CONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 1,
+				"airway_status": "OBSTRUCTED",
+				"breathing_rate": 28.0,
+				"pulse_present": true
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "*struggling to speak* ...the car... hit us... I can't breathe properly...",
+					"where_hurts": "My neck... and my chest... *gasping* ...something is wrong with my breathing...",
+					"when_started": "The crash... just now...",
+					"pain_scale": "*wincing* ...8... the neck is terrible..."
+				},
+				"allergies": {
+					"any_allergies": "Latex... I'm allergic to latex...",
+					"medication_allergies": "No medicine allergies."
+				},
+				"medications": {
+					"current_meds": "Birth control pills... that's all...",
+					"what_meds": "Oral contraceptive... I don't remember the name..."
+				},
+				"past_history": {
+					"medical_conditions": "No... I was healthy before this...",
+					"surgeries": "Appendectomy when I was 20."
+				},
+				"last_meal": {
+					"when_ate": "I had som tam about an hour ago...",
+					"what_ate": "Papaya salad and sticky rice..."
+				},
+				"events": {
+					"what_doing": "I was the passenger... my friend was driving...",
+					"witnesses": "*coughing* ...I don't know... everything happened so fast..."
+				},
+				"opqrst": {
+					"onset": "*gasping* ...the crash... I was a passenger...",
+					"provocation": "*struggling* ...everything hurts more when I try to breathe...",
+					"quality": "*wincing* ...neck feels like it's being squeezed... chest is tight and sharp...",
+					"radiation": "...pain goes from neck down into my chest... left side...",
+					"severity": "*gasping* ...8 out of 10...",
+					"time_course": "...constant since crash... getting worse... *coughing*"
+				}
+			},
+			"vitals": {
+				"heart_rate": 122,
+				"blood_pressure_systolic": 108,
+				"blood_pressure_diastolic": 72,
+				"spo2": 88.0,
+				"temperature": 37.1,
+				"blood_glucose": 95,
+				"capillary_refill": 2.2,
+				"pupil_left_size": 3,
+				"pupil_right_size": 3,
+				"pupil_left_reactive": true,
+				"pupil_right_reactive": true,
+				"skin_color": "PALE",
+				"skin_temperature": "COOL",
+				"skin_moisture": "DIAPHORETIC",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 4,
+				"gcs_verbal": 3,
+				"gcs_motor": 5
+			},
+			"examination_findings": {
+				"head": "Multiple small facial lacerations. No scalp laceration. GCS 12 (E4V3M5) — responds to voice, confused verbal. Pupils equal 3mm, reactive. No periorbital bruising.",
+				"neck": "⚠ Midline cervical tenderness C4-C5 — suspected cervical fracture. Tracheal deviation to right side — sign of tension pneumothorax. Neck veins flat. Immobilise cervical spine.",
+				"chest": "⚠ Paradoxical chest movement left side — suspected flail chest or tension pneumothorax. Breath sounds markedly diminished left. RR 28 /min. SpO2 88% — hypoxia critical. Immediate airway management required.",
+				"abdomen": "Soft. No tenderness. No bruising.",
+				"pelvis": "Stable on compression.",
+				"back": "Unable to fully assess — patient in respiratory distress. Maintain spinal precautions.",
+				"extremities": "Minor bruising bilateral upper extremities from impact. No fractures palpated. Distal pulses present. OCP noted (increased DVT risk)."
+			},
+			"deterioration": {
+				"rate": 1.0,
+				"enabled": true,
+				"bleeding_interval": 40.0,
+				"airway_to_unconscious": 35.0
+			},
+			"correct_protocol_sequence": [
+				"scene_safety_check",
+				"assess_consciousness",
+				"assess_airway",
+				"head_tilt_chin_lift",
+				"assess_breathing",
+				"assess_pulse",
+				"control_bleeding",
+				"triage_assign"
+			]
+		},
+		{
+			"position": { "x": -0.04, "y": 0.0, "z": -3.19 },
+			"persona": {
+				"name": "Prasert",
+				"age": 52,
+				"consciousness_level": "UNRESPONSIVE",
+				"pain_level": 0,
+				"panic_level": 0.0,
+				"language_clarity": 0.0
+			},
+			"initial_state": "UNCONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 3,
+				"airway_status": "OBSTRUCTED",
+				"breathing_rate": 6.0,
+				"pulse_present": true
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "(Patient is unresponsive — bystander reports: He was driving the other car. His car spun and hit the post.)",
+					"where_hurts": "(Patient is unresponsive — visible head laceration and heavy bleeding from abdomen.)",
+					"when_started": "(Bystander: The crash just happened, a few minutes ago.)",
+					"pain_scale": "(Patient is unresponsive.)"
+				},
+				"allergies": {
+					"any_allergies": "(Unknown — no one at the scene knows the patient.)",
+					"medication_allergies": "(Unknown.)"
+				},
+				"medications": {
+					"current_meds": "(A medical bracelet on his wrist reads: 'Warfarin'.)",
+					"what_meds": "(Warfarin — blood thinner. This is critical information for bleeding management.)"
+				},
+				"past_history": {
+					"medical_conditions": "(Medical bracelet indicates anticoagulant therapy — likely history of DVT, PE, or atrial fibrillation.)",
+					"surgeries": "(Unknown.)"
+				},
+				"last_meal": {
+					"when_ate": "(Unknown.)",
+					"what_ate": "(Unknown.)"
+				},
+				"events": {
+					"what_doing": "(Bystander: He ran the red light at speed. T-boned the other car then hit the lamp post.)",
+					"witnesses": "(Multiple bystanders present. Traffic camera likely recorded the collision.)"
+				},
+				"opqrst": {
+					"onset": "(Patient is unresponsive — bystander: His car ran the red light at speed.)",
+					"provocation": "(Patient is unresponsive — information unavailable.)",
+					"quality": "(Patient is unresponsive — visible head and abdominal trauma.)",
+					"radiation": "(Patient is unresponsive — information unavailable.)",
+					"severity": "(Patient is unresponsive — injury severity assessed by examination.)",
+					"time_course": "(Bystander: Impact was 3-4 minutes ago. He has not moved since.)"
+				}
+			},
+			"vitals": {
+				"heart_rate": 135,
+				"blood_pressure_systolic": 72,
+				"blood_pressure_diastolic": 40,
+				"spo2": 85.0,
+				"temperature": 35.8,
+				"blood_glucose": 90,
+				"capillary_refill": 5.0,
+				"pupil_left_size": 6,
+				"pupil_right_size": 7,
+				"pupil_left_reactive": false,
+				"pupil_right_reactive": false,
+				"skin_color": "PALE",
+				"skin_temperature": "COLD",
+				"skin_moisture": "DIAPHORETIC",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 1,
+				"gcs_verbal": 1,
+				"gcs_motor": 2
+			},
+			"examination_findings": {
+				"head": "⚠ 4cm temporal laceration right side — actively bleeding. GCS 4 (E1V1M2) — severe TBI. Right pupil dilated 7mm fixed, left 6mm fixed — bilateral blown pupils, signs of raised ICP and herniation. Suspect basal skull fracture — do NOT insert NPA.",
+				"neck": "No visible external neck injury. No JVD. No carotid bruit. Trachea appears midline.",
+				"chest": "⚠ Bilateral breath sounds present but reduced bilaterally. RR 6 /min — near-absent respiration. SpO2 85% — critical hypoxia. BVM ventilation required immediately.",
+				"abdomen": "⚠ Abdomen distended and rigid — peritonism. Seatbelt bruising across upper abdomen. Suspected traumatic splenic or hepatic rupture with internal bleeding.",
+				"pelvis": "⚠ Unstable pelvic fracture — do NOT repeat compression test. Pelvic binder indicated. Major source of haemorrhage.",
+				"back": "Unable to fully assess — patient unresponsive and critically unstable. Minimal log-roll with spinal precautions.",
+				"extremities": "⚠ Medical bracelet: WARFARIN — anticoagulant therapy, critically impaired haemostasis. Poor distal perfusion, CRT 5 sec. Multiple abrasions. No obvious long-bone fractures."
+			},
+			"deterioration": {
+				"rate": 1.2,
+				"enabled": true,
+				"bleeding_interval": 20.0,
+				"airway_to_unconscious": 30.0,
+				"unconscious_to_cardiac": 45.0,
+				"cardiac_to_dead": 25.0
+			},
+			"correct_protocol_sequence": [
+				"scene_safety_check",
+				"assess_consciousness",
+				"assess_airway",
+				"jaw_thrust",
+				"assess_breathing",
+				"bag_valve_mask",
+				"assess_pulse",
+				"control_bleeding",
+				"triage_assign"
+			]
+		}
+	],
+	"bag_tier": "ALS",
+	"equipment": [
+		{
+			"type": "STRETCHER",
+			"name": "Stretcher",
+			"use_label": "Load Patient",
+			"position": { "x": -6.0, "y": 0.0, "z": -2.0 }
+		}
+	],
+	"correct_diagnosis": ["Blunt Thoracic Trauma", "Cervical Spine Injury", "Hemorrhagic Shock"],
+	"hazards": [
+		{
+			"type": "FIRE",
+			"position": { "x": 10.0, "y": 0.0, "z": 4.0 },
+			"radius": 2.5,
+			"spread_rate": 0.1,
+			"max_radius": 4.0,
+			"damage_per_second": 10.0,
+			"initial_active": true
+		}
+	],
+	"random_events": [],
+	"passing_criteria": {
+		"min_patients_assessed": 3,
+		"triage_tags_required": true
+	}
+}

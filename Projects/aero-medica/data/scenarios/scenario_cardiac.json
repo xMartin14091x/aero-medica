@@ -1,0 +1,119 @@
+{
+	"scenario_id": "cardiac_arrest_01",
+	"scenario_name": "Cardiac Arrest — Workplace Emergency",
+	"description": "A single patient found unresponsive in an office environment. No pulse, no breathing. Practice BLS protocol: CPR and AED application within the critical time window.",
+	"environment_scene_path": "",
+	"difficulty_rating": 2,
+	"guided_hints": false,
+	"time_limit_seconds": 480,
+	"bag_tier": "ALS",
+	"patients": [
+		{
+			"position": { "x": 10.0, "y": 0.0, "z": 10.0 },
+			"persona": {
+				"name": "Wichai",
+				"age": 58,
+				"consciousness_level": "UNRESPONSIVE",
+				"pain_level": 0,
+				"panic_level": 0.0,
+				"language_clarity": 0.0
+			},
+			"initial_state": "CARDIAC_ARREST",
+			"modifiers": {
+				"bleeding_severity": 0,
+				"airway_status": "CLEAR",
+				"breathing_rate": 0.0,
+				"pulse_present": false
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "(Patient is unresponsive — coworker reports: He was at his desk, complained of chest tightness, then slumped over.)",
+					"where_hurts": "(Patient is unresponsive — cannot report pain.)",
+					"when_started": "(Coworker: Maybe 3 minutes ago. I came back from the break room and found him like this.)",
+					"pain_scale": "(Patient is unresponsive.)"
+				},
+				"allergies": {
+					"any_allergies": "(Coworker: I think he mentioned a shellfish allergy once at lunch.)",
+					"medication_allergies": "(Unknown — coworker is not sure.)"
+				},
+				"medications": {
+					"current_meds": "(Coworker: He takes heart pills, I've seen him take them at lunch. Small white ones.)",
+					"what_meds": "(A pill organizer found in his desk drawer — labels: Aspirin 81mg, Lisinopril 10mg, Metformin 500mg.)"
+				},
+				"past_history": {
+					"medical_conditions": "(Coworker: He's diabetic, I know that. And he had a heart scare last year — was in hospital for a week.)",
+					"surgeries": "(Unknown — coworker cannot confirm.)"
+				},
+				"last_meal": {
+					"when_ate": "(Coworker: We had lunch together about an hour ago.)",
+					"what_ate": "(Coworker: He had pad thai from the canteen and iced tea.)"
+				},
+				"events": {
+					"what_doing": "(Coworker: He was working at his computer. Said he felt dizzy, then just... collapsed.)",
+					"witnesses": "(Coworker: I was right here. Two other people in the office saw it too.)"
+				},
+				"opqrst": {
+					"onset": "(Coworker: He was sitting at his desk working. Said he felt dizzy and chest felt tight, then slumped forward.)",
+					"provocation": "(Patient is unresponsive — information unavailable.)",
+					"quality": "(Coworker: He grabbed his chest and said it felt like something was crushing him.)",
+					"radiation": "(Patient is unresponsive — could not describe radiation.)",
+					"severity": "(Coworker: He said 'really bad' before he lost consciousness.)",
+					"time_course": "(Coworker: It came on suddenly. No warning signs before today.)"
+				}
+			},
+			"vitals": {
+				"heart_rate": 0,
+				"blood_pressure_systolic": 0,
+				"blood_pressure_diastolic": 0,
+				"spo2": 0.0,
+				"temperature": 36.8,
+				"blood_glucose": 180,
+				"capillary_refill": 6.0,
+				"pupil_left_size": 6,
+				"pupil_right_size": 6,
+				"pupil_left_reactive": false,
+				"pupil_right_reactive": false,
+				"skin_color": "CYANOTIC",
+				"skin_temperature": "COOL",
+				"skin_moisture": "DIAPHORETIC",
+				"ecg_rhythm": "VENTRICULAR_FIBRILLATION",
+				"gcs_eye": 1,
+				"gcs_verbal": 1,
+				"gcs_motor": 1
+			},
+			"examination_findings": {
+				"head": "⚠ Face and lips cyanotic. Pupils bilaterally fixed and dilated at 6mm — consistent with cardiac arrest and hypoxia. No head trauma. GCS 3 (E1V1M1).",
+				"neck": "No carotid pulse palpable. No JVD. Trachea midline. No neck trauma. Airway clear on chin-lift.",
+				"chest": "⚠ No spontaneous chest rise. No breath sounds bilaterally. No chest trauma. AED deployed — VF rhythm confirmed on monitor. CPR site identified: lower half of sternum. Begin 30:2 compression-to-ventilation cycle.",
+				"abdomen": "Soft. No distension. No guarding. No visible trauma.",
+				"pelvis": "No pelvic injury. No incontinence noted.",
+				"back": "No visible back injuries. No trauma mechanism.",
+				"extremities": "⚠ Skin cool, cyanotic, mottled peripherally. No distal pulses. No deformity. Pill organiser found in drawer: Aspirin 81mg, Lisinopril 10mg, Metformin 500mg — note elevated BGL 180 mg/dL consistent with diabetes."
+			},
+			"deterioration": {
+				"rate": 1.5,
+				"enabled": true,
+				"cardiac_to_dead": 30.0
+			},
+			"correct_protocol_sequence": [
+				"scene_safety_check",
+				"assess_consciousness",
+				"call_for_help",
+				"assess_airway",
+				"assess_breathing",
+				"assess_pulse",
+				"cpr",
+				"aed",
+				"reassess"
+			]
+		}
+	],
+	"equipment": [],
+	"correct_diagnosis": ["Cardiac Arrest", "Ventricular Fibrillation"],
+	"hazards": [],
+	"random_events": [],
+	"passing_criteria": {
+		"cpr_started_within_seconds": 60,
+		"aed_applied": true
+	}
+}

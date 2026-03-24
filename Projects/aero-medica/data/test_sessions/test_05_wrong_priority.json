@@ -1,0 +1,25 @@
+{
+	"test_name": "Wrong Priority — Treated GREEN Before RED",
+	"description": "Student assesses all patients but treats the lowest priority first and mis-triages a RED patient. Expected: review focusing on prioritisation errors.",
+	"scenario_id": "rta_intersection_01",
+	"duration_seconds": 500.0,
+	"events": [
+		{"type": "scenario_started", "target": "", "timestamp": 0.0, "details": {}},
+		{"type": "assess_consciousness", "target": "Somchai", "timestamp": 15.0, "details": {"result": "ALERT"}},
+		{"type": "assess_breathing", "target": "Somchai", "timestamp": 20.0, "details": {"breathing_rate": 22.0}},
+		{"type": "assess_pulse", "target": "Somchai", "timestamp": 25.0, "details": {"pulse_present": true}},
+		{"type": "assess_bleeding", "target": "Somchai", "timestamp": 30.0, "details": {"bleeding_present": true, "severity": 2}},
+		{"type": "treatment_applied", "target": "Somchai", "timestamp": 40.0, "details": {"equipment_name": "Bandage", "was_correct": true}},
+		{"type": "triage_assign", "target": "Somchai", "timestamp": 50.0, "details": {"assigned_tag": "YELLOW", "correct_tag": "YELLOW", "was_correct": true}},
+		{"type": "assess_consciousness", "target": "Nanthida", "timestamp": 120.0, "details": {"result": "VERBAL"}},
+		{"type": "assess_breathing", "target": "Nanthida", "timestamp": 130.0, "details": {"breathing_rate": 28.0}},
+		{"type": "triage_assign", "target": "Nanthida", "timestamp": 140.0, "details": {"assigned_tag": "YELLOW", "correct_tag": "RED", "was_correct": false}},
+		{"type": "assess_consciousness", "target": "Prasert", "timestamp": 200.0, "details": {"result": "UNRESPONSIVE"}},
+		{"type": "assess_breathing", "target": "Prasert", "timestamp": 210.0, "details": {"breathing_rate": 6.0}},
+		{"type": "assess_pulse", "target": "Prasert", "timestamp": 220.0, "details": {"pulse_present": true}},
+		{"type": "triage_assign", "target": "Prasert", "timestamp": 230.0, "details": {"assigned_tag": "RED", "correct_tag": "RED", "was_correct": true}},
+		{"type": "patient_state_changed", "target": "Nanthida", "timestamp": 250.0, "details": {"old_state": "CONSCIOUS", "new_state": "UNCONSCIOUS"}},
+		{"type": "patient_state_changed", "target": "Prasert", "timestamp": 350.0, "details": {"old_state": "UNCONSCIOUS", "new_state": "CARDIAC_ARREST"}},
+		{"type": "scenario_ended", "target": "", "timestamp": 500.0, "details": {}}
+	]
+}

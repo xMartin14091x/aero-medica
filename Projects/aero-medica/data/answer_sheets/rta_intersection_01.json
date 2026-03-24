@@ -1,0 +1,61 @@
+{
+	"scenario_id": "rta_intersection_01",
+	"scenario_name": "Road Traffic Accident — Intersection Collision",
+	"correct_protocol": "BCLS",
+	"patients": [
+		{
+			"patient_id": "Somchai",
+			"correct_triage": "YELLOW",
+			"priority_order": 2,
+			"correct_actions": [
+				"assess_consciousness",
+				"assess_breathing",
+				"assess_pulse",
+				"assess_bleeding",
+				"apply_bandage"
+			],
+			"critical_actions": ["assess_breathing", "assess_pulse"],
+			"correct_equipment": ["BANDAGE"],
+			"notes": "Conscious, moderate bleeding. YELLOW triage — delayed but needs treatment."
+		},
+		{
+			"patient_id": "Nanthida",
+			"correct_triage": "RED",
+			"priority_order": 1,
+			"correct_actions": [
+				"assess_consciousness",
+				"assess_breathing",
+				"assess_pulse",
+				"head_tilt_chin_lift",
+				"assess_bleeding"
+			],
+			"critical_actions": ["assess_breathing", "head_tilt_chin_lift"],
+			"correct_equipment": [],
+			"notes": "Obstructed airway — RED triage. Immediate airway management needed."
+		},
+		{
+			"patient_id": "Prasert",
+			"correct_triage": "RED",
+			"priority_order": 1,
+			"correct_actions": [
+				"assess_consciousness",
+				"assess_breathing",
+				"assess_pulse",
+				"head_tilt_chin_lift",
+				"assess_bleeding",
+				"apply_bandage"
+			],
+			"critical_actions": ["assess_breathing", "assess_pulse", "head_tilt_chin_lift"],
+			"correct_equipment": ["BANDAGE"],
+			"notes": "Unconscious, obstructed airway, severe bleeding. RED triage — immediate."
+		}
+	],
+	"timing_benchmarks": {
+		"first_assessment_excellent": 15,
+		"first_assessment_acceptable": 30,
+		"first_triage_excellent": 30,
+		"first_triage_acceptable": 60,
+		"total_scenario_target": 480
+	},
+	"priority_order_notes": "Nanthida and Prasert are both RED — treat either first. Somchai is YELLOW — treat last."
+}

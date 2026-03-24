@@ -1,0 +1,23 @@
+## Overall Assessment
+This session requires significant improvement. Anong received minimal or no effective care during the Fire scenario. The compromised airway from smoke inhalation went unmanaged and the patient deteriorated severely. Protocol adherence: below 20%. 3 critical errors detected. Smoke inhalation causes progressive airway swelling — without intervention, a compromised airway becomes a completely obstructed one.
+
+## Strengths
+- You entered the scenario and engaged with the fire environment
+
+## Areas for Improvement
+- Anong's compromised airway was not managed — no head-tilt chin-lift despite stridor and hoarse voice indicating developing oedema
+- No oxygen applied despite SpO2 of 88% — critically low in a CO exposure patient
+- Assessment was either not started or abandoned before any meaningful intervention
+- Triage was not assigned or was grossly incorrect
+- Anong's condition deteriorated during the scenario because critical interventions were not performed
+
+## Critical Errors
+- Compromised airway not managed — progressive upper airway oedema from smoke inhalation can become fatal within minutes
+- No oxygen therapy — 88% saturation with CO exposure is a medical emergency requiring immediate high-flow oxygen
+- Patient deterioration from inaction — Anong's worsening condition was directly caused by failure to intervene
+
+## Recommendations
+- In any fire scenario, airway is the absolute first priority — check it immediately upon reaching the patient
+- Practice this core sequence: approach patient, check airway, perform head-tilt chin-lift if compromised, apply oxygen, then continue assessment
+- Return to the tutorial scenario to reinforce the basic ABCDE assessment flow before reattempting timed fire scenarios
+- Remember: a patient speaking in a hoarse voice now may have a fully obstructed airway within minutes — act immediately

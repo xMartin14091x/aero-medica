@@ -1,0 +1,25 @@
+## Overall Assessment
+Partial performance with significant prioritisation errors. You assessed all three patients and demonstrated knowledge of the assessment protocol, but treated the YELLOW patient (Somchai) first while two RED patients (Nanthida and Prasert) went untreated. Nanthida was incorrectly triaged as YELLOW when she was RED. Protocol adherence: approximately 55%. 3 errors detected including 1 critical.
+
+## Strengths
+- All three patients were assessed — no patient was completely ignored
+- Somchai received a complete ABCDE assessment with correct treatment (bandage for bleeding)
+- Somchai was correctly triaged as YELLOW
+- Prasert was correctly triaged as RED
+- Assessment sequences were performed in the correct ABCDE order
+
+## Areas for Improvement
+- Somchai (YELLOW) was treated first at 15 seconds, while Nanthida (RED) wasn't seen until 120 seconds — a 2-minute delay for a more critical patient
+- Nanthida was incorrectly triaged as YELLOW when her obstructed airway makes her RED priority
+- Nanthida received no airway management (head-tilt chin-lift) despite obstructed airway — she deteriorated to unconscious
+- Prasert received assessment but no treatment — he deteriorated to cardiac arrest
+- Skipped the pulse and airway assessment for Nanthida
+
+## Critical Errors
+- Incorrect triage on RED patient (Nanthida): assigned YELLOW instead of RED. Obstructed airway = immediate (RED) priority under START protocol
+- Treated YELLOW patient before RED patients — violates the fundamental triage principle of treating the most critical first
+
+## Recommendations
+- Before treating anyone, do a rapid 30-second scene sweep: walk past all patients and identify who is unconscious, who has laboured breathing, who is bleeding heavily — these are your RED patients
+- Remember the START triage rule: if the patient cannot walk AND has abnormal breathing or obstructed airway → RED
+- Practice the prioritisation drill: assess all patients briefly first, tag them, then return to RED patients for treatment

@@ -1,0 +1,26 @@
+## Overall Assessment
+Solid performance on the Mass Casualty scenario. Most patients were assessed and triaged correctly. RED patients (Malee, Tawan, Chai) were generally prioritised over GREEN (Lek, Kanda). Protocol adherence: approximately 75%. Minor delays and one or two assessment gaps, but the overall triage framework was applied correctly. 0 critical errors detected.
+
+## Strengths
+- Triage tags mostly correct across the six patients
+- RED patients treated before GREEN — correct prioritisation framework followed
+- Boonsri identified as non-survivable in an MCI context — BLACK triage appropriate
+- Malee's bleeding managed with bandage application
+- Chai's severe bleeding (severity 3) identified and treated
+- Scenario completed within the 1200-second time limit
+
+## Areas for Improvement
+- Tawan's obstructed airway management was delayed — unconscious patient with breathing rate of 8/min needed immediate head-tilt chin-lift
+- Transition time between patients could be reduced — aim for under 10 seconds between completing one patient and starting the next
+- One GREEN patient may have been assessed before all RED patients were stabilised — always complete RED before moving to GREEN
+- Initial triage sweep took longer than optimal — practise the 30-second walk-through to classify all patients before deep assessment
+- Kanda's minor bleeding was noted but bandage application was slow
+
+## Critical Errors
+No critical errors detected.
+
+## Recommendations
+- In MCI scenarios, speed of triage sweep is critical — walk past all patients in the first 60 seconds and tag RED/YELLOW/GREEN/BLACK before treating anyone
+- Practice faster transitions: finish treatment, immediately move to next RED patient
+- Review the BLACK triage criteria: in MCI with limited resources, cardiac arrest patients are expectant — CPR is not performed
+- Consider time-boxing each patient: aim for 90 seconds per RED patient assessment and treatment

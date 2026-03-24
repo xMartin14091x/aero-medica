@@ -1,0 +1,167 @@
+[gd_scene format=3 uid="uid://dlt68gn8yi5qr"]
+
+[ext_resource type="Script" uid="uid://dpr4gxyj2px4o" path="res://scripts/gameplay/tutorial_level.gd" id="1_level"]
+[ext_resource type="Script" uid="uid://bgs1ivm88l835" path="res://scripts/core/isometric_camera.gd" id="2_camera"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player/Player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUD.tscn" id="4_hud"]
+[ext_resource type="PackedScene" uid="uid://cb52vj4dvyote" path="res://scenes/environments/Grass.tscn" id="5_grass"]
+[ext_resource type="PackedScene" uid="uid://djemvnxp40tv5" path="res://scenes/environments/Sidewalk.tscn" id="6_sidewalk"]
+
+[sub_resource type="NavigationMesh" id="nav_mesh"]
+geometry_parsed_geometry_type = 1
+
+[sub_resource type="StandardMaterial3D" id="bench_mat"]
+albedo_color = Color(0.45, 0.3, 0.15, 1)
+
+[sub_resource type="BoxMesh" id="bench_mesh"]
+material = SubResource("bench_mat")
+size = Vector3(1.2, 0.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="bench_shape"]
+size = Vector3(1.2, 0.5, 0.4)
+
+[node name="Tutorial" type="Node3D" unique_id=1877276430]
+script = ExtResource("1_level")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1930182059]
+transform = Transform3D(0.75, -0.433, 0.5, 0, 0.866, 0.5, -0.866, -0.25, 0.433, 0, 12, 0)
+shadow_enabled = true
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=2074070049]
+navigation_mesh = SubResource("nav_mesh")
+
+[node name="Tiles" type="Node3D" parent="NavigationRegion3D" unique_id=519742647]
+
+[node name="Grass_0_0" parent="NavigationRegion3D/Tiles" unique_id=1193645600 instance=ExtResource("5_grass")]
+transform = Transform3D(37.50902, 0, 0, 0, 1, 0, 0, 0, 35.594822, 9.982376, -0.013234377, 8.49008)
+
+[node name="Sidewalk_2_2" parent="NavigationRegion3D/Tiles" unique_id=1775204630 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 4)
+
+[node name="Sidewalk_2_3" parent="NavigationRegion3D/Tiles" unique_id=1882912153 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 6)
+
+[node name="Sidewalk_2_4" parent="NavigationRegion3D/Tiles" unique_id=408629853 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.0058107, 0, 8)
+
+[node name="Sidewalk_2_5" parent="NavigationRegion3D/Tiles" unique_id=515887975 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 10)
+
+[node name="Sidewalk_2_6" parent="NavigationRegion3D/Tiles" unique_id=1684214435 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 12)
+
+[node name="Sidewalk_2_7" parent="NavigationRegion3D/Tiles" unique_id=1677896930 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 14)
+
+[node name="Sidewalk_3_2" parent="NavigationRegion3D/Tiles" unique_id=1229742502 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 4)
+
+[node name="Sidewalk_3_5" parent="NavigationRegion3D/Tiles" unique_id=531316307 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 10)
+
+[node name="Sidewalk_4_2" parent="NavigationRegion3D/Tiles" unique_id=210793890 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 4)
+
+[node name="Sidewalk_4_5" parent="NavigationRegion3D/Tiles" unique_id=2092271425 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 10)
+
+[node name="Sidewalk_5_2" parent="NavigationRegion3D/Tiles" unique_id=455566840 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 4)
+
+[node name="Sidewalk_5_5" parent="NavigationRegion3D/Tiles" unique_id=2136201466 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 10)
+
+[node name="Sidewalk_6_2" parent="NavigationRegion3D/Tiles" unique_id=1562759061 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 4)
+
+[node name="Sidewalk_6_5" parent="NavigationRegion3D/Tiles" unique_id=1868499545 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 10)
+
+[node name="Sidewalk_7_2" parent="NavigationRegion3D/Tiles" unique_id=1990717935 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 4)
+
+[node name="Sidewalk_7_3" parent="NavigationRegion3D/Tiles" unique_id=1463324411 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 6)
+
+[node name="Sidewalk_7_4" parent="NavigationRegion3D/Tiles" unique_id=887795533 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 8)
+
+[node name="Sidewalk_7_5" parent="NavigationRegion3D/Tiles" unique_id=530377420 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 10)
+
+[node name="Sidewalk_7_6" parent="NavigationRegion3D/Tiles" unique_id=201250709 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 12)
+
+[node name="Sidewalk_7_7" parent="NavigationRegion3D/Tiles" unique_id=1129570934 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 14)
+
+[node name="Barrier_1" parent="NavigationRegion3D/Tiles" unique_id=2026487355 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 105.07663, 0, 0, 0, 12.896166, 24.43597, 0, 9.658703)
+visible = false
+
+[node name="Barrier_3" parent="NavigationRegion3D/Tiles" unique_id=1945692466 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(15.926822, 0, 0, 0, 94.53247, 0, 0, 0, 1, 8.650325, 0, 22.35363)
+visible = false
+
+[node name="Barrier_2" parent="NavigationRegion3D/Tiles" unique_id=1028048647 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 105.681076, 0, 0, 0, 13.104444, -7.218197, 0, 9.926386)
+visible = false
+
+[node name="Barrier_4" parent="NavigationRegion3D/Tiles" unique_id=215270373 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(15.979436, 0, 0, 0, 105.4808, 0, 0, 0, 1, 8.652787, 0, -3.1307135)
+visible = false
+
+[node name="Props" type="Node3D" parent="NavigationRegion3D" unique_id=937352802]
+
+[node name="Bench_01" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=911136849]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.25, 6)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Bench_01" unique_id=1366978759]
+mesh = SubResource("bench_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Bench_01" unique_id=2108187664]
+shape = SubResource("bench_shape")
+
+[node name="Bench_02" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=705537142]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.25, 14)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Bench_02" unique_id=671530162]
+mesh = SubResource("bench_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Bench_02" unique_id=1937398482]
+shape = SubResource("bench_shape")
+
+[node name="Spawns" type="Node3D" parent="." unique_id=1830869053]
+
+[node name="PlayerSpawn" type="Marker3D" parent="Spawns" unique_id=676918960]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.1, 10)
+
+[node name="PatientSpawn_01" type="Marker3D" parent="Spawns" unique_id=1109284136]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.1, 10)
+
+[node name="EquipmentSpawn_01" type="Marker3D" parent="Spawns" unique_id=1973644124]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.1, 6)
+
+[node name="EquipmentSpawn_02" type="Marker3D" parent="Spawns" unique_id=1322630824]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.1, 14)
+
+[node name="EquipmentSpawn_03" type="Marker3D" parent="Spawns" unique_id=179604511]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.1, 8)
+
+[node name="EquipmentSpawn_04" type="Marker3D" parent="Spawns" unique_id=1062047016]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.1, 12)
+
+[node name="EquipmentSpawn_05" type="Marker3D" parent="Spawns" unique_id=491513848]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.1, 8)
+
+[node name="Player" parent="." unique_id=849491545 instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.1, 10)
+
+[node name="IsometricCamera" type="Camera3D" parent="." unique_id=1262123836]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 12, 12)
+script = ExtResource("2_camera")
+offset = Vector3(8, 8, 8)
+zoom_min = 4.0
+zoom_max = 16.0
+
+[node name="HUD" parent="." unique_id=1530460690 instance=ExtResource("4_hud")]

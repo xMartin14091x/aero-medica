@@ -1,0 +1,21 @@
+## Overall Assessment
+Solid performance on the tutorial. Somchai was assessed and treated with correct triage assignment. Protocol adherence: approximately 80%. Minor gaps in assessment completeness but no critical errors. A strong foundation to build on.
+
+## Strengths
+- Somchai correctly triaged as GREEN — appropriate for a conscious patient with minor bleeding
+- Bleeding identified and bandage applied
+- Assessment performed in mostly correct ABCDE order
+- Patient approached promptly after scenario start
+
+## Areas for Improvement
+- One or more ABCDE steps were performed out of sequence or skipped — ensure every step is completed even when the patient appears stable
+- Consider verbalising findings as you go — this builds a habit of systematic documentation
+- Somchai's pain level and consciousness should both be formally assessed, not assumed from visual appearance
+
+## Critical Errors
+No critical errors detected.
+
+## Recommendations
+- Repeat the tutorial once more focusing on completing every ABCDE step in strict order before moving to timed scenarios
+- Practice the full assessment on stable patients — thoroughness on GREEN patients builds the habits needed for RED patients
+- Once consistent, advance to the Building Fire scenario for single-patient practice with time pressure

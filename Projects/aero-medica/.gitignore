@@ -1,0 +1,25 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Godot import cache
+*.import
+
+# Export presets (contains signing keys)
+export_presets.cfg
+
+# Runtime user data
+user_data/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+
+# Build outputs
+builds/
+*.exe
+*.pck

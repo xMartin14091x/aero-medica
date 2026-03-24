@@ -1,0 +1,426 @@
+[gd_scene format=3 uid="uid://hgcih0f8xuyo"]
+
+[ext_resource type="Script" uid="uid://c4fdxnsoybr3o" path="res://scripts/gameplay/rta_level.gd" id="1_level"]
+[ext_resource type="Script" uid="uid://bgs1ivm88l835" path="res://scripts/core/isometric_camera.gd" id="2_camera"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player/Player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUD.tscn" id="4_hud"]
+[ext_resource type="PackedScene" uid="uid://cb52vj4dvyote" path="res://scenes/environments/Grass.tscn" id="5_grass"]
+[ext_resource type="PackedScene" uid="uid://djemvnxp40tv5" path="res://scenes/environments/Sidewalk.tscn" id="6_sidewalk"]
+[ext_resource type="PackedScene" path="res://scenes/environments/Road.tscn" id="7_road"]
+
+[sub_resource type="NavigationMesh" id="nav_mesh"]
+geometry_parsed_geometry_type = 1
+
+[sub_resource type="StandardMaterial3D" id="vehicle_sedan_mat"]
+albedo_color = Color(0.45, 0.45, 0.5, 1)
+
+[sub_resource type="BoxMesh" id="vehicle_sedan_mesh"]
+material = SubResource("vehicle_sedan_mat")
+size = Vector3(2, 1, 1)
+
+[sub_resource type="BoxShape3D" id="vehicle_sedan_shape"]
+size = Vector3(2, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="vehicle_suv_mat"]
+albedo_color = Color(0.55, 0.55, 0.6, 1)
+
+[sub_resource type="BoxMesh" id="vehicle_suv_mesh"]
+material = SubResource("vehicle_suv_mat")
+size = Vector3(2.4, 1.2, 1.2)
+
+[sub_resource type="BoxShape3D" id="vehicle_suv_shape"]
+size = Vector3(2.4, 1.2, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="vehicle_small_mat"]
+albedo_color = Color(0.6, 0.35, 0.35, 1)
+
+[sub_resource type="BoxMesh" id="vehicle_small_mesh"]
+material = SubResource("vehicle_small_mat")
+size = Vector3(1.8, 0.9, 0.9)
+
+[sub_resource type="BoxShape3D" id="vehicle_small_shape"]
+size = Vector3(1.8, 0.9, 0.9)
+
+[sub_resource type="StandardMaterial3D" id="ambulance_mat"]
+albedo_color = Color(0.95, 0.95, 0.95, 1)
+
+[sub_resource type="BoxMesh" id="ambulance_mesh"]
+material = SubResource("ambulance_mat")
+size = Vector3(2.2, 1.5, 1.2)
+
+[sub_resource type="BoxShape3D" id="ambulance_shape"]
+size = Vector3(2.2, 1.5, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="firetruck_mat"]
+albedo_color = Color(0.85, 0.15, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="firetruck_mesh"]
+material = SubResource("firetruck_mat")
+size = Vector3(3, 1.8, 1.4)
+
+[sub_resource type="BoxShape3D" id="firetruck_shape"]
+size = Vector3(3, 1.8, 1.4)
+
+[sub_resource type="StandardMaterial3D" id="debris_mat_1"]
+albedo_color = Color(0.5, 0.5, 0.55, 1)
+
+[sub_resource type="BoxMesh" id="debris_mesh_1"]
+material = SubResource("debris_mat_1")
+size = Vector3(0.4, 0.1, 0.3)
+
+[sub_resource type="BoxShape3D" id="debris_shape_1"]
+size = Vector3(0.4, 0.1, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="debris_mat_2"]
+albedo_color = Color(0.55, 0.55, 0.6, 1)
+
+[sub_resource type="BoxMesh" id="debris_mesh_2"]
+material = SubResource("debris_mat_2")
+size = Vector3(0.3, 0.1, 0.2)
+
+[sub_resource type="BoxShape3D" id="debris_shape_2"]
+size = Vector3(0.3, 0.1, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="debris_mat_3"]
+albedo_color = Color(0.4, 0.4, 0.45, 1)
+
+[sub_resource type="BoxMesh" id="debris_mesh_3"]
+material = SubResource("debris_mat_3")
+size = Vector3(0.5, 0.15, 0.4)
+
+[sub_resource type="BoxShape3D" id="debris_shape_3"]
+size = Vector3(0.5, 0.15, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="debris_mat_4"]
+albedo_color = Color(0.35, 0.35, 0.4, 1)
+
+[sub_resource type="BoxMesh" id="debris_mesh_4"]
+material = SubResource("debris_mat_4")
+size = Vector3(0.2, 0.08, 0.5)
+
+[sub_resource type="BoxShape3D" id="debris_shape_4"]
+size = Vector3(0.2, 0.08, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="debris_mat_5"]
+albedo_color = Color(0.6, 0.4, 0.3, 1)
+
+[sub_resource type="BoxMesh" id="debris_mesh_5"]
+material = SubResource("debris_mat_5")
+size = Vector3(0.6, 0.12, 0.15)
+
+[sub_resource type="BoxShape3D" id="debris_shape_5"]
+size = Vector3(0.6, 0.12, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="debris_mat_6"]
+albedo_color = Color(0.3, 0.3, 0.35, 1)
+
+[sub_resource type="BoxMesh" id="debris_mesh_6"]
+material = SubResource("debris_mat_6")
+size = Vector3(0.3, 0.08, 0.3)
+
+[sub_resource type="BoxShape3D" id="debris_shape_6"]
+size = Vector3(0.3, 0.08, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="debris_mat_7"]
+albedo_color = Color(0.7, 0.3, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="debris_mesh_7"]
+material = SubResource("debris_mat_7")
+size = Vector3(0.8, 0.05, 0.15)
+
+[sub_resource type="BoxShape3D" id="debris_shape_7"]
+size = Vector3(0.8, 0.05, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="cone_mat"]
+albedo_color = Color(1, 0.5, 0, 1)
+
+[sub_resource type="CylinderMesh" id="cone_mesh"]
+top_radius = 0.05
+bottom_radius = 0.15
+height = 0.4
+
+[node name="RoadTrafficAccident" type="Node3D" unique_id=238196732]
+script = ExtResource("1_level")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1707753724]
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 15, 0)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=365585447]
+navigation_mesh = SubResource("nav_mesh")
+
+[node name="Tiles" type="Node3D" parent="NavigationRegion3D" unique_id=1246565058]
+
+[node name="Grass_Ground" parent="NavigationRegion3D/Tiles" unique_id=843122542 instance=ExtResource("5_grass")]
+transform = Transform3D(91.09919, 0, 0, 0, 1, 0, 0, 0, 73.416306, 14.925728, -0.05, 14.961987)
+
+[node name="Road_H_Z7" parent="NavigationRegion3D/Tiles" unique_id=1126696412 instance=ExtResource("7_road")]
+transform = Transform3D(91.317696, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 14)
+
+[node name="Road_H_Z8" parent="NavigationRegion3D/Tiles" unique_id=949346337 instance=ExtResource("7_road")]
+transform = Transform3D(91.69059, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 16)
+
+[node name="Road_V_X7" parent="NavigationRegion3D/Tiles" unique_id=361318414 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 73.04241, 14, 0, 15)
+
+[node name="Road_V_X8" parent="NavigationRegion3D/Tiles" unique_id=1284447026 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 73.561646, 16, 0, 15)
+
+[node name="Sidewalk_TopLeft" parent="NavigationRegion3D/Tiles" unique_id=312002285 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(39.9505, 0, 0, 0, 1, 0, 0, 0, 1, -26.962997, 0, 12)
+
+[node name="Sidewalk_BotLeft" parent="NavigationRegion3D/Tiles" unique_id=1387316026 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(46.01002, 0, 0, 0, 1, 0, 0, 0, 1, -34.74479, 0, 17.984129)
+
+[node name="Sidewalk_TopRight" parent="NavigationRegion3D/Tiles" unique_id=1169653537 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(44.512638, 0, 0, 0, 1, 0, 0, 0, 1, 61.586327, 0.008507729, 12.001085)
+
+[node name="Sidewalk_BotRight" parent="NavigationRegion3D/Tiles" unique_id=1508855079 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(44.410698, 0, 0, 0, 1, 0, 0, 0, 1, 62.630775, 0, 18.010344)
+
+[node name="Sidewalk_LeftTop" parent="NavigationRegion3D/Tiles" unique_id=927269034 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 37.88882, 12, 0, -26.742558)
+
+[node name="Sidewalk_RightTop" parent="NavigationRegion3D/Tiles" unique_id=522774490 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 38.73118, 17.964596, 0, -27.493229)
+
+[node name="Sidewalk_LeftBot" parent="NavigationRegion3D/Tiles" unique_id=1264050483 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 38.454594, 12, 0, 55.417202)
+
+[node name="Sidewalk_RightBot" parent="NavigationRegion3D/Tiles" unique_id=1959346917 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 43.863262, 17.998257, 0, 60.871315)
+
+[node name="Barrier_North" parent="NavigationRegion3D/Tiles" unique_id=1533973559 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(16, 0, 0, 0, 105, 0, 0, 0, 1, 15, 0, -1.303233)
+visible = false
+
+[node name="Barrier_South" parent="NavigationRegion3D/Tiles" unique_id=1237867843 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(16, 0, 0, 0, 105, 0, 0, 0, 1, 15, 0, 31.874474)
+visible = false
+
+[node name="Barrier_West" parent="NavigationRegion3D/Tiles" unique_id=1398038118 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 105, 0, 0, 0, 16, -1.736831, 0, 15)
+visible = false
+
+[node name="Barrier_East" parent="NavigationRegion3D/Tiles" unique_id=1156727870 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 105, 0, 0, 0, 16, 31.7725, 0, 15)
+visible = false
+
+[node name="Props" type="Node3D" parent="NavigationRegion3D" unique_id=67222192]
+
+[node name="Vehicle_Sedan" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1520731449]
+transform = Transform3D(0.906, 0, 0.423, 0, 1, 0, -0.423, 0, 0.906, 20, 0, 17)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Vehicle_Sedan" unique_id=938832074]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("vehicle_sedan_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Vehicle_Sedan" unique_id=1398681807]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("vehicle_sedan_shape")
+
+[node name="Vehicle_SUV" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1422136141]
+transform = Transform3D(0.819, 0, -0.574, 0, 1, 0, 0.574, 0, 0.819, 17, 0, 13)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Vehicle_SUV" unique_id=2052554360]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+mesh = SubResource("vehicle_suv_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Vehicle_SUV" unique_id=141236335]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("vehicle_suv_shape")
+
+[node name="Vehicle_SmallCar" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1741556649]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 15)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Vehicle_SmallCar" unique_id=104898829]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("vehicle_small_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Vehicle_SmallCar" unique_id=216031657]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("vehicle_small_shape")
+
+[node name="EmergencyVehicle_Ambulance" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1529110108]
+transform = Transform3D(0.966, 0, 0.259, 0, 1, 0, -0.259, 0, 0.966, 6, 0, 18)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/EmergencyVehicle_Ambulance" unique_id=726156585]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("ambulance_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/EmergencyVehicle_Ambulance" unique_id=1019547345]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+shape = SubResource("ambulance_shape")
+
+[node name="RedLight" type="OmniLight3D" parent="NavigationRegion3D/Props/EmergencyVehicle_Ambulance" unique_id=1316571746]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 2, 0)
+light_color = Color(1, 0.05, 0.05, 1)
+light_energy = 2.0
+omni_range = 8.0
+
+[node name="BlueLight" type="OmniLight3D" parent="NavigationRegion3D/Props/EmergencyVehicle_Ambulance" unique_id=1697114231]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2, 0)
+light_color = Color(0.1, 0.15, 1, 1)
+light_energy = 2.0
+omni_range = 8.0
+
+[node name="EmergencyVehicle_FireTruck" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=538253301]
+transform = Transform3D(0.996, 0, -0.087, 0, 1, 0, 0.087, 0, 0.996, 26, 0, 20)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/EmergencyVehicle_FireTruck" unique_id=1706858508]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("firetruck_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/EmergencyVehicle_FireTruck" unique_id=1101992131]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("firetruck_shape")
+
+[node name="RedLight" type="OmniLight3D" parent="NavigationRegion3D/Props/EmergencyVehicle_FireTruck" unique_id=1223085314]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+light_color = Color(1, 0.1, 0, 1)
+light_energy = 2.5
+omni_range = 10.0
+
+[node name="Debris" type="Node3D" parent="NavigationRegion3D" unique_id=1969281307]
+
+[node name="Debris_01" type="StaticBody3D" parent="NavigationRegion3D/Debris" unique_id=1874857235]
+transform = Transform3D(0.966, 0, 0.259, 0, 1, 0, -0.259, 0, 0.966, 19, 0.05, 16)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Debris/Debris_01" unique_id=1521070670]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("debris_mesh_1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Debris/Debris_01" unique_id=1928400274]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+shape = SubResource("debris_shape_1")
+
+[node name="Debris_02" type="StaticBody3D" parent="NavigationRegion3D/Debris" unique_id=1651367768]
+transform = Transform3D(0.94, 0, -0.342, 0, 1, 0, 0.342, 0, 0.94, 21, 0.05, 18)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Debris/Debris_02" unique_id=74190597]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("debris_mesh_2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Debris/Debris_02" unique_id=2042812697]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+shape = SubResource("debris_shape_2")
+
+[node name="Debris_03" type="StaticBody3D" parent="NavigationRegion3D/Debris" unique_id=1989869922]
+transform = Transform3D(0.985, 0, 0.174, 0, 1, 0, -0.174, 0, 0.985, 16, 0.05, 14)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Debris/Debris_03" unique_id=1996187319]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0)
+mesh = SubResource("debris_mesh_3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Debris/Debris_03" unique_id=460250762]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0)
+shape = SubResource("debris_shape_3")
+
+[node name="Debris_04" type="StaticBody3D" parent="NavigationRegion3D/Debris" unique_id=699257908]
+transform = Transform3D(0.891, 0, 0.454, 0, 1, 0, -0.454, 0, 0.891, 22, 0.05, 17)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Debris/Debris_04" unique_id=735394794]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+mesh = SubResource("debris_mesh_4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Debris/Debris_04" unique_id=1085393196]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+shape = SubResource("debris_shape_4")
+
+[node name="Debris_05" type="StaticBody3D" parent="NavigationRegion3D/Debris" unique_id=1755127514]
+transform = Transform3D(0.927, 0, -0.375, 0, 1, 0, 0.375, 0, 0.927, 18, 0.05, 13)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Debris/Debris_05" unique_id=501844631]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+mesh = SubResource("debris_mesh_5")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Debris/Debris_05" unique_id=1118481146]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+shape = SubResource("debris_shape_5")
+
+[node name="Debris_06" type="StaticBody3D" parent="NavigationRegion3D/Debris" unique_id=1650237058]
+transform = Transform3D(0.978, 0, 0.208, 0, 1, 0, -0.208, 0, 0.978, 15, 0.05, 16)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Debris/Debris_06" unique_id=1379023449]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+mesh = SubResource("debris_mesh_6")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Debris/Debris_06" unique_id=51207128]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+shape = SubResource("debris_shape_6")
+
+[node name="Debris_07" type="StaticBody3D" parent="NavigationRegion3D/Debris" unique_id=1811066130]
+transform = Transform3D(0.951, 0, 0.309, 0, 1, 0, -0.309, 0, 0.951, 20, 0.1, 14)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Debris/Debris_07" unique_id=1791104747]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+mesh = SubResource("debris_mesh_7")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Debris/Debris_07" unique_id=1245487909]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+shape = SubResource("debris_shape_7")
+
+[node name="TrafficCones" type="Node3D" parent="NavigationRegion3D" unique_id=1370687689]
+
+[node name="Cone_01" type="MeshInstance3D" parent="NavigationRegion3D/TrafficCones" unique_id=693116346]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.2, 12)
+material_override = SubResource("cone_mat")
+mesh = SubResource("cone_mesh")
+
+[node name="Cone_02" type="MeshInstance3D" parent="NavigationRegion3D/TrafficCones" unique_id=1860702791]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.2, 20)
+material_override = SubResource("cone_mat")
+mesh = SubResource("cone_mesh")
+
+[node name="Cone_03" type="MeshInstance3D" parent="NavigationRegion3D/TrafficCones" unique_id=109303643]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0.2, 12)
+material_override = SubResource("cone_mat")
+mesh = SubResource("cone_mesh")
+
+[node name="Cone_04" type="MeshInstance3D" parent="NavigationRegion3D/TrafficCones" unique_id=571408717]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0.2, 20)
+material_override = SubResource("cone_mat")
+mesh = SubResource("cone_mesh")
+
+[node name="Cone_05" type="MeshInstance3D" parent="NavigationRegion3D/TrafficCones" unique_id=1694722457]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.2, 11)
+material_override = SubResource("cone_mat")
+mesh = SubResource("cone_mesh")
+
+[node name="Cone_06" type="MeshInstance3D" parent="NavigationRegion3D/TrafficCones" unique_id=1786742853]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.2, 21)
+material_override = SubResource("cone_mat")
+mesh = SubResource("cone_mesh")
+
+[node name="Spawns" type="Node3D" parent="." unique_id=1475377473]
+
+[node name="PlayerSpawn" type="Marker3D" parent="Spawns" unique_id=2131561465]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6771636, 0.082603276, 16)
+
+[node name="PatientSpawn_01" type="Marker3D" parent="Spawns" unique_id=1278511022]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.1, 18)
+
+[node name="PatientSpawn_02" type="Marker3D" parent="Spawns" unique_id=2045837117]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0.1, 14)
+
+[node name="PatientSpawn_03" type="Marker3D" parent="Spawns" unique_id=1659565185]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.1, 12)
+
+[node name="EquipSpawn_AED" type="Marker3D" parent="Spawns" unique_id=510753491]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.1, 20)
+
+[node name="EquipSpawn_Bandages" type="Marker3D" parent="Spawns" unique_id=809913051]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.1, 20)
+
+[node name="EquipSpawn_Stretcher" type="Marker3D" parent="Spawns" unique_id=1852712654]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0.1, 22)
+
+[node name="Player" parent="." unique_id=1302856210 instance=ExtResource("3_player")]
+transform = Transform3D(0.03871923, 0, 0.9992501, 0, 1, 0, -0.9992501, 0, 0.03871923, 4.560516, 0.12827098, 16)
+
+[node name="IsometricCamera" type="Camera3D" parent="." unique_id=927952658]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 15, 20)
+script = ExtResource("2_camera")
+
+[node name="HUD" parent="." unique_id=2001979186 instance=ExtResource("4_hud")]

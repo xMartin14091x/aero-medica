@@ -1,0 +1,2612 @@
+## PatientInteractionUI — Full-screen tabbed panel for patient interaction.
+## Opened when player presses E near a patient. Contains 4 tabs:
+## Patient (info + AI talk), Exam (DRSABCDE), Stabilize (medical bag), Differential (diagnosis).
+## Layout: left content panel + right vertical tab strip.
+extends Control
+
+## Emitted when the UI is closed (Escape or close button).
+signal interaction_closed
+
+## Emitted when an assessment action is performed.
+signal assessment_action(action_name: String)
+
+## Emitted when equipment is used from the medical bag.
+signal equipment_used(equipment_type: String, patient: Node)
+
+## Emitted when a diagnosis is selected.
+signal diagnosis_selected(diagnosis: String)
+
+## Tab identifiers.
+enum Tab { PATIENT, EXAM, STABILIZE, DIFFERENTIAL }
+
+## The patient node being interacted with.
+var _patient: Node = null
+
+## Player reference (for distance check).
+var _player: Node = null
+
+## Distance threshold — auto-close if player walks away.
+const CLOSE_DISTANCE := 4.0
+
+## Current active tab.
+var _current_tab: Tab = Tab.PATIENT
+
+## UI references (built in _ready).
+var _tab_buttons: Dictionary = {}  # Tab enum → Button
+var _tab_contents: Dictionary = {}  # Tab enum → Control
+var _left_panel: PanelContainer = null
+var _content_container: VBoxContainer = null
+
+## Tab-specific state.
+var _exam_buttons: Dictionary = {}  # action_name → Button
+var _exam_results: Dictionary = {}  # action_name → Label
+var _exam_completed: int = 0
+var _exam_total: int = 8
+var _exam_counter_label: Label = null
+var _equipment_buttons: Dictionary = {}  # equip_type → Button
+var _applied_equipment: Array[String] = []
+
+## Maps Equipment button keys (lowercase) ↔ Bag manager keys (UPPERCASE).
+const EQUIP_TO_BAG_KEY := {
+	"oxygen_mask": "OXYGEN_MASK",
+	"bvm": "BVM",
+	"aed": "AED",
+	"iv_access": "IV_ACCESS",
+	"c_collar": "CERVICAL_COLLAR",
+	"tourniquet": "TOURNIQUET",
+	"bandage": "BANDAGE",
+	"splint": "SPLINT_SAM",
+	"stretcher": "STRETCHER",
+	"pulse_oximeter": "PULSE_OXIMETER",
+	"bp_cuff": "BP_CUFF",
+	"penlight": "PENLIGHT",
+	"thermometer": "THERMOMETER",
+	"glucometer": "GLUCOMETER",
+}
+const BAG_TO_EQUIP_KEY := {
+	"OXYGEN_MASK": "oxygen_mask",
+	"BVM": "bvm",
+	"AED": "aed",
+	"IV_ACCESS": "iv_access",
+	"CERVICAL_COLLAR": "c_collar",
+	"TOURNIQUET": "tourniquet",
+	"BANDAGE": "bandage",
+	"SPLINT_SAM": "splint",
+	"STRETCHER": "stretcher",
+	"PULSE_OXIMETER": "pulse_oximeter",
+	"BP_CUFF": "bp_cuff",
+	"PENLIGHT": "penlight",
+	"THERMOMETER": "thermometer",
+	"GLUCOMETER": "glucometer",
+}
+var _diagnosis_buttons: Array[Button] = []
+var _selected_diagnoses: Array[String] = []
+var _diagnosis_submitted: bool = false
+var _submit_diagnosis_btn: Button = null
+var _diagnosis_rank_label: Label = null
+
+## Chat elements (Patient tab).
+var _chat_container: VBoxContainer = null
+var _chat_scroll: ScrollContainer = null
+var _chat_input: LineEdit = null
+var _talk_button: Button = null
+var _patient_info_label: RichTextLabel = null
+var _ai_status_label: Label = null
+
+## Ollama dialogue client reference.
+var _dialogue_client: Node = null
+
+## History taking manager reference.
+var _history_manager: Node = null
+
+## Assessment manager reference.
+var _assessment_manager: Node = null
+
+## ARC-12: OPQRST button reference.
+var _opqrst_btn: Button = null
+
+## ARC-13: Vital sign assessment buttons and result labels.
+var _vital_buttons: Dictionary = {}  # key → Button
+var _vital_results: Dictionary = {}  # key → Label
+
+## ARC-14: ECG overlay panel and widgets.
+var _ecg_panel: PanelContainer = null
+var _ecg_texture_rect: TextureRect = null
+var _ecg_rhythm_label: Label = null
+var _ecg_mode_label: Label = null
+var _ecg_rhythm_manager: Node = null
+
+## ARC-15: GCS assessment UI.
+var _gcs_component_selection: Dictionary = {}  # "eye"/"verbal"/"motor" → int (selected value, 0 = none)
+var _gcs_component_btns: Dictionary = {}  # "eye_1"/"eye_2"/etc → Button
+var _gcs_total_label: Label = null
+var _gcs_severity_label: Label = null
+var _gcs_manager: Node = null
+
+## ARC-16: Secondary survey UI.
+var _secondary_buttons: Dictionary = {}  # region → Button
+var _secondary_results: Dictionary = {}  # region → Label
+var _secondary_completed_count: int = 0
+var _secondary_counter_label: Label = null
+var _secondary_survey_manager: Node = null
+
+## ARC-17: Drug administration UI.
+var _drug_name_btn: OptionButton = null
+var _drug_route_btn: OptionButton = null
+var _drug_dose_btn: OptionButton = null
+var _drug_feedback_label: Label = null
+var _drug_log_vbox: VBoxContainer = null
+var _drug_admin_manager: Node = null
+var _current_drug_data: Dictionary = {}  # loaded drugs.json
+
+## ARC-18: Medical bag tier UI.
+var _bag_tier_label: Label = null
+var _bag_items_vbox: VBoxContainer = null
+var _bag_tier_manager: Node = null
+var _current_bag_data: Dictionary = {}  # loaded medical_bag_tiers.json
+
+
+func _ready() -> void:
+	visible = false
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_build_ui()
+	_find_systems.call_deferred()
+
+
+func _find_systems() -> void:
+	await get_tree().process_frame
+	_dialogue_client = get_node_or_null("/root/OllamaDialogueClient")
+	if _dialogue_client:
+		if not _dialogue_client.dialogue_response_received.is_connected(_on_ai_response):
+			_dialogue_client.dialogue_response_received.connect(_on_ai_response)
+		if not _dialogue_client.dialogue_failed.is_connected(_on_ai_failed):
+			_dialogue_client.dialogue_failed.connect(_on_ai_failed)
+	_load_drugs_json()
+	_load_bag_json()
+
+
+func _process(_delta: float) -> void:
+	if not visible or not _player or not _patient:
+		return
+	if not is_instance_valid(_patient):
+		close_ui()
+		return
+	var dist: float = _player.global_position.distance_to(_patient.global_position)
+	if dist > CLOSE_DISTANCE:
+		close_ui()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	# Consume the interact action (E key) so InteractionManager doesn't re-trigger.
+	# Pressing E while open closes the UI (toggle behavior).
+	if event.is_action_pressed("interact"):
+		close_ui()
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventKey and event.pressed:
+		if event.physical_keycode == KEY_ESCAPE:
+			close_ui()
+			get_viewport().set_input_as_handled()
+		elif not _chat_input or not _chat_input.has_focus():
+			match event.physical_keycode:
+				KEY_1:
+					_switch_tab(Tab.PATIENT)
+					get_viewport().set_input_as_handled()
+				KEY_2:
+					_switch_tab(Tab.EXAM)
+					get_viewport().set_input_as_handled()
+				KEY_3:
+					_switch_tab(Tab.STABILIZE)
+					get_viewport().set_input_as_handled()
+				KEY_4:
+					_switch_tab(Tab.DIFFERENTIAL)
+					get_viewport().set_input_as_handled()
+
+
+## Open the interaction UI for a patient.
+func open_ui(patient: Node, player: Node) -> void:
+	_patient = patient
+	_player = player
+	_current_tab = Tab.PATIENT
+
+	# Restore diagnosis state from patient metadata if already submitted.
+	# Prevents re-interaction from wiping a completed diagnosis.
+	if patient.has_meta("player_diagnoses") and not (patient.get_meta("player_diagnoses") as Array).is_empty():
+		_selected_diagnoses = (patient.get_meta("player_diagnoses") as Array).duplicate()
+		_diagnosis_submitted = true
+	else:
+		_selected_diagnoses.clear()
+		_diagnosis_submitted = false
+
+	# Find managers on player
+	_assessment_manager = player.get_node_or_null("AssessmentManager")
+	_history_manager = player.get_node_or_null("HistoryTakingManager")
+
+	# ARC-14/15/16/17/18: find additional managers
+	_ecg_rhythm_manager = get_node_or_null("/root/ECGRhythmManager")
+	_gcs_manager = get_node_or_null("/root/GCSAssessmentManager")
+	_secondary_survey_manager = get_node_or_null("/root/SecondarySurveyManager")
+	_drug_admin_manager = player.get_node_or_null("DrugAdministrationManager")
+	_bag_tier_manager = player.get_node_or_null("MedicalBagTierManager")
+
+	# Rebuild _applied_equipment from patient metadata (persists across UI open/close)
+	_applied_equipment.clear()
+	if patient.has_meta("deployed_equipment"):
+		var deployed: Array = patient.get_meta("deployed_equipment")
+		for bag_key in deployed:
+			var equip_key: String = BAG_TO_EQUIP_KEY.get(str(bag_key), str(bag_key).to_lower())
+			if equip_key not in _applied_equipment:
+				_applied_equipment.append(equip_key)
+
+	# Make visible BEFORE begin_assessment() so HUDController's guard clause
+	# sees this panel is active and does not open the legacy ActionMenu.
+	visible = true
+
+	# Start history session
+	if _history_manager and not _history_manager.is_active:
+		_history_manager.begin_history(patient)
+
+	# Start assessment session
+	if _assessment_manager:
+		_assessment_manager.begin_assessment(patient)
+
+	# Set up Ollama context
+	_setup_ollama_context()
+
+	# Populate all tabs
+	_populate_patient_tab()
+	_populate_exam_tab()
+	_populate_stabilize_tab()
+	_populate_differential_tab()
+
+	# ARC-13/14/15/16/17/18: populate new sections
+	_populate_vitals_section()
+	_populate_ecg_section()
+	_populate_gcs_section()
+	_populate_secondary_section()
+	_populate_drug_section()
+	_populate_bag_section()
+
+	_switch_tab(Tab.PATIENT)
+
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+	if _ai_status_label:
+		if _dialogue_client and _dialogue_client.ollama_available:
+			_ai_status_label.text = "AI Dialogue Active"
+			_ai_status_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+		else:
+			_ai_status_label.text = "Scripted Responses (Ollama Offline)"
+			_ai_status_label.add_theme_color_override("font_color", Color(0.9, 0.7, 0.3))
+
+	# ARC-17: connect drug administered signal if available
+	if _drug_admin_manager and _drug_admin_manager.has_signal("drug_administered"):
+		if not _drug_admin_manager.drug_administered.is_connected(_on_drug_administered_signal):
+			_drug_admin_manager.drug_administered.connect(_on_drug_administered_signal)
+
+
+## Close the UI.
+func close_ui() -> void:
+	visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if _history_manager and _history_manager.is_active:
+		_history_manager.end_history()
+	if _assessment_manager and _assessment_manager.in_assessment:
+		_assessment_manager.end_assessment()
+	_patient = null
+	_player = null
+	interaction_closed.emit()
+
+
+# ==============================================================================
+# UI BUILD — main structure
+# ==============================================================================
+
+func _build_ui() -> void:
+	# Dim overlay background
+	var bg := ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.7)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(bg)
+
+	# Outer margin container
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 60)
+	margin.add_theme_constant_override("margin_right", 60)
+	margin.add_theme_constant_override("margin_top", 40)
+	margin.add_theme_constant_override("margin_bottom", 40)
+	add_child(margin)
+
+	# Main horizontal container: [content panel] [tab strip]
+	var main_hbox := HBoxContainer.new()
+	margin.add_child(main_hbox)
+
+	# Left content panel
+	_left_panel = PanelContainer.new()
+	_left_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_left_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	main_hbox.add_child(_left_panel)
+
+	_content_container = VBoxContainer.new()
+	_content_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_content_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_left_panel.add_child(_content_container)
+
+	# Build each tab's content
+	_tab_contents[Tab.PATIENT] = _build_patient_tab()
+	_tab_contents[Tab.EXAM] = _build_exam_tab()
+	_tab_contents[Tab.STABILIZE] = _build_stabilize_tab()
+	_tab_contents[Tab.DIFFERENTIAL] = _build_differential_tab()
+
+	for tab_content in _tab_contents.values():
+		_content_container.add_child(tab_content)
+		tab_content.visible = false
+
+	# Right tab strip
+	var tab_strip := VBoxContainer.new()
+	tab_strip.custom_minimum_size = Vector2(120, 0)
+	tab_strip.add_theme_constant_override("separation", 4)
+	main_hbox.add_child(tab_strip)
+
+	var tab_labels := {
+		Tab.PATIENT:      "[1]\nPatient",
+		Tab.EXAM:         "[2]\nExam",
+		Tab.STABILIZE:    "[3]\nStabilize",
+		Tab.DIFFERENTIAL: "[4]\nDiff Dx"
+	}
+
+	for tab_id in [Tab.PATIENT, Tab.EXAM, Tab.STABILIZE, Tab.DIFFERENTIAL]:
+		var btn := Button.new()
+		btn.text = tab_labels[tab_id]
+		btn.custom_minimum_size = Vector2(110, 70)
+		btn.focus_mode = Control.FOCUS_NONE
+		btn.pressed.connect(_switch_tab.bind(tab_id))
+		tab_strip.add_child(btn)
+		_tab_buttons[tab_id] = btn
+
+	# Spacer + close button at bottom of strip
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	tab_strip.add_child(spacer)
+
+	var close_btn := Button.new()
+	close_btn.text = "[Esc]\nClose"
+	close_btn.custom_minimum_size = Vector2(110, 50)
+	close_btn.focus_mode = Control.FOCUS_NONE
+	close_btn.pressed.connect(close_ui)
+	tab_strip.add_child(close_btn)
+
+
+func _switch_tab(tab: Tab) -> void:
+	_current_tab = tab
+	for tab_id in _tab_contents:
+		_tab_contents[tab_id].visible = (tab_id == tab)
+	for tab_id in _tab_buttons:
+		var btn: Button = _tab_buttons[tab_id]
+		btn.disabled = (tab_id == tab)
+
+
+# ==============================================================================
+# TAB BUILD — Patient
+# ==============================================================================
+
+func _build_patient_tab() -> Control:
+	var root := VBoxContainer.new()
+	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	var title := Label.new()
+	title.text = "Patient"
+	title.add_theme_font_size_override("font_size", 22)
+	root.add_child(title)
+
+	# Patient info
+	_patient_info_label = RichTextLabel.new()
+	_patient_info_label.bbcode_enabled = true
+	_patient_info_label.custom_minimum_size = Vector2(0, 100)
+	_patient_info_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.add_child(_patient_info_label)
+
+	root.add_child(HSeparator.new())
+
+	# SAMPLE history categories
+	var sample_title := Label.new()
+	sample_title.text = "SAMPLE History"
+	sample_title.add_theme_font_size_override("font_size", 17)
+	root.add_child(sample_title)
+
+	var sample_grid := GridContainer.new()
+	sample_grid.columns = 2
+	root.add_child(sample_grid)
+
+	var sample_categories := [
+		["S - Signs & Symptoms", "signs_symptoms"],
+		["A - Allergies", "allergies"],
+		["M - Medications", "medications"],
+		["P - Past History", "past_history"],
+		["L - Last Oral Intake", "last_oral_intake"],
+		["E - Events Leading To", "events"],
+	]
+
+	for cat in sample_categories:
+		var btn := Button.new()
+		btn.text = cat[0]
+		btn.custom_minimum_size = Vector2(180, 36)
+		btn.add_theme_font_size_override("font_size", 13)
+		btn.focus_mode = Control.FOCUS_NONE
+		btn.pressed.connect(_on_sample_category_pressed.bind(cat[1]))
+		sample_grid.add_child(btn)
+
+	## ARC-12: OPQRST category button (amber colour, pain auto-suggest)
+	_opqrst_btn = Button.new()
+	_opqrst_btn.text = "O - OPQRST (Pain)"
+	_opqrst_btn.custom_minimum_size = Vector2(180, 36)
+	_opqrst_btn.add_theme_font_size_override("font_size", 13)
+	_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2))
+	_opqrst_btn.pressed.connect(_on_sample_category_pressed.bind("opqrst"))
+	_opqrst_btn.focus_mode = Control.FOCUS_NONE
+	sample_grid.add_child(_opqrst_btn)
+
+	root.add_child(HSeparator.new())
+
+	# AI status
+	_ai_status_label = Label.new()
+	_ai_status_label.add_theme_font_size_override("font_size", 12)
+	root.add_child(_ai_status_label)
+
+	# Chat scroll
+	_chat_scroll = ScrollContainer.new()
+	_chat_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_chat_scroll.custom_minimum_size = Vector2(0, 200)
+	root.add_child(_chat_scroll)
+
+	_chat_container = VBoxContainer.new()
+	_chat_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_chat_scroll.add_child(_chat_container)
+
+	# Chat input row
+	var input_row := HBoxContainer.new()
+	root.add_child(input_row)
+
+	_chat_input = LineEdit.new()
+	_chat_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_chat_input.placeholder_text = "Ask the patient..."
+	_chat_input.text_submitted.connect(_on_chat_submitted)
+	input_row.add_child(_chat_input)
+
+	_talk_button = Button.new()
+	_talk_button.text = "Talk"
+	_talk_button.focus_mode = Control.FOCUS_NONE
+	_talk_button.pressed.connect(_on_talk_button_pressed)
+	input_row.add_child(_talk_button)
+
+	return root
+
+
+# ==============================================================================
+# TAB BUILD — Exam
+# ==============================================================================
+
+func _build_exam_tab() -> Control:
+	var root := VBoxContainer.new()
+	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	var title_row := HBoxContainer.new()
+	root.add_child(title_row)
+
+	var title := Label.new()
+	title.text = "Primary Survey — DRSABCDE"
+	title.add_theme_font_size_override("font_size", 22)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_row.add_child(title)
+
+	_exam_counter_label = Label.new()
+	_exam_counter_label.text = "0/8"
+	_exam_counter_label.add_theme_font_size_override("font_size", 16)
+	title_row.add_child(_exam_counter_label)
+
+	# Scrollable exam area
+	var exam_scroll := ScrollContainer.new()
+	exam_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(exam_scroll)
+
+	var exam_vbox := VBoxContainer.new()
+	exam_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	exam_scroll.add_child(exam_vbox)
+
+	# DRSABCDE steps
+	var drs_steps := [
+		["D - Danger", "check_danger"],
+		["R - Response", "check_response"],
+		["S - Send for Help", "send_help"],
+		["A - Airway", "check_airway"],
+		["B - Breathing", "check_breathing"],
+		["C - Circulation", "check_circulation"],
+		["D - Disability", "check_disability"],
+		["E - Exposure", "check_exposure"],
+	]
+
+	var steps_grid := GridContainer.new()
+	steps_grid.columns = 2
+	exam_vbox.add_child(steps_grid)
+
+	for step in drs_steps:
+		var step_vbox := VBoxContainer.new()
+		steps_grid.add_child(step_vbox)
+
+		var btn := Button.new()
+		btn.text = step[0]
+		btn.custom_minimum_size = Vector2(180, 36)
+		btn.focus_mode = Control.FOCUS_NONE
+		btn.pressed.connect(_on_exam_action_pressed.bind(step[1]))
+		step_vbox.add_child(btn)
+		_exam_buttons[step[1]] = btn
+
+		var result_lbl := Label.new()
+		result_lbl.text = ""
+		result_lbl.add_theme_font_size_override("font_size", 12)
+		result_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		step_vbox.add_child(result_lbl)
+		_exam_results[step[1]] = result_lbl
+
+	## ARC-13: Vital Signs Assessment section
+	var vitals_sep := HSeparator.new()
+	exam_vbox.add_child(vitals_sep)
+
+	var vitals_title := Label.new()
+	vitals_title.text = "Vital Signs Assessment"
+	vitals_title.add_theme_font_size_override("font_size", 17)
+	vitals_title.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
+	exam_vbox.add_child(vitals_title)
+
+	var vitals_grid := GridContainer.new()
+	vitals_grid.columns = 2
+	exam_vbox.add_child(vitals_grid)
+
+	# Enum values from AssessmentManager.AssessmentAction:
+	# CHECK_HEART_RATE=5, CHECK_BLOOD_PRESSURE=6, CHECK_SPO2=7,
+	# CHECK_PUPILS=8, CHECK_TEMPERATURE=9, CHECK_BLOOD_GLUCOSE=10,
+	# CHECK_CAPILLARY_REFILL=11, CHECK_SKIN=12
+	var vital_defs := [
+		["Heart Rate", "check_heart_rate", 5],
+		["Blood Pressure", "check_blood_pressure", 6],
+		["SpO2 / Oxygen Sat", "check_spo2", 7],
+		["Temperature", "check_temperature", 9],
+		["Blood Glucose", "check_blood_glucose", 10],
+		["Capillary Refill", "check_capillary_refill", 11],
+		["Pupils", "check_pupils", 8],
+		["Skin Assessment", "check_skin", 12],
+	]
+
+	for vd in vital_defs:
+		var v_vbox := VBoxContainer.new()
+		vitals_grid.add_child(v_vbox)
+
+		var v_btn := Button.new()
+		v_btn.text = vd[0]
+		v_btn.custom_minimum_size = Vector2(180, 36)
+		v_btn.focus_mode = Control.FOCUS_NONE
+		v_btn.pressed.connect(_on_vital_pressed.bind(vd[1], vd[2]))
+		v_vbox.add_child(v_btn)
+		_vital_buttons[vd[1]] = v_btn
+
+		var v_result := Label.new()
+		v_result.text = ""
+		v_result.add_theme_font_size_override("font_size", 12)
+		v_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		v_vbox.add_child(v_result)
+		_vital_results[vd[1]] = v_result
+
+	## ARC-14: ECG Monitor section
+	var ecg_sep := HSeparator.new()
+	exam_vbox.add_child(ecg_sep)
+
+	var ecg_title := Label.new()
+	ecg_title.text = "ECG / Cardiac Monitor"
+	ecg_title.add_theme_font_size_override("font_size", 17)
+	ecg_title.add_theme_color_override("font_color", Color(0.3, 1.0, 0.6))
+	exam_vbox.add_child(ecg_title)
+
+	_ecg_mode_label = Label.new()
+	_ecg_mode_label.text = "No monitor deployed"
+	_ecg_mode_label.add_theme_font_size_override("font_size", 13)
+	_ecg_mode_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	exam_vbox.add_child(_ecg_mode_label)
+
+	_ecg_panel = PanelContainer.new()
+	_ecg_panel.custom_minimum_size = Vector2(400, 110)
+	_ecg_panel.visible = false
+	exam_vbox.add_child(_ecg_panel)
+
+	var ecg_inner := VBoxContainer.new()
+	_ecg_panel.add_child(ecg_inner)
+
+	_ecg_texture_rect = TextureRect.new()
+	_ecg_texture_rect.custom_minimum_size = Vector2(400, 100)
+	_ecg_texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_ecg_texture_rect.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ecg_inner.add_child(_ecg_texture_rect)
+
+	_ecg_rhythm_label = Label.new()
+	_ecg_rhythm_label.text = ""
+	_ecg_rhythm_label.add_theme_font_size_override("font_size", 13)
+	_ecg_rhythm_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	exam_vbox.add_child(_ecg_rhythm_label)
+
+	var ecg_identify_btn := Button.new()
+	ecg_identify_btn.text = "Identify Rhythm"
+	ecg_identify_btn.custom_minimum_size = Vector2(160, 36)
+	ecg_identify_btn.focus_mode = Control.FOCUS_NONE
+	ecg_identify_btn.pressed.connect(_on_ecg_identify_pressed)
+	exam_vbox.add_child(ecg_identify_btn)
+
+	## ARC-15: GCS Assessment
+	var gcs_sep := HSeparator.new()
+	exam_vbox.add_child(gcs_sep)
+
+	var gcs_title_hbox := HBoxContainer.new()
+	exam_vbox.add_child(gcs_title_hbox)
+
+	var gcs_title := Label.new()
+	gcs_title.text = "GCS — Glasgow Coma Scale"
+	gcs_title.add_theme_font_size_override("font_size", 17)
+	gcs_title.add_theme_color_override("font_color", Color(0.9, 0.7, 0.3))
+	gcs_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gcs_title_hbox.add_child(gcs_title)
+
+	_gcs_total_label = Label.new()
+	_gcs_total_label.text = "GCS: —"
+	_gcs_total_label.add_theme_font_size_override("font_size", 17)
+	gcs_title_hbox.add_child(_gcs_total_label)
+
+	_gcs_severity_label = Label.new()
+	_gcs_severity_label.text = ""
+	_gcs_severity_label.add_theme_font_size_override("font_size", 13)
+	exam_vbox.add_child(_gcs_severity_label)
+
+	# GCS sub-sections — Eye, Verbal, Motor
+	var gcs_defs := [
+		["Eye (E)", "eye",
+			["Spontaneous (4)", "To Voice (3)", "To Pain (2)", "None (1)"],
+			[4, 3, 2, 1]],
+		["Verbal (V)", "verbal",
+			["Oriented (5)", "Confused (4)", "Words (3)", "Sounds (2)", "None (1)"],
+			[5, 4, 3, 2, 1]],
+		["Motor (M)", "motor",
+			["Obeys (6)", "Localises (5)", "Withdraws (4)", "Flexion (3)", "Extension (2)", "None (1)"],
+			[6, 5, 4, 3, 2, 1]],
+	]
+
+	for gcs_comp in gcs_defs:
+		var comp_name: String = gcs_comp[0]
+		var comp_key: String = gcs_comp[1]
+		var comp_labels: Array = gcs_comp[2]
+		var comp_values: Array = gcs_comp[3]
+
+		var comp_title := Label.new()
+		comp_title.text = comp_name
+		comp_title.add_theme_font_size_override("font_size", 14)
+		exam_vbox.add_child(comp_title)
+
+		var comp_hbox := HBoxContainer.new()
+		comp_hbox.add_theme_constant_override("separation", 4)
+		exam_vbox.add_child(comp_hbox)
+
+		for i in range(comp_labels.size()):
+			var gcs_btn := Button.new()
+			gcs_btn.text = comp_labels[i]
+			gcs_btn.custom_minimum_size = Vector2(0, 30)
+			gcs_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			gcs_btn.focus_mode = Control.FOCUS_NONE
+			gcs_btn.pressed.connect(_on_gcs_value_selected.bind(comp_key, comp_values[i]))
+			comp_hbox.add_child(gcs_btn)
+			_gcs_component_btns[comp_key + "_" + str(comp_values[i])] = gcs_btn
+
+	var gcs_read_btn := Button.new()
+	gcs_read_btn.text = "Read from Patient"
+	gcs_read_btn.custom_minimum_size = Vector2(160, 32)
+	gcs_read_btn.focus_mode = Control.FOCUS_NONE
+	gcs_read_btn.pressed.connect(_on_gcs_read_patient)
+	exam_vbox.add_child(gcs_read_btn)
+
+	## ARC-16: Secondary Survey
+	var ss_sep := HSeparator.new()
+	exam_vbox.add_child(ss_sep)
+
+	var ss_title_hbox := HBoxContainer.new()
+	exam_vbox.add_child(ss_title_hbox)
+
+	var ss_title := Label.new()
+	ss_title.text = "Secondary Survey — Head-to-Toe"
+	ss_title.add_theme_font_size_override("font_size", 17)
+	ss_title.add_theme_color_override("font_color", Color(0.7, 0.5, 1.0))
+	ss_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ss_title_hbox.add_child(ss_title)
+
+	_secondary_counter_label = Label.new()
+	_secondary_counter_label.text = "0/7"
+	_secondary_counter_label.add_theme_font_size_override("font_size", 14)
+	ss_title_hbox.add_child(_secondary_counter_label)
+
+	var ss_grid := GridContainer.new()
+	ss_grid.columns = 2
+	exam_vbox.add_child(ss_grid)
+
+	var ss_regions := ["head", "neck", "chest", "abdomen", "pelvis", "back", "extremities"]
+
+	for region in ss_regions:
+		var r_vbox := VBoxContainer.new()
+		ss_grid.add_child(r_vbox)
+
+		var r_btn := Button.new()
+		r_btn.text = region.capitalize()
+		r_btn.custom_minimum_size = Vector2(180, 36)
+		r_btn.focus_mode = Control.FOCUS_NONE
+		r_btn.pressed.connect(_on_secondary_region_pressed.bind(region))
+		r_vbox.add_child(r_btn)
+		_secondary_buttons[region] = r_btn
+
+		var r_result := Label.new()
+		r_result.text = ""
+		r_result.add_theme_font_size_override("font_size", 12)
+		r_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		r_vbox.add_child(r_result)
+		_secondary_results[region] = r_result
+
+	return root
+
+
+# ==============================================================================
+# TAB BUILD — Stabilize
+# ==============================================================================
+
+func _build_stabilize_tab() -> Control:
+	var root := ScrollContainer.new()
+	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	var container := VBoxContainer.new()
+	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.add_child(container)
+
+	var title := Label.new()
+	title.text = "Stabilize"
+	title.add_theme_font_size_override("font_size", 22)
+	container.add_child(title)
+
+	## ARC-18: Medical Bag Tier Indicator (at TOP, before equipment grid)
+	var tier_hbox := HBoxContainer.new()
+	container.add_child(tier_hbox)
+
+	var tier_label_title := Label.new()
+	tier_label_title.text = "Medical Bag Tier: "
+	tier_label_title.add_theme_font_size_override("font_size", 15)
+	tier_hbox.add_child(tier_label_title)
+
+	_bag_tier_label = Label.new()
+	_bag_tier_label.text = "BLS"
+	_bag_tier_label.add_theme_font_size_override("font_size", 15)
+	_bag_tier_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+	tier_hbox.add_child(_bag_tier_label)
+
+	container.add_child(HSeparator.new())
+
+	# Equipment grid
+	var equip_title := Label.new()
+	equip_title.text = "Equipment"
+	equip_title.add_theme_font_size_override("font_size", 17)
+	container.add_child(equip_title)
+
+	var equip_grid := GridContainer.new()
+	equip_grid.columns = 3
+	container.add_child(equip_grid)
+
+	var equipment_defs := [
+		# Treatment equipment
+		["O2 Mask", "oxygen_mask"],
+		["BVM", "bvm"],
+		["AED", "aed"],
+		["IV Access", "iv_access"],
+		["C-Collar", "c_collar"],
+		["Tourniquet", "tourniquet"],
+		["Bandage", "bandage"],
+		["Splint", "splint"],
+		["Stretcher", "stretcher"],
+		# Diagnostic equipment (required for vital sign gating)
+		["Pulse Oximeter", "pulse_oximeter"],
+		["BP Cuff", "bp_cuff"],
+		["Penlight", "penlight"],
+		["Thermometer", "thermometer"],
+		["Glucometer", "glucometer"],
+	]
+
+	for eq in equipment_defs:
+		var eq_btn := Button.new()
+		eq_btn.text = eq[0]
+		eq_btn.custom_minimum_size = Vector2(110, 40)
+		eq_btn.focus_mode = Control.FOCUS_NONE
+		eq_btn.pressed.connect(_on_equipment_pressed.bind(eq[1]))
+		equip_grid.add_child(eq_btn)
+		_equipment_buttons[eq[1]] = eq_btn
+
+	## ARC-18: Bag Contents section
+	container.add_child(HSeparator.new())
+
+	var bag_contents_title := Label.new()
+	bag_contents_title.text = "Bag Contents"
+	bag_contents_title.add_theme_font_size_override("font_size", 17)
+	bag_contents_title.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+	container.add_child(bag_contents_title)
+
+	var bag_scroll := ScrollContainer.new()
+	bag_scroll.custom_minimum_size = Vector2(0, 180)
+	bag_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	container.add_child(bag_scroll)
+
+	_bag_items_vbox = VBoxContainer.new()
+	_bag_items_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bag_scroll.add_child(_bag_items_vbox)
+
+	## ARC-17: Drug Administration section
+	var drug_sep := HSeparator.new()
+	container.add_child(drug_sep)
+
+	var drug_title := Label.new()
+	drug_title.text = "Drug Administration"
+	drug_title.add_theme_font_size_override("font_size", 18)
+	drug_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	container.add_child(drug_title)
+
+	var drug_form_grid := GridContainer.new()
+	drug_form_grid.columns = 2
+	container.add_child(drug_form_grid)
+
+	var drug_name_label := Label.new()
+	drug_name_label.text = "Drug:"
+	drug_form_grid.add_child(drug_name_label)
+
+	_drug_name_btn = OptionButton.new()
+	_drug_name_btn.custom_minimum_size = Vector2(200, 32)
+	_drug_name_btn.focus_mode = Control.FOCUS_NONE
+	_drug_name_btn.item_selected.connect(_on_drug_name_changed)
+	drug_form_grid.add_child(_drug_name_btn)
+
+	var drug_route_label := Label.new()
+	drug_route_label.text = "Route:"
+	drug_form_grid.add_child(drug_route_label)
+
+	_drug_route_btn = OptionButton.new()
+	_drug_route_btn.custom_minimum_size = Vector2(200, 32)
+	_drug_route_btn.focus_mode = Control.FOCUS_NONE
+	drug_form_grid.add_child(_drug_route_btn)
+
+	var drug_dose_label := Label.new()
+	drug_dose_label.text = "Dose:"
+	drug_form_grid.add_child(drug_dose_label)
+
+	_drug_dose_btn = OptionButton.new()
+	_drug_dose_btn.custom_minimum_size = Vector2(200, 32)
+	_drug_dose_btn.focus_mode = Control.FOCUS_NONE
+	drug_form_grid.add_child(_drug_dose_btn)
+
+	var admin_btn := Button.new()
+	admin_btn.text = "Administer Drug"
+	admin_btn.custom_minimum_size = Vector2(200, 40)
+	admin_btn.focus_mode = Control.FOCUS_NONE
+	admin_btn.pressed.connect(_on_administer_drug_pressed)
+	container.add_child(admin_btn)
+
+	_drug_feedback_label = Label.new()
+	_drug_feedback_label.text = ""
+	_drug_feedback_label.add_theme_font_size_override("font_size", 13)
+	_drug_feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	container.add_child(_drug_feedback_label)
+
+	var drug_log_title := Label.new()
+	drug_log_title.text = "Administration Log:"
+	drug_log_title.add_theme_font_size_override("font_size", 13)
+	container.add_child(drug_log_title)
+
+	_drug_log_vbox = VBoxContainer.new()
+	_drug_log_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	container.add_child(_drug_log_vbox)
+
+	return root
+
+
+# ==============================================================================
+# TAB BUILD — Differential
+# ==============================================================================
+
+func _build_differential_tab() -> Control:
+	var root := VBoxContainer.new()
+	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	var title := Label.new()
+	title.text = "Differential Diagnosis"
+	title.add_theme_font_size_override("font_size", 22)
+	root.add_child(title)
+
+	var instructions := Label.new()
+	instructions.text = "Select up to 3 diagnoses in order of likelihood, then submit."
+	instructions.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	instructions.add_theme_font_size_override("font_size", 13)
+	root.add_child(instructions)
+
+	root.add_child(HSeparator.new())
+
+	_diagnosis_rank_label = Label.new()
+	_diagnosis_rank_label.text = "Selected: (none)"
+	_diagnosis_rank_label.add_theme_font_size_override("font_size", 13)
+	root.add_child(_diagnosis_rank_label)
+
+	var diag_scroll := ScrollContainer.new()
+	diag_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(diag_scroll)
+
+	var diag_vbox := VBoxContainer.new()
+	diag_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	diag_vbox.name = "DiagVBox"
+	diag_scroll.add_child(diag_vbox)
+
+	_submit_diagnosis_btn = Button.new()
+	_submit_diagnosis_btn.text = "Submit Diagnosis"
+	_submit_diagnosis_btn.custom_minimum_size = Vector2(200, 44)
+	_submit_diagnosis_btn.focus_mode = Control.FOCUS_NONE
+	_submit_diagnosis_btn.pressed.connect(_on_submit_diagnosis_pressed)
+	_submit_diagnosis_btn.disabled = true
+	root.add_child(_submit_diagnosis_btn)
+
+	return root
+
+
+# ==============================================================================
+# POPULATE — Patient tab
+# ==============================================================================
+
+func _populate_patient_tab() -> void:
+	if not _patient:
+		return
+
+	var info_text := "[b]Patient:[/b] Unknown\n"
+
+	var persona: Node = null
+	var medical_state: Node = null
+
+	if _patient.has_node("PatientPersona"):
+		persona = _patient.get_node("PatientPersona")
+	if _patient.has_node("MedicalStateComponent"):
+		medical_state = _patient.get_node("MedicalStateComponent")
+
+	if persona:
+		var name_val: String = persona.get("patient_name") if persona.get("patient_name") else "Unknown"
+		var age_val = persona.get("age") if persona.get("age") else "?"
+		var gender_val: String = persona.get("gender") if persona.get("gender") else "?"
+		info_text = "[b]%s[/b], %s, %s\n" % [name_val, str(age_val), gender_val]
+
+		var chief_complaint: String = persona.get("chief_complaint") if persona.get("chief_complaint") else ""
+		if chief_complaint != "":
+			info_text += "[color=yellow]CC:[/color] %s\n" % chief_complaint
+
+	if medical_state:
+		var consciousness: String = medical_state.get("consciousness_level") if medical_state.get("consciousness_level") else ""
+		if consciousness != "":
+			var c_color := "white"
+			if consciousness == "UNRESPONSIVE":
+				c_color = "red"
+			elif consciousness == "VERBAL":
+				c_color = "yellow"
+			info_text += "[color=%s]Consciousness: %s[/color]\n" % [c_color, consciousness]
+
+	if _patient_info_label:
+		_patient_info_label.text = info_text
+
+	# ARC-12: gate OPQRST button visibility and styling
+	if _opqrst_btn:
+		var consciousness_level := ""
+		if medical_state:
+			consciousness_level = medical_state.get("consciousness_level") if medical_state.get("consciousness_level") else ""
+
+		if consciousness_level == "UNRESPONSIVE":
+			_opqrst_btn.disabled = true
+			_opqrst_btn.tooltip_text = "Patient is unresponsive — cannot describe pain"
+			_opqrst_btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+		else:
+			_opqrst_btn.disabled = false
+			_opqrst_btn.tooltip_text = ""
+
+			var pain_level: int = 0
+			if medical_state:
+				pain_level = medical_state.get("pain_level") if medical_state.get("pain_level") else 0
+
+			if pain_level > 0:
+				# Bright amber for pain present
+				_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
+				_opqrst_btn.text = "O - OPQRST (Pain %d/10)" % pain_level
+			else:
+				_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2))
+				_opqrst_btn.text = "O - OPQRST (Pain)"
+
+	# Clear chat on open
+	if _chat_container:
+		for child in _chat_container.get_children():
+			child.queue_free()
+
+
+# ==============================================================================
+# POPULATE — Exam tab
+# ==============================================================================
+
+func _populate_exam_tab() -> void:
+	# Reset DRSABCDE
+	_exam_completed = 0
+	for key in _exam_results:
+		_exam_results[key].text = ""
+		_exam_results[key].add_theme_color_override("font_color", Color(1, 1, 1))
+	for key in _exam_buttons:
+		_exam_buttons[key].disabled = false
+
+	if _exam_counter_label:
+		_exam_counter_label.text = "0/%d" % _exam_total
+
+	# Reset vitals
+	for key in _vital_results:
+		_vital_results[key].text = ""
+		if _vital_results[key].has_theme_color_override("font_color"):
+			_vital_results[key].remove_theme_color_override("font_color")
+	for key in _vital_buttons:
+		_vital_buttons[key].disabled = false
+
+	# Reset ECG
+	if _ecg_mode_label:
+		_ecg_mode_label.text = "No monitor deployed"
+		_ecg_mode_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	if _ecg_panel:
+		_ecg_panel.visible = false
+	if _ecg_rhythm_label:
+		_ecg_rhythm_label.text = ""
+
+	# Reset GCS
+	_gcs_component_selection = {}
+	if _gcs_total_label:
+		_gcs_total_label.text = "GCS: —"
+		if _gcs_total_label.has_theme_color_override("font_color"):
+			_gcs_total_label.remove_theme_color_override("font_color")
+	if _gcs_severity_label:
+		_gcs_severity_label.text = ""
+	for btn_key in _gcs_component_btns:
+		var b: Button = _gcs_component_btns[btn_key]
+		if b.has_theme_color_override("font_color"):
+			b.remove_theme_color_override("font_color")
+
+	# Reset secondary survey
+	_secondary_completed_count = 0
+	for region in _secondary_results:
+		_secondary_results[region].text = ""
+		if _secondary_results[region].has_theme_color_override("font_color"):
+			_secondary_results[region].remove_theme_color_override("font_color")
+	for region in _secondary_buttons:
+		_secondary_buttons[region].disabled = false
+		if _secondary_buttons[region].has_theme_color_override("font_color"):
+			_secondary_buttons[region].remove_theme_color_override("font_color")
+	if _secondary_counter_label:
+		_secondary_counter_label.text = "0/7"
+
+
+# ==============================================================================
+# POPULATE — Stabilize tab
+# ==============================================================================
+
+func _populate_stabilize_tab() -> void:
+	# Reset all equipment buttons to available state
+	for key in _equipment_buttons:
+		var btn: Button = _equipment_buttons[key]
+		btn.text = btn.text.trim_suffix(" ✓")
+		btn.disabled = false
+		if btn.has_theme_color_override("font_color"):
+			btn.remove_theme_color_override("font_color")
+
+	# Disable equipment buttons for items no longer available in bag
+	if _bag_tier_manager and _bag_tier_manager.has_method("is_available"):
+		for key in _equipment_buttons:
+			var bag_key: String = EQUIP_TO_BAG_KEY.get(key, key.to_upper())
+			if not _bag_tier_manager.is_available(bag_key):
+				_equipment_buttons[key].disabled = true
+				_equipment_buttons[key].add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+
+	# Re-mark already applied equipment with checkmarks
+	for eq in _applied_equipment:
+		if _equipment_buttons.has(eq):
+			_equipment_buttons[eq].text = _equipment_buttons[eq].text.trim_suffix(" ✓") + " ✓"
+			_equipment_buttons[eq].disabled = true
+
+
+# ==============================================================================
+# POPULATE — Differential tab
+# ==============================================================================
+
+func _populate_differential_tab() -> void:
+	# Find the diag vbox via name lookup
+	var diag_vbox: VBoxContainer = null
+	var tab_root: Control = _tab_contents.get(Tab.DIFFERENTIAL)
+	if tab_root:
+		diag_vbox = tab_root.find_child("DiagVBox", true, false)
+
+	if not diag_vbox:
+		return
+
+	# Clear existing buttons (but NOT _selected_diagnoses — preserved from open_ui)
+	for b in _diagnosis_buttons:
+		if is_instance_valid(b):
+			b.queue_free()
+	_diagnosis_buttons.clear()
+
+	# If already diagnosed, show locked state
+	if _diagnosis_submitted:
+		if _diagnosis_rank_label:
+			var parts: PackedStringArray = PackedStringArray()
+			for d in _selected_diagnoses:
+				parts.append(d)
+			_diagnosis_rank_label.text = "Submitted: " + ", ".join(parts)
+			_diagnosis_rank_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+		if _submit_diagnosis_btn:
+			_submit_diagnosis_btn.disabled = true
+			_submit_diagnosis_btn.text = "Diagnosis Submitted"
+	else:
+		if _diagnosis_rank_label:
+			_diagnosis_rank_label.text = "Selected: (none)"
+		if _submit_diagnosis_btn:
+			_submit_diagnosis_btn.disabled = true
+			_submit_diagnosis_btn.text = "Submit Diagnosis"
+
+	# Comprehensive differential diagnosis list for EMS assessment
+	var diagnoses := [
+		# Cardiac
+		"Cardiac Arrest", "Myocardial Infarction (STEMI)", "Myocardial Infarction (NSTEMI)",
+		"Unstable Angina", "Ventricular Fibrillation", "Ventricular Tachycardia",
+		"Bradycardia", "SVT / Tachyarrhythmia", "Heart Failure / Pulmonary Oedema",
+		"Cardiac Tamponade", "Aortic Dissection",
+		# Respiratory
+		"Pneumothorax", "Tension Pneumothorax", "Asthma (Acute)",
+		"COPD Exacerbation", "Pulmonary Embolism", "Respiratory Failure",
+		"Smoke Inhalation", "Upper Airway Obstruction",
+		# Neurological
+		"Stroke (Ischaemic)", "Stroke (Haemorrhagic)", "Seizure / Status Epilepticus",
+		"Head Injury / TBI", "Spinal Injury",
+		# Trauma
+		"Trauma — Multi-system", "Haemorrhagic Shock", "Internal Bleeding",
+		"Crush Injury / Rhabdomyolysis", "Burns (Thermal)", "Blast Injury",
+		"Penetrating Trauma", "Fracture — Open", "Fracture — Closed",
+		# Medical
+		"Anaphylaxis", "Hypoglycaemia", "Diabetic Ketoacidosis",
+		"Sepsis / Septic Shock", "Opioid Overdose", "Drug Overdose (Other)",
+		"Poisoning / Toxic Exposure", "CO Poisoning",
+		"Hypothermia", "Hyperthermia / Heat Stroke",
+		# Other
+		"Minor Bleeding / Laceration", "Soft Tissue Injury",
+		"Acute Abdomen", "Ectopic Pregnancy",
+	]
+
+	for diag in diagnoses:
+		var btn := Button.new()
+		btn.text = diag
+		btn.custom_minimum_size = Vector2(0, 36)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.focus_mode = Control.FOCUS_NONE
+		btn.pressed.connect(_on_diagnosis_button_pressed.bind(diag))
+		# If already diagnosed, lock all buttons and highlight selected ones
+		if _diagnosis_submitted:
+			btn.disabled = true
+			if diag in _selected_diagnoses:
+				btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3))
+		diag_vbox.add_child(btn)
+		_diagnosis_buttons.append(btn)
+
+
+# ==============================================================================
+# ARC-13: POPULATE — Vital Signs
+# ==============================================================================
+
+func _populate_vitals_section() -> void:
+	# Vitals reset is handled in _populate_exam_tab
+	pass
+
+
+# ==============================================================================
+# ARC-14: POPULATE — ECG section
+# ==============================================================================
+
+func _populate_ecg_section() -> void:
+	if not _patient:
+		return
+
+	var medical_state: Node = _patient.get_node_or_null("MedicalStateComponent")
+	if not medical_state:
+		return
+
+	var deployed: Array = []
+	if medical_state.get("deployed_equipment") != null:
+		deployed = medical_state.get("deployed_equipment")
+
+	var has_aed := "AED" in deployed or "aed" in deployed
+	var has_cardiac_monitor := "CARDIAC_MONITOR" in deployed or "cardiac_monitor" in deployed
+
+	if has_aed or has_cardiac_monitor:
+		var mode_text := "AED (Auto Analysis)" if has_aed else "Cardiac Monitor (Manual)"
+		if _ecg_mode_label:
+			_ecg_mode_label.text = mode_text
+			_ecg_mode_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.6))
+
+		if _ecg_panel:
+			_ecg_panel.visible = true
+
+		# Attempt to load ECG texture
+		var rhythm_key: String = ""
+		if medical_state.get("ecg_rhythm") != null:
+			rhythm_key = str(medical_state.get("ecg_rhythm"))
+
+		if _ecg_rhythm_manager and rhythm_key != "":
+			var tex = null
+			if _ecg_rhythm_manager.has_method("get_rhythm_texture"):
+				tex = _ecg_rhythm_manager.get_rhythm_texture(rhythm_key)
+			if tex and _ecg_texture_rect:
+				_ecg_texture_rect.texture = tex
+				_ecg_texture_rect.visible = true
+			else:
+				# Placeholder — texture not yet placed, hide TextureRect
+				if _ecg_texture_rect:
+					_ecg_texture_rect.visible = false
+	else:
+		if _ecg_mode_label:
+			_ecg_mode_label.text = "No monitor deployed"
+			_ecg_mode_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+		if _ecg_panel:
+			_ecg_panel.visible = false
+
+
+# ==============================================================================
+# ARC-15: POPULATE — GCS section
+# ==============================================================================
+
+func _populate_gcs_section() -> void:
+	# GCS reset already done in _populate_exam_tab
+	pass
+
+
+# ==============================================================================
+# ARC-16: POPULATE — Secondary Survey
+# ==============================================================================
+
+func _populate_secondary_section() -> void:
+	# Secondary survey reset already done in _populate_exam_tab
+	pass
+
+
+# ==============================================================================
+# ARC-17: POPULATE — Drug section
+# ==============================================================================
+
+func _populate_drug_section() -> void:
+	if not _drug_name_btn:
+		return
+
+	_drug_name_btn.clear()
+	_drug_route_btn.clear()
+	_drug_dose_btn.clear()
+
+	if _current_drug_data.is_empty():
+		if _drug_feedback_label:
+			_drug_feedback_label.text = "Drug data unavailable."
+			_drug_feedback_label.add_theme_color_override("font_color", Color(0.8, 0.4, 0.4))
+		_drug_name_btn.disabled = true
+		_drug_route_btn.disabled = true
+		_drug_dose_btn.disabled = true
+		return
+
+	_drug_name_btn.disabled = false
+	_drug_route_btn.disabled = false
+	_drug_dose_btn.disabled = false
+
+	# Maps bag inventory keys → drugs.json keys (different naming conventions)
+	var bag_to_drug_map := {
+		"EPIPEN": "EPINEPHRINE_IM",
+		"ASPIRIN_TABLET": "ASPIRIN",
+		"GTN_SPRAY": "GTN",
+		"ORAL_GLUCOSE": "GLUCOSE_ORAL",
+		"EPINEPHRINE_IV_AMP": "EPINEPHRINE_IV",
+		"AMIODARONE_AMP": "AMIODARONE",
+		"ATROPINE_AMP": "ATROPINE",
+		"MORPHINE_AMP": "MORPHINE",
+		"KETAMINE_VIAL": "KETAMINE",
+		"NALOXONE_AMP": "NALOXONE",
+		"DEXTROSE_50": "DEXTROSE_50",
+		"NORMAL_SALINE_500": "NORMAL_SALINE",
+		"NORMAL_SALINE_1000": "NORMAL_SALINE",
+		"GLUCAGON_KIT": "GLUCOSE_ORAL",
+	}
+
+	# drugs.json is a flat dict: { "DRUG_KEY": { "display_name": "...", ... }, ... }
+	# Filter by bag tier — only show drugs the player has in their bag
+	var available_drug_keys: Array = []
+	if _bag_tier_manager and _bag_tier_manager.has_method("get_all_items"):
+		var bag_items: Dictionary = _bag_tier_manager.get_all_items()
+		for bag_key in bag_items:
+			if not bag_items[bag_key].get("available", false):
+				continue
+			# Try direct match first, then mapped key
+			var drug_key: String = bag_to_drug_map.get(bag_key, bag_key)
+			if _current_drug_data.has(drug_key) and drug_key not in available_drug_keys:
+				available_drug_keys.append(drug_key)
+	# Fallback: if no bag manager or no matches, show all drugs from JSON
+	if available_drug_keys.is_empty():
+		for key in _current_drug_data:
+			var drug: Dictionary = _current_drug_data[key]
+			if drug is Dictionary and drug.has("display_name"):
+				available_drug_keys.append(key)
+
+	for key in available_drug_keys:
+		var drug: Dictionary = _current_drug_data[key]
+		var dname: String = drug.get("display_name", key)
+		_drug_name_btn.add_item(dname)
+		_drug_name_btn.set_item_metadata(_drug_name_btn.item_count - 1, key)
+
+	if available_drug_keys.size() > 0:
+		_on_drug_name_changed(0)
+
+	# Clear drug log
+	if _drug_log_vbox:
+		for child in _drug_log_vbox.get_children():
+			child.queue_free()
+
+	if _drug_feedback_label:
+		_drug_feedback_label.text = ""
+
+
+# ==============================================================================
+# ARC-18: POPULATE — Bag section
+# ==============================================================================
+
+func _populate_bag_section() -> void:
+	if not _bag_items_vbox:
+		return
+
+	# Clear existing
+	for child in _bag_items_vbox.get_children():
+		child.queue_free()
+
+	# Determine tier from manager or default
+	var tier_name := "BLS"
+
+	if _bag_tier_manager and _bag_tier_manager.has_method("get_current_tier"):
+		tier_name = _bag_tier_manager.get_current_tier()
+	elif _bag_tier_manager and _bag_tier_manager.get("current_tier") != null:
+		tier_name = str(_bag_tier_manager.get("current_tier"))
+
+	if _bag_tier_label:
+		_bag_tier_label.text = tier_name
+		var tier_color := Color(0.3, 0.9, 0.4)  # BLS = green
+		if tier_name == "ALS" or tier_name == "ADVANCED":
+			tier_color = Color(0.3, 0.6, 1.0)
+		elif tier_name == "CRITICAL" or tier_name == "HEMS":
+			tier_color = Color(1.0, 0.4, 0.4)
+		_bag_tier_label.add_theme_color_override("font_color", tier_color)
+
+	# Pull live items from MedicalBagTierManager (primary source)
+	var live_items: Dictionary = {}
+	if _bag_tier_manager and _bag_tier_manager.has_method("get_all_items"):
+		live_items = _bag_tier_manager.get_all_items()
+
+	# Fallback: read from raw JSON if manager not available
+	if live_items.is_empty() and not _current_bag_data.is_empty():
+		var bls_items: Array = _current_bag_data.get("BLS", {}).get("items", [])
+		var als_items: Array = _current_bag_data.get("ALS", {}).get("additional_items", [])
+		var raw_items: Array = bls_items
+		if tier_name == "ALS":
+			raw_items = bls_items + als_items
+		for item in raw_items:
+			var k: String = item.get("key", "")
+			if k != "":
+				live_items[k] = {
+					"display": item.get("display", k),
+					"category": item.get("category", ""),
+					"quantity": item.get("quantity", 1),
+					"consumable": item.get("consumable", true),
+					"available": item.get("quantity", 1) > 0,
+				}
+
+	if live_items.is_empty():
+		var empty_lbl := Label.new()
+		empty_lbl.text = "No items in bag for tier: %s" % tier_name
+		empty_lbl.add_theme_font_size_override("font_size", 12)
+		_bag_items_vbox.add_child(empty_lbl)
+		return
+
+	for itype in live_items:
+		var item: Dictionary = live_items[itype]
+		var iname: String = item.get("display", itype.capitalize())
+		var qty: int = item.get("quantity", 0)
+		var available: bool = item.get("available", qty > 0)
+
+		var item_hbox := HBoxContainer.new()
+		_bag_items_vbox.add_child(item_hbox)
+
+		var item_name_lbl := Label.new()
+		item_name_lbl.text = iname
+		item_name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		item_name_lbl.add_theme_font_size_override("font_size", 13)
+		item_hbox.add_child(item_name_lbl)
+
+		var qty_lbl := Label.new()
+		qty_lbl.text = "x%d" % qty
+		qty_lbl.custom_minimum_size = Vector2(40, 0)
+		qty_lbl.add_theme_font_size_override("font_size", 13)
+		item_hbox.add_child(qty_lbl)
+
+		var deploy_btn := Button.new()
+		deploy_btn.text = "Deploy"
+		deploy_btn.custom_minimum_size = Vector2(70, 28)
+		deploy_btn.focus_mode = Control.FOCUS_NONE
+		deploy_btn.disabled = not available
+		deploy_btn.pressed.connect(_on_bag_item_deploy.bind(itype, iname, qty_lbl, deploy_btn))
+		item_hbox.add_child(deploy_btn)
+
+
+# ==============================================================================
+# HANDLERS — Patient tab
+# ==============================================================================
+
+func _on_sample_category_pressed(category: String) -> void:
+	if not _patient:
+		return
+
+	var question_text := _get_sample_question(category)
+	_add_chat_bubble(question_text, true)
+
+	if _history_manager and _history_manager.has_method("query_category"):
+		var result: String = _history_manager.query_category(category)
+		if result != "":
+			_add_chat_bubble(result, false)
+			return
+
+	# Fallback to Ollama
+	if _dialogue_client and _dialogue_client.ollama_available:
+		if _ai_status_label:
+			_ai_status_label.text = "Waiting for response..."
+		_dialogue_client.ask_patient(question_text)
+	else:
+		var scripted := _get_scripted_response(category)
+		_add_chat_bubble(scripted, false)
+
+
+func _on_chat_submitted(text: String) -> void:
+	if text.strip_edges() == "":
+		return
+	_chat_input.clear()
+	_add_chat_bubble(text, true)
+	if _dialogue_client and _dialogue_client.ollama_available:
+		if _ai_status_label:
+			_ai_status_label.text = "Waiting for response..."
+		_dialogue_client.ask_patient(text)
+	else:
+		_add_chat_bubble("I'm not feeling well...", false)
+
+
+func _on_talk_button_pressed() -> void:
+	if _chat_input:
+		_on_chat_submitted(_chat_input.text)
+
+
+func _on_ai_response(response: String) -> void:
+	if _ai_status_label:
+		_ai_status_label.text = "AI Dialogue Active"
+	_add_chat_bubble(response, false)
+
+
+func _on_ai_failed(error: String) -> void:
+	if _ai_status_label:
+		_ai_status_label.text = "AI Error: " + error
+		_ai_status_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+
+
+func _add_chat_bubble(text: String, is_player: bool) -> void:
+	if not _chat_container:
+		return
+
+	var lbl := Label.new()
+	lbl.text = ("[Player] " if is_player else "[Patient] ") + text
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if is_player:
+		lbl.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
+	else:
+		lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.7))
+	_chat_container.add_child(lbl)
+
+	# Scroll to bottom
+	await get_tree().process_frame
+	if _chat_scroll:
+		_chat_scroll.scroll_vertical = int(_chat_scroll.get_v_scroll_bar().max_value)
+
+
+# ==============================================================================
+# HANDLERS — Exam tab (DRSABCDE)
+# ==============================================================================
+
+func _on_exam_action_pressed(action_name: String) -> void:
+	if not _assessment_manager:
+		_exam_results[action_name].text = "No assessment manager."
+		return
+
+	var result: Dictionary = {}
+	if _assessment_manager.has_method("perform_assessment_by_name"):
+		result = _assessment_manager.perform_assessment_by_name(action_name)
+	elif _assessment_manager.has_method("perform_assessment"):
+		result = _assessment_manager.perform_assessment(action_name)
+
+	# AssessmentManager handles vital signs but not DRSABCDE steps —
+	# build patient-specific findings from MedicalStateComponent directly.
+	if result.is_empty():
+		result = _build_drsabcde_finding(action_name)
+
+	var result_text := _format_assessment_result(result, action_name)
+	_exam_results[action_name].text = result_text
+	_exam_buttons[action_name].disabled = true
+
+	_exam_completed += 1
+	if _exam_counter_label:
+		_exam_counter_label.text = "%d/%d" % [_exam_completed, _exam_total]
+
+	assessment_action.emit(action_name)
+
+
+# ==============================================================================
+# ARC-13: HANDLERS — Vital Signs
+# ==============================================================================
+
+func _on_vital_pressed(key: String, action_id: int) -> void:
+	var result_lbl: Label = _vital_results.get(key)
+	if not result_lbl:
+		return
+
+	if not _assessment_manager:
+		result_lbl.text = "No assessment manager."
+		result_lbl.add_theme_color_override("font_color", Color(0.8, 0.5, 0.2))
+		# Still attempt a direct read
+		var fallback := _read_vital_from_patient(key)
+		if not fallback.is_empty():
+			_display_vital_result(key, fallback, result_lbl)
+		return
+
+	var result: Dictionary = {}
+	if _assessment_manager.has_method("perform_assessment"):
+		result = _assessment_manager.perform_assessment(action_id)
+
+	if result.has("error"):
+		result_lbl.text = result["error"]
+		result_lbl.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1))
+		return
+
+	if result.is_empty():
+		result = _read_vital_from_patient(key)
+
+	_display_vital_result(key, result, result_lbl)
+
+	if _vital_buttons.has(key):
+		_vital_buttons[key].disabled = true
+
+	assessment_action.emit(key)
+
+
+func _display_vital_result(key: String, result: Dictionary, result_lbl: Label) -> void:
+	var display_text := ""
+	var severity_color := Color(0.3, 0.9, 0.4)  # default green
+
+	match key:
+		"check_heart_rate":
+			var hr: float = result.get("value", result.get("heart_rate", -1.0))
+			if hr >= 0:
+				display_text = "HR: %.0f bpm" % hr
+				severity_color = _color_for_hr(hr)
+		"check_blood_pressure":
+			var sys: float = result.get("systolic", result.get("value", -1.0))
+			var dia: float = result.get("diastolic", -1.0)
+			if sys >= 0:
+				display_text = "BP: %.0f/%.0f mmHg" % [sys, dia] if dia >= 0 else "BP: %.0f mmHg" % sys
+				severity_color = _color_for_bp(sys)
+		"check_spo2":
+			var spo2: float = result.get("value", result.get("spo2", -1.0))
+			if spo2 >= 0:
+				display_text = "SpO2: %.0f%%" % spo2
+				severity_color = _color_for_spo2(spo2)
+		"check_temperature":
+			var temp: float = result.get("value", result.get("temperature", -1.0))
+			if temp >= 0:
+				display_text = "Temp: %.1f°C" % temp
+				severity_color = _color_for_temp(temp)
+		"check_blood_glucose":
+			# AssessmentManager returns "glucose" key
+			var bg: float = result.get("glucose", result.get("value", -1.0))
+			if bg >= 0:
+				display_text = "BGL: %.0f mg/dL" % bg
+				severity_color = _color_for_bgl(bg)
+		"check_capillary_refill":
+			# AssessmentManager returns "refill_seconds" key
+			var crt: float = result.get("refill_seconds", result.get("value", -1.0))
+			if crt >= 0:
+				display_text = "CRT: %.1f sec" % crt
+				severity_color = Color(0.3, 0.9, 0.4) if crt <= 2.0 else (Color(0.9, 0.8, 0.2) if crt <= 3.0 else Color(0.9, 0.3, 0.3))
+		"check_pupils":
+			# AssessmentManager returns left_size, left_reactive, right_size, right_reactive, equal
+			if result.has("left_size"):
+				var ls: int = result.get("left_size", 4)
+				var rs: int = result.get("right_size", 4)
+				var lr: bool = result.get("left_reactive", true)
+				var rr: bool = result.get("right_reactive", true)
+				var eq: bool = result.get("equal", true)
+				var react_l := "reactive" if lr else "fixed"
+				var react_r := "reactive" if rr else "fixed"
+				display_text = "L: %dmm %s  R: %dmm %s%s" % [ls, react_l, rs, react_r, "  ⚠ Unequal" if not eq else ""]
+				severity_color = Color(0.9, 0.3, 0.3) if (not lr or not rr or not eq or ls >= 6 or rs >= 6) else Color(0.3, 0.9, 0.4)
+			else:
+				display_text = "Pupils: assessed"
+		"check_skin":
+			# AssessmentManager returns color, temperature, moisture, shock_signs
+			if result.has("color"):
+				var c: String = result.get("color", "NORMAL")
+				var t: String = result.get("temperature", "WARM")
+				var m: String = result.get("moisture", "DRY")
+				var shock: bool = result.get("shock_signs", false)
+				display_text = "%s / %s / %s%s" % [c, t, m, "  ⚠ SHOCK SIGNS" if shock else ""]
+				severity_color = Color(0.9, 0.3, 0.3) if shock else Color(0.3, 0.9, 0.4)
+			else:
+				display_text = "Skin: assessed"
+
+	if display_text == "":
+		display_text = result.get("description", result.get("text", "Assessed"))
+
+	result_lbl.text = display_text
+	result_lbl.add_theme_color_override("font_color", severity_color)
+
+
+func _read_vital_from_patient(key: String) -> Dictionary:
+	if not _patient:
+		return {}
+	var ms: Node = _patient.get_node_or_null("MedicalStateComponent")
+	if not ms:
+		return {}
+	match key:
+		"check_heart_rate":
+			var hr = ms.get("heart_rate")
+			return {"value": float(hr) if hr != null else -1.0}
+		"check_blood_pressure":
+			var sys = ms.get("blood_pressure_systolic")
+			var dia = ms.get("blood_pressure_diastolic")
+			return {"systolic": float(sys) if sys != null else -1.0, "diastolic": float(dia) if dia != null else -1.0}
+		"check_spo2":
+			var s = ms.get("spo2")
+			return {"value": float(s) if s != null else -1.0}
+		"check_temperature":
+			var t = ms.get("temperature")
+			return {"value": float(t) if t != null else -1.0}
+		"check_blood_glucose":
+			var bg = ms.get("blood_glucose")
+			return {"glucose": float(bg) if bg != null else -1.0}
+		"check_capillary_refill":
+			var crt = ms.get("capillary_refill")
+			return {"refill_seconds": float(crt) if crt != null else -1.0}
+		"check_pupils":
+			return {
+				"left_size": ms.get("pupil_left_size") if ms.get("pupil_left_size") != null else 4,
+				"right_size": ms.get("pupil_right_size") if ms.get("pupil_right_size") != null else 4,
+				"left_reactive": ms.get("pupil_left_reactive") if ms.get("pupil_left_reactive") != null else true,
+				"right_reactive": ms.get("pupil_right_reactive") if ms.get("pupil_right_reactive") != null else true,
+				"equal": ms.get("pupil_left_size") == ms.get("pupil_right_size"),
+			}
+		"check_skin":
+			return {
+				"color": ms.get("skin_color") if ms.get("skin_color") != null else "NORMAL",
+				"temperature": ms.get("skin_temperature") if ms.get("skin_temperature") != null else "WARM",
+				"moisture": ms.get("skin_moisture") if ms.get("skin_moisture") != null else "DRY",
+				"shock_signs": ms.get("skin_color") in ["PALE","CYANOTIC","MOTTLED"] or ms.get("skin_temperature") in ["COOL","COLD"] or ms.get("skin_moisture") == "DIAPHORETIC",
+			}
+	return {}
+
+
+# Vital sign colour helpers (ARC-13)
+
+func _color_for_hr(hr: float) -> Color:
+	if hr >= 60.0 and hr <= 100.0:
+		return Color(0.3, 0.9, 0.4)
+	elif (hr >= 50.0 and hr < 60.0) or (hr > 100.0 and hr <= 120.0):
+		return Color(0.9, 0.8, 0.2)
+	return Color(0.9, 0.3, 0.3)
+
+
+func _color_for_bp(sys: float) -> Color:
+	if sys >= 90.0 and sys <= 139.0:
+		return Color(0.3, 0.9, 0.4)
+	elif (sys >= 70.0 and sys < 90.0) or (sys >= 140.0 and sys < 180.0):
+		return Color(0.9, 0.8, 0.2)
+	return Color(0.9, 0.3, 0.3)
+
+
+func _color_for_spo2(spo2: float) -> Color:
+	if spo2 >= 95.0:
+		return Color(0.3, 0.9, 0.4)
+	elif spo2 >= 90.0:
+		return Color(0.9, 0.8, 0.2)
+	return Color(0.9, 0.3, 0.3)
+
+
+func _color_for_temp(temp: float) -> Color:
+	if temp >= 36.1 and temp <= 37.5:
+		return Color(0.3, 0.9, 0.4)
+	elif (temp >= 35.0 and temp < 36.1) or (temp > 37.5 and temp <= 38.5):
+		return Color(0.9, 0.8, 0.2)
+	return Color(0.9, 0.3, 0.3)
+
+
+func _color_for_bgl(bgl: float) -> Color:
+	if bgl >= 4.0 and bgl <= 8.0:
+		return Color(0.3, 0.9, 0.4)
+	elif (bgl >= 3.0 and bgl < 4.0) or (bgl > 8.0 and bgl <= 11.0):
+		return Color(0.9, 0.8, 0.2)
+	return Color(0.9, 0.3, 0.3)
+
+
+# ==============================================================================
+# ARC-14: HANDLERS — ECG
+# ==============================================================================
+
+func _on_ecg_identify_pressed() -> void:
+	if not _patient:
+		return
+
+	var medical_state: Node = _patient.get_node_or_null("MedicalStateComponent")
+	if not medical_state:
+		if _ecg_rhythm_label:
+			_ecg_rhythm_label.text = "No medical state data available."
+		return
+
+	var rhythm_key: String = ""
+	if medical_state.get("ecg_rhythm") != null:
+		rhythm_key = str(medical_state.get("ecg_rhythm"))
+
+	if rhythm_key == "":
+		if _ecg_rhythm_label:
+			_ecg_rhythm_label.text = "No ECG rhythm data on patient."
+		return
+
+	var rhythm_display := rhythm_key.replace("_", " ").capitalize()
+	var clinical_note := ""
+	var rhythm_color := Color(0.9, 0.8, 0.2)  # default yellow
+
+	var critical_shockable := ["VENTRICULAR_FIBRILLATION", "VENTRICULAR_TACHYCARDIA", "VF", "VT"]
+	var critical_non_shockable := ["ASYSTOLE", "PEA", "PULSELESS_ELECTRICAL_ACTIVITY"]
+	var normal_rhythms := ["NORMAL_SINUS", "NSR", "SINUS_RHYTHM"]
+
+	if rhythm_key in critical_shockable:
+		rhythm_color = Color(0.9, 0.2, 0.2)
+		clinical_note = "SHOCKABLE — Defibrillate immediately. CPR between shocks."
+	elif rhythm_key in critical_non_shockable:
+		rhythm_color = Color(0.6, 0.1, 0.1)
+		clinical_note = "NON-SHOCKABLE — Continue CPR. Identify and treat reversible causes."
+	elif rhythm_key in normal_rhythms:
+		rhythm_color = Color(0.3, 0.9, 0.4)
+		clinical_note = "Normal sinus rhythm identified."
+	else:
+		clinical_note = "Interpret clinically — consult guidelines."
+
+	# Try to get detailed data from ECGRhythmManager
+	if _ecg_rhythm_manager and _ecg_rhythm_manager.has_method("get_rhythm_data"):
+		var rhythm_data: Dictionary = _ecg_rhythm_manager.get_rhythm_data(rhythm_key)
+		if rhythm_data.has("display_name"):
+			rhythm_display = rhythm_data["display_name"]
+		if rhythm_data.has("clinical_note"):
+			clinical_note = rhythm_data["clinical_note"]
+
+	if _ecg_rhythm_label:
+		_ecg_rhythm_label.text = "%s\n%s" % [rhythm_display, clinical_note]
+		_ecg_rhythm_label.add_theme_color_override("font_color", rhythm_color)
+
+	# Always refresh the ECG texture to match the current rhythm (may have changed after treatment)
+	if _ecg_panel:
+		_ecg_panel.visible = true
+	if _ecg_rhythm_manager and _ecg_rhythm_manager.has_method("get_rhythm_texture"):
+		var tex = _ecg_rhythm_manager.get_rhythm_texture(rhythm_key)
+		if tex and _ecg_texture_rect:
+			_ecg_texture_rect.texture = tex
+			_ecg_texture_rect.visible = true
+
+
+# ==============================================================================
+# ARC-15: HANDLERS — GCS
+# ==============================================================================
+
+func _on_gcs_value_selected(component: String, value: int) -> void:
+	_gcs_component_selection[component] = value
+
+	# Un-highlight all buttons in this component, highlight the selected one
+	var all_values := {
+		"eye":    [4, 3, 2, 1],
+		"verbal": [5, 4, 3, 2, 1],
+		"motor":  [6, 5, 4, 3, 2, 1],
+	}
+
+	if all_values.has(component):
+		for v in all_values[component]:
+			var btn_key := component + "_" + str(v)
+			if _gcs_component_btns.has(btn_key):
+				var b: Button = _gcs_component_btns[btn_key]
+				if v == value:
+					b.add_theme_color_override("font_color", Color(0.3, 0.7, 1.0))
+				else:
+					if b.has_theme_color_override("font_color"):
+						b.remove_theme_color_override("font_color")
+
+	# Compute total when all 3 components are selected
+	if _gcs_component_selection.has("eye") and _gcs_component_selection.has("verbal") and _gcs_component_selection.has("motor"):
+		var eye_val: int = _gcs_component_selection["eye"]
+		var verbal_val: int = _gcs_component_selection["verbal"]
+		var motor_val: int = _gcs_component_selection["motor"]
+		var total: int = eye_val + verbal_val + motor_val
+
+		var severity_text := ""
+		var severity_color := Color(0.3, 0.9, 0.4)
+
+		if total >= 13:
+			severity_text = "MILD (13–15)"
+			severity_color = Color(0.3, 0.9, 0.4)
+		elif total >= 9:
+			severity_text = "MODERATE (9–12)"
+			severity_color = Color(0.9, 0.8, 0.2)
+		else:
+			severity_text = "SEVERE (3–8)"
+			severity_color = Color(0.9, 0.3, 0.3)
+
+		if _gcs_total_label:
+			_gcs_total_label.text = "GCS: %d/15 (E%dV%dM%d)" % [total, eye_val, verbal_val, motor_val]
+			_gcs_total_label.add_theme_color_override("font_color", severity_color)
+
+		var severity_display := severity_text
+		if total <= 8:
+			severity_display += "  ⚠ AIRWAY AT RISK — Consider advanced airway"
+		if _gcs_severity_label:
+			_gcs_severity_label.text = severity_display
+			_gcs_severity_label.add_theme_color_override("font_color", severity_color)
+
+		# Report to GCS manager if available
+		if _gcs_manager and _gcs_manager.has_method("record_gcs"):
+			_gcs_manager.record_gcs(_patient, eye_val, verbal_val, motor_val)
+
+
+func _on_gcs_read_patient() -> void:
+	if not _patient:
+		return
+
+	var ms: Node = _patient.get_node_or_null("MedicalStateComponent")
+	if not ms:
+		return
+
+	var eye_val: int = 1
+	var verbal_val: int = 1
+	var motor_val: int = 1
+
+	if ms.get("gcs_eye") != null:
+		eye_val = int(ms.get("gcs_eye"))
+	if ms.get("gcs_verbal") != null:
+		verbal_val = int(ms.get("gcs_verbal"))
+	if ms.get("gcs_motor") != null:
+		motor_val = int(ms.get("gcs_motor"))
+
+	# Clamp to valid GCS ranges
+	eye_val = clampi(eye_val, 1, 4)
+	verbal_val = clampi(verbal_val, 1, 5)
+	motor_val = clampi(motor_val, 1, 6)
+
+	# Simulate button presses to trigger highlighting and total calculation
+	_on_gcs_value_selected("eye", eye_val)
+	_on_gcs_value_selected("verbal", verbal_val)
+	_on_gcs_value_selected("motor", motor_val)
+
+
+# ==============================================================================
+# ARC-16: HANDLERS — Secondary Survey
+# ==============================================================================
+
+func _on_secondary_region_pressed(region: String) -> void:
+	if not _patient:
+		return
+
+	var result_lbl: Label = _secondary_results.get(region)
+	var region_btn: Button = _secondary_buttons.get(region)
+	if not result_lbl or not region_btn:
+		return
+
+	# Get findings from MedicalStateComponent
+	var finding_text := "No abnormalities found."
+	var ms: Node = _patient.get_node_or_null("MedicalStateComponent")
+
+	if ms:
+		var findings = ms.get("examination_findings")
+		if findings and findings is Dictionary:
+			if findings.has(region):
+				finding_text = str(findings[region])
+			elif findings.has(region.to_lower()):
+				finding_text = str(findings[region.to_lower()])
+
+	# Also try SecondarySurveyManager
+	if _secondary_survey_manager and _secondary_survey_manager.has_method("examine_region"):
+		var manager_result: Dictionary = _secondary_survey_manager.examine_region(_patient, region)
+		if manager_result.has("finding"):
+			finding_text = str(manager_result["finding"])
+
+	# Check for critical keywords
+	var critical_keywords := [
+		"fracture", "bleeding", "obstruction", "deviation",
+		"pneumothorax", "rigid", "dilated", "fixed", "unstable",
+		"tenderness", "deformity", "laceration", "haematoma", "crepitus"
+	]
+
+	var is_critical := false
+	var lower_finding := finding_text.to_lower()
+	for kw in critical_keywords:
+		if kw in lower_finding:
+			is_critical = true
+			break
+
+	if is_critical:
+		result_lbl.text = "⚠ CRITICAL: " + finding_text
+		result_lbl.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
+		region_btn.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
+	else:
+		result_lbl.text = finding_text
+		result_lbl.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+
+	region_btn.disabled = true
+
+	_secondary_completed_count += 1
+	if _secondary_counter_label:
+		_secondary_counter_label.text = "%d/7" % _secondary_completed_count
+
+	assessment_action.emit("secondary_" + region)
+
+
+# ==============================================================================
+# ARC-17: HANDLERS — Drug Administration
+# ==============================================================================
+
+func _on_drug_name_changed(index: int) -> void:
+	if not _drug_name_btn or not _drug_route_btn or not _drug_dose_btn:
+		return
+
+	_drug_route_btn.clear()
+	_drug_dose_btn.clear()
+
+	if index < 0 or index >= _drug_name_btn.get_item_count():
+		return
+
+	# Retrieve the drug key stored as metadata during population
+	var drug_key = _drug_name_btn.get_item_metadata(index)
+	if drug_key == null or not _current_drug_data.has(str(drug_key)):
+		return
+
+	var drug: Dictionary = _current_drug_data[str(drug_key)]
+
+	# Populate routes from drugs.json "valid_routes" field
+	var routes: Array = drug.get("valid_routes", [])
+	if routes.is_empty():
+		_drug_route_btn.add_item("IV")
+		_drug_route_btn.add_item("IM")
+		_drug_route_btn.add_item("PO")
+	else:
+		for route in routes:
+			_drug_route_btn.add_item(str(route))
+
+	# Populate doses from drugs.json "dose_options" field
+	var doses: Array = drug.get("dose_options", [])
+	if doses.is_empty():
+		_drug_dose_btn.add_item("Standard")
+	else:
+		for dose in doses:
+			_drug_dose_btn.add_item(str(dose))
+
+
+func _on_administer_drug_pressed() -> void:
+	if not _drug_name_btn or not _drug_route_btn or not _drug_dose_btn:
+		return
+	if not _patient:
+		return
+
+	var drug_display: String = _drug_name_btn.get_item_text(_drug_name_btn.selected) if _drug_name_btn.get_item_count() > 0 else ""
+	var drug_key = _drug_name_btn.get_item_metadata(_drug_name_btn.selected) if _drug_name_btn.get_item_count() > 0 else ""
+	var route: String = _drug_route_btn.get_item_text(_drug_route_btn.selected) if _drug_route_btn.get_item_count() > 0 else ""
+	var dose_text: String = _drug_dose_btn.get_item_text(_drug_dose_btn.selected) if _drug_dose_btn.get_item_count() > 0 else ""
+
+	if drug_display == "" or drug_key == null:
+		if _drug_feedback_label:
+			_drug_feedback_label.text = "No drug selected."
+			_drug_feedback_label.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
+		return
+
+	# Deplete from bag if it's a consumable bag item
+	if _bag_tier_manager and _bag_tier_manager.has_method("deploy_item"):
+		var bag_key := str(drug_key)
+		if _bag_tier_manager.is_available(bag_key):
+			_bag_tier_manager.deploy_item(_patient, bag_key)
+
+	var result_text := ""
+	var success := false
+
+	if _drug_admin_manager and _drug_admin_manager.has_method("administer"):
+		# administer(patient, drug_key, dose_string, route) — 4 args
+		var admin_result: Dictionary = _drug_admin_manager.administer(_patient, str(drug_key), dose_text, route)
+		success = admin_result.get("success", false)
+		result_text = admin_result.get("message", "Administered." if success else "Administration failed.")
+	else:
+		# Simulate basic administration
+		success = true
+		result_text = "Administered: %s %s via %s" % [dose_text, drug_display, route]
+
+	if _drug_feedback_label:
+		_drug_feedback_label.text = result_text
+		_drug_feedback_label.add_theme_color_override("font_color",
+			Color(0.3, 0.9, 0.4) if success else Color(0.9, 0.3, 0.3))
+
+	_add_drug_log_entry(drug_display, route, dose_text, success)
+
+
+func _add_drug_log_entry(drug_name: String, route: String, dose: String, success: bool) -> void:
+	if not _drug_log_vbox:
+		return
+
+	# Keep last 5 entries — remove oldest when at capacity
+	while _drug_log_vbox.get_child_count() >= 5:
+		_drug_log_vbox.get_child(0).queue_free()
+
+	var entry_lbl := Label.new()
+	var status_icon := "✓" if success else "✗"
+	entry_lbl.text = "[%s] %s %s via %s" % [status_icon, dose, drug_name, route]
+	entry_lbl.add_theme_font_size_override("font_size", 12)
+	entry_lbl.add_theme_color_override("font_color",
+		Color(0.3, 0.9, 0.4) if success else Color(0.9, 0.3, 0.3))
+	_drug_log_vbox.add_child(entry_lbl)
+
+
+func _on_drug_administered_signal(drug_name: String, route: String, dose_amount: float, dose_unit: String, success: bool) -> void:
+	_add_drug_log_entry(drug_name, route, "%.1f %s" % [dose_amount, dose_unit], success)
+
+
+# ==============================================================================
+# ARC-18: HANDLERS — Medical Bag
+# ==============================================================================
+
+func _on_bag_item_deploy(item_type: String, _item_name: String, qty_label: Label, deploy_btn: Button) -> void:
+	if not _patient:
+		return
+
+	# Intercept TRIAGE_TAGS — show color picker instead of direct deploy
+	if item_type == "TRIAGE_TAGS":
+		_show_triage_color_picker(qty_label, deploy_btn)
+		return
+
+	var current_qty: int = 0
+	if qty_label and qty_label.text.begins_with("x"):
+		current_qty = int(qty_label.text.substr(1))
+
+	var success := false
+
+	if _bag_tier_manager and _bag_tier_manager.has_method("deploy_item"):
+		var result: Dictionary = _bag_tier_manager.deploy_item(_patient, item_type)
+		success = result.get("success", false)
+		current_qty = result.get("remaining", maxi(0, current_qty - 1))
+	else:
+		success = true
+		current_qty = maxi(0, current_qty - 1)
+
+	if success:
+		if qty_label:
+			qty_label.text = "x%d" % current_qty
+		if current_qty <= 0 and deploy_btn:
+			deploy_btn.disabled = true
+
+		equipment_used.emit(item_type, _patient)
+
+		# Mirror to equipment buttons via key mapping
+		var equip_key: String = BAG_TO_EQUIP_KEY.get(item_type, item_type.to_lower())
+		if _equipment_buttons.has(equip_key) and equip_key not in _applied_equipment:
+			_applied_equipment.append(equip_key)
+			var eq_btn: Button = _equipment_buttons[equip_key]
+			eq_btn.text = eq_btn.text.trim_suffix(" ✓") + " ✓"
+			eq_btn.disabled = true
+
+
+## Show a triage color picker popup when deploying triage tags from the bag.
+func _show_triage_color_picker(qty_label: Label, deploy_btn: Button) -> void:
+	var popup := PopupPanel.new()
+	popup.title = "Select Triage Tag Colour"
+	add_child(popup)
+
+	var vbox := VBoxContainer.new()
+	popup.add_child(vbox)
+
+	var title_lbl := Label.new()
+	title_lbl.text = "Assign Triage Tag:"
+	title_lbl.add_theme_font_size_override("font_size", 16)
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title_lbl)
+
+	var colours := {
+		"RED": {"label": "Immediate", "color": Color(1.0, 0.2, 0.2)},
+		"YELLOW": {"label": "Delayed", "color": Color(1.0, 0.9, 0.1)},
+		"GREEN": {"label": "Minor", "color": Color(0.2, 0.9, 0.2)},
+		"BLACK": {"label": "Deceased / Expectant", "color": Color(0.3, 0.3, 0.3)},
+	}
+
+	for tag_name in colours:
+		var tag_info: Dictionary = colours[tag_name]
+		var btn := Button.new()
+		btn.text = "%s — %s" % [tag_name, tag_info["label"]]
+		btn.custom_minimum_size = Vector2(220, 38)
+		btn.focus_mode = Control.FOCUS_NONE
+		btn.add_theme_color_override("font_color", tag_info["color"])
+		btn.pressed.connect(_on_triage_color_selected.bind(tag_name, qty_label, deploy_btn, popup))
+		vbox.add_child(btn)
+
+	var cancel_btn := Button.new()
+	cancel_btn.text = "Cancel"
+	cancel_btn.custom_minimum_size = Vector2(220, 32)
+	cancel_btn.focus_mode = Control.FOCUS_NONE
+	cancel_btn.pressed.connect(func(): popup.queue_free())
+	vbox.add_child(cancel_btn)
+
+	popup.popup_centered(Vector2(240, 260))
+
+
+func _on_triage_color_selected(tag_name: String, qty_label: Label, deploy_btn: Button, popup: PopupPanel) -> void:
+	popup.queue_free()
+
+	# Deplete triage tag from bag
+	var current_qty: int = 0
+	if qty_label and qty_label.text.begins_with("x"):
+		current_qty = int(qty_label.text.substr(1))
+
+	if _bag_tier_manager and _bag_tier_manager.has_method("deploy_item"):
+		var result: Dictionary = _bag_tier_manager.deploy_item(_patient, "TRIAGE_TAGS")
+		current_qty = result.get("remaining", maxi(0, current_qty - 1))
+
+	if qty_label:
+		qty_label.text = "x%d" % current_qty
+	if current_qty <= 0 and deploy_btn:
+		deploy_btn.disabled = true
+
+	# Assign triage tag via TriageSystem if available
+	# Convert string tag name to TriageTag enum int (GREEN=0, YELLOW=1, RED=2, BLACK=3)
+	var triage_sys: Node = get_node_or_null("/root/TriageSystem")
+	if triage_sys and triage_sys.has_method("assign_tag"):
+		var tag_int_map := {"GREEN": 0, "YELLOW": 1, "RED": 2, "BLACK": 3}
+		var tag_int: int = tag_int_map.get(tag_name, 0)
+		triage_sys.assign_tag(_patient, tag_int)
+
+	if _drug_feedback_label:
+		var color_map := {"RED": Color(1, 0.2, 0.2), "YELLOW": Color(1, 0.9, 0.1), "GREEN": Color(0.2, 0.9, 0.2), "BLACK": Color(0.5, 0.5, 0.5)}
+		_drug_feedback_label.text = "Triage tag assigned: %s" % tag_name
+		_drug_feedback_label.add_theme_color_override("font_color", color_map.get(tag_name, Color.WHITE))
+
+
+# ==============================================================================
+# HANDLERS — Stabilize tab (equipment)
+# ==============================================================================
+
+func _on_equipment_pressed(equip_type: String) -> void:
+	if equip_type in _applied_equipment:
+		return
+
+	# Deplete from bag manager via key mapping
+	var bag_key: String = EQUIP_TO_BAG_KEY.get(equip_type, equip_type.to_upper())
+	if _bag_tier_manager and _bag_tier_manager.has_method("deploy_item") and _patient:
+		if _bag_tier_manager.is_available(bag_key):
+			var result: Dictionary = _bag_tier_manager.deploy_item(_patient, bag_key)
+			if not result.get("success", false):
+				# Item unavailable — show feedback
+				if _drug_feedback_label:
+					_drug_feedback_label.text = result.get("message", "Item unavailable in bag.")
+					_drug_feedback_label.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
+				return
+		else:
+			if _drug_feedback_label:
+				_drug_feedback_label.text = "%s not available in bag." % equip_type.capitalize()
+				_drug_feedback_label.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
+			return
+
+	_applied_equipment.append(equip_type)
+	if _equipment_buttons.has(equip_type):
+		var btn: Button = _equipment_buttons[equip_type]
+		btn.text = btn.text.trim_suffix(" ✓") + " ✓"
+		btn.disabled = true
+
+	# Sync bag contents UI — refresh to show updated quantities
+	_populate_bag_section()
+
+	equipment_used.emit(equip_type, _patient)
+
+
+# ==============================================================================
+# HANDLERS — Differential tab
+# ==============================================================================
+
+func _on_diagnosis_button_pressed(diagnosis: String) -> void:
+	if _diagnosis_submitted:
+		return
+
+	if diagnosis in _selected_diagnoses:
+		# Deselect
+		_selected_diagnoses.erase(diagnosis)
+		for btn in _diagnosis_buttons:
+			if btn.text == diagnosis:
+				if btn.has_theme_color_override("font_color"):
+					btn.remove_theme_color_override("font_color")
+	else:
+		if _selected_diagnoses.size() >= 3:
+			return
+		_selected_diagnoses.append(diagnosis)
+		for btn in _diagnosis_buttons:
+			if btn.text == diagnosis:
+				btn.add_theme_color_override("font_color", Color(0.3, 0.9, 0.5))
+
+	_update_diagnosis_rank_label()
+
+	if _submit_diagnosis_btn:
+		_submit_diagnosis_btn.disabled = _selected_diagnoses.is_empty()
+
+
+func _update_diagnosis_rank_label() -> void:
+	if not _diagnosis_rank_label:
+		return
+	if _selected_diagnoses.is_empty():
+		_diagnosis_rank_label.text = "Selected: (none)"
+	else:
+		var parts := PackedStringArray()
+		for i in range(_selected_diagnoses.size()):
+			parts.append("%d. %s" % [i + 1, _selected_diagnoses[i]])
+		_diagnosis_rank_label.text = "Selected: " + ", ".join(parts)
+
+
+func _on_submit_diagnosis_pressed() -> void:
+	if _selected_diagnoses.is_empty():
+		return
+	_diagnosis_submitted = true
+	for btn in _diagnosis_buttons:
+		btn.disabled = true
+	if _submit_diagnosis_btn:
+		_submit_diagnosis_btn.disabled = true
+		_submit_diagnosis_btn.text = "Diagnosis Submitted"
+	for diag in _selected_diagnoses:
+		diagnosis_selected.emit(diag)
+
+	# Score against correct diagnoses from scenario data
+	var correct_list: Array = []
+	var scenario_mgr: Node = get_node_or_null("/root/ScenarioManager")
+	if scenario_mgr and scenario_mgr.current_scenario:
+		correct_list = scenario_mgr.current_scenario.get("correct_diagnosis", [])
+
+	# Calculate match score
+	var matches: int = 0
+	var matched_names: Array[String] = []
+	for selected in _selected_diagnoses:
+		for correct in correct_list:
+			if selected.to_lower() == str(correct).to_lower():
+				matches += 1
+				matched_names.append(selected)
+				break
+
+	# Store diagnosis result on patient metadata for debrief
+	if _patient:
+		_patient.set_meta("player_diagnoses", _selected_diagnoses.duplicate())
+		_patient.set_meta("correct_diagnoses", correct_list)
+		_patient.set_meta("diagnosis_matches", matches)
+
+	# Log to telemetry
+	var telemetry: Node = get_node_or_null("/root/TelemetryCollector")
+	if telemetry and telemetry.has_method("record_event"):
+		telemetry.record_event({
+			"type": "diagnosis_submitted",
+			"selected": _selected_diagnoses,
+			"correct": correct_list,
+			"matches": matches,
+		})
+
+	# Show scoring feedback
+	var score_pct: int = 0
+	if not correct_list.is_empty():
+		score_pct = int(float(matches) / float(correct_list.size()) * 100.0)
+
+	# Build feedback label
+	var feedback_text := ""
+	if matches == _selected_diagnoses.size() and matches == correct_list.size():
+		feedback_text = "PERFECT — All diagnoses correct!"
+	elif matches > 0:
+		feedback_text = "%d/%d correct (%d%%)" % [matches, correct_list.size(), score_pct]
+	else:
+		feedback_text = "No correct diagnoses. Correct: %s" % ", ".join(PackedStringArray(correct_list))
+
+	# Color matched buttons green, missed correct ones orange
+	for btn in _diagnosis_buttons:
+		if btn.text in matched_names:
+			btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3))
+		elif btn.text in correct_list:
+			btn.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1))
+
+	if _diagnosis_rank_label:
+		_diagnosis_rank_label.text = feedback_text
+		var feedback_color := Color(0.2, 1.0, 0.3) if score_pct >= 80 else (Color(1.0, 0.85, 0.2) if score_pct >= 40 else Color(1.0, 0.3, 0.3))
+		_diagnosis_rank_label.add_theme_color_override("font_color", feedback_color)
+
+	# Auto-close UI and end scenario after a short delay
+	var timer := get_tree().create_timer(3.0)
+	timer.timeout.connect(_on_diagnosis_timeout)
+
+
+func _on_diagnosis_timeout() -> void:
+	close_ui()
+	# Only end scenario if ALL patients in the scenario have been diagnosed,
+	# or if it's a single-patient scenario. Multi-patient scenarios continue.
+	var scenario_mgr: Node = get_node_or_null("/root/ScenarioManager")
+	if not scenario_mgr:
+		return
+
+	var patient_defs: Array = scenario_mgr.current_scenario.get("patients", [])
+	var total_patients: int = patient_defs.size()
+
+	if total_patients <= 1:
+		# Single-patient scenario — end immediately
+		scenario_mgr.end_scenario()
+		return
+
+	# Multi-patient: count how many patients have been diagnosed
+	var diagnosed_count: int = 0
+	var all_patients := get_tree().get_nodes_in_group("patients")
+	for p in all_patients:
+		if p.has_meta("player_diagnoses") and not (p.get_meta("player_diagnoses") as Array).is_empty():
+			diagnosed_count += 1
+
+	if diagnosed_count >= total_patients:
+		scenario_mgr.end_scenario()
+
+
+# ==============================================================================
+# OLLAMA / AI helpers
+# ==============================================================================
+
+func _setup_ollama_context() -> void:
+	if not _dialogue_client or not _patient:
+		return
+
+	var persona_data := {}
+	var medical_data := {}
+
+	if "persona" in _patient and _patient.persona:
+		var p: PatientPersona = _patient.persona
+		persona_data = {
+			"name": p.patient_name,
+			"age": p.age,
+			"consciousness_level": p.consciousness_level,
+			"pain_level": p.pain_level,
+			"panic_level": p.panic_level,
+		}
+		if p.has_method("get_all_history"):
+			persona_data["history"] = p.get_all_history()
+
+	var medical_state: Node = _patient.get_node_or_null("MedicalStateComponent")
+	if medical_state:
+		medical_data = {
+			"airway_status": medical_state.airway_status,
+			"breathing_rate": medical_state.breathing_rate,
+			"pulse_present": medical_state.pulse_present,
+			"bleeding_severity": medical_state.bleeding_severity,
+		}
+
+	if _dialogue_client.has_method("set_patient_context"):
+		_dialogue_client.set_patient_context(persona_data, medical_data)
+
+
+func _get_sample_question(category: String) -> String:
+	match category:
+		"signs_symptoms":  return "Can you tell me what symptoms you're experiencing right now?"
+		"allergies":       return "Do you have any allergies — medications, foods, or environmental?"
+		"medications":     return "Are you currently taking any medications or supplements?"
+		"past_history":    return "Do you have any significant past medical history or conditions?"
+		"last_oral_intake": return "When did you last eat or drink anything?"
+		"events":          return "Can you walk me through what happened leading up to this?"
+		"opqrst":          return "Can you describe your pain — where is it, when did it start, does anything make it better or worse?"
+	return "Can you tell me more about how you're feeling?"
+
+
+func _get_scripted_response(category: String) -> String:
+	match category:
+		"signs_symptoms":  return "I have chest pain and I feel short of breath."
+		"allergies":       return "I'm allergic to penicillin."
+		"medications":     return "I take aspirin and metformin daily."
+		"past_history":    return "I have type 2 diabetes and hypertension."
+		"last_oral_intake": return "I had breakfast about 3 hours ago."
+		"events":          return "I was walking to the shops when I suddenly felt unwell."
+		"opqrst":          return "The pain is in my chest, a crushing feeling. Started about 20 minutes ago. 7 out of 10. No radiation."
+	return "I'm not feeling well..."
+
+
+# ==============================================================================
+# DRSABCDE patient-specific findings builder
+# ==============================================================================
+
+## Builds a patient-specific finding dict for DRSABCDE primary survey steps.
+## AssessmentManager only handles vital sign enums — DRSABCDE steps (check_danger,
+## check_response, check_airway, check_breathing, check_circulation, check_disability,
+## check_exposure) are resolved here from MedicalStateComponent and PatientPersona.
+func _build_drsabcde_finding(action_name: String) -> Dictionary:
+	var ms: Node = null
+	var persona = null
+	if _patient:
+		ms = _patient.get_node_or_null("MedicalStateComponent")
+		if _patient.get("persona") != null:
+			persona = _patient.persona
+
+	match action_name:
+		"check_danger":
+			return {"description": "Scene assessed — area safe for responder."}
+
+		"check_response":
+			var cl := "ALERT"
+			if persona and persona.get("consciousness_level") != null:
+				cl = str(persona.consciousness_level)
+			return {"description": "Patient response: %s" % cl}
+
+		"send_help":
+			return {"description": "Emergency services alerted. Additional resources en route."}
+
+		"check_airway":
+			if ms and ms.get("airway_status") != null:
+				var status: String = str(ms.airway_status)
+				return {"description": "Airway: %s" % status}
+			return {"description": "Airway assessed."}
+
+		"check_breathing":
+			if ms and ms.get("breathing_rate") != null:
+				var rr: float = float(ms.breathing_rate)
+				var status: String
+				if rr <= 0.0:
+					status = "ABSENT"
+				elif rr < 12.0 or rr > 20.0:
+					status = "ABNORMAL"
+				else:
+					status = "NORMAL"
+				return {"description": "RR: %.0f /min — %s" % [rr, status]}
+			return {"description": "Breathing assessed."}
+
+		"check_circulation":
+			if ms:
+				var pulse := "PRESENT"
+				if ms.get("pulse_present") != null and not bool(ms.pulse_present):
+					pulse = "ABSENT"
+				var bleed := 0
+				if ms.get("bleeding_severity") != null:
+					bleed = int(ms.bleeding_severity)
+				var bleed_text := "none" if bleed == 0 else ("minor" if bleed == 1 else ("moderate" if bleed == 2 else "severe"))
+				return {"description": "Pulse: %s — Bleeding: %s" % [pulse, bleed_text]}
+			return {"description": "Circulation assessed."}
+
+		"check_disability":
+			if ms and ms.get("gcs_eye") != null:
+				var eye := int(ms.gcs_eye)
+				var verbal := int(ms.gcs_verbal)
+				var motor := int(ms.gcs_motor)
+				var total := eye + verbal + motor
+				var avpu := "ALERT"
+				if total <= 8:
+					avpu = "UNRESPONSIVE"
+				elif total <= 12:
+					avpu = "VOICE"
+				elif total <= 14:
+					avpu = "PAIN"
+				var pupils_txt := ""
+				if ms.get("pupil_left_reactive") != null and ms.get("pupil_right_reactive") != null:
+					var lr: bool = bool(ms.pupil_left_reactive)
+					var rr: bool = bool(ms.pupil_right_reactive)
+					var ls: int = int(ms.pupil_left_size) if ms.get("pupil_left_size") != null else 4
+					var rs: int = int(ms.pupil_right_size) if ms.get("pupil_right_size") != null else 4
+					pupils_txt = " | Pupils: L%dmm%s R%dmm%s" % [
+						ls, ("" if lr else " fixed"),
+						rs, ("" if rr else " fixed"),
+					]
+				return {"description": "GCS: %d/15 (E%dV%dM%d) — AVPU: %s%s" % [total, eye, verbal, motor, avpu, pupils_txt]}
+			if persona and persona.get("consciousness_level") != null:
+				return {"description": "AVPU: %s" % str(persona.consciousness_level)}
+			return {"description": "Disability assessed."}
+
+		"check_exposure":
+			return {"description": "Patient exposed — proceed with secondary survey below."}
+
+	return {}
+
+
+# ==============================================================================
+# ASSESSMENT result formatter
+# ==============================================================================
+
+func _format_assessment_result(result: Dictionary, action_name: String) -> String:
+	if result.is_empty():
+		# Fallback messages if no manager
+		match action_name:
+			"check_danger":     return "Scene assessed — no immediate danger."
+			"check_response":   return "Response level checked."
+			"send_help":        return "Help requested."
+			"check_airway":     return "Airway assessed."
+			"check_breathing":  return "Breathing assessed."
+			"check_circulation": return "Circulation checked."
+			"check_disability": return "Disability (AVPU) assessed."
+			"check_exposure":   return "Patient exposed and examined."
+		return "Assessed."
+
+	if result.has("description"):
+		return str(result["description"])
+	if result.has("text"):
+		return str(result["text"])
+	if result.has("finding"):
+		return str(result["finding"])
+	return "Assessed."
+
+
+# ==============================================================================
+# DATA LOADING — ARC-17 & ARC-18
+# ==============================================================================
+
+func _load_drugs_json() -> void:
+	var path := "res://data/drugs.json"
+	if not FileAccess.file_exists(path):
+		_current_drug_data = {}
+		return
+	var file := FileAccess.open(path, FileAccess.READ)
+	if not file:
+		_current_drug_data = {}
+		return
+	var content := file.get_as_text()
+	file.close()
+	var json := JSON.new()
+	var err := json.parse(content)
+	if err != OK:
+		_current_drug_data = {}
+		return
+	var parsed = json.get_data()
+	if parsed is Dictionary:
+		_current_drug_data = parsed
+	else:
+		_current_drug_data = {}
+
+
+func _load_bag_json() -> void:
+	var path := "res://data/medical_bag_tiers.json"
+	if not FileAccess.file_exists(path):
+		_current_bag_data = {}
+		return
+	var file := FileAccess.open(path, FileAccess.READ)
+	if not file:
+		_current_bag_data = {}
+		return
+	var content := file.get_as_text()
+	file.close()
+	var json := JSON.new()
+	var err := json.parse(content)
+	if err != OK:
+		_current_bag_data = {}
+		return
+	var parsed = json.get_data()
+	if parsed is Dictionary:
+		_current_bag_data = parsed
+	else:
+		_current_bag_data = {}

@@ -1,0 +1,22 @@
+## Overall Assessment
+No meaningful actions were taken during this tutorial session. Somchai was not assessed, not treated, and no triage tag was assigned. Protocol adherence: 0%. This appears to be either a first attempt where the controls were unfamiliar, or the scenario was started accidentally.
+
+## Strengths
+- The scenario was started, which is the first step in learning
+
+## Areas for Improvement
+- Somchai was not approached or assessed at any point during the session
+- No equipment was picked up or used
+- No triage tag was assigned
+- The tutorial has no time limit — there was ample opportunity to explore and practice
+
+## Critical Errors
+- Complete inaction: the patient received no care whatsoever
+- Without any interaction, the system cannot evaluate clinical decision-making
+
+## Recommendations
+- The tutorial is designed for first-time users — there is no time pressure and guided hints will appear on screen
+- Walk towards Somchai (the patient on the ground) and press E to begin an assessment
+- Follow the on-screen prompts to perform each step of the ABCDE primary survey
+- When you find bleeding, use the equipment menu to apply a bandage
+- After completing the assessment, assign a triage tag using the triage menu

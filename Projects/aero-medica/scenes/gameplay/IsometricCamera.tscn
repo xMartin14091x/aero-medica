@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/isometric_camera.gd" id="1_camera"]
+
+[node name="IsometricCamera" type="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 10, 10)
+script = ExtResource("1_camera")
+follow_speed = 5.0
+offset = Vector3(10, 10, 10)
+zoom_min = 5.0
+zoom_max = 20.0
+zoom_step = 1.0

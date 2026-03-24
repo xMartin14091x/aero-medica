@@ -1,0 +1,928 @@
+[gd_scene format=3 uid="uid://cewxkawof133k"]
+
+[ext_resource type="Script" uid="uid://bl8ir2rfq0hgu" path="res://scripts/gameplay/mass_casualty_level.gd" id="1_level"]
+[ext_resource type="Script" uid="uid://bgs1ivm88l835" path="res://scripts/core/isometric_camera.gd" id="2_camera"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player/Player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUD.tscn" id="4_hud"]
+[ext_resource type="PackedScene" uid="uid://cb52vj4dvyote" path="res://scenes/environments/Grass.tscn" id="5_grass"]
+[ext_resource type="PackedScene" uid="uid://djemvnxp40tv5" path="res://scenes/environments/Sidewalk.tscn" id="6_sidewalk"]
+[ext_resource type="PackedScene" path="res://scenes/environments/Road.tscn" id="7_road"]
+
+[sub_resource type="NavigationMesh" id="nav_mesh"]
+geometry_parsed_geometry_type = 1
+
+[sub_resource type="StandardMaterial3D" id="bench_mat"]
+albedo_color = Color(0.45, 0.3, 0.15, 1)
+
+[sub_resource type="BoxMesh" id="bench_mesh"]
+material = SubResource("bench_mat")
+size = Vector3(1.2, 0.5, 0.4)
+
+[sub_resource type="BoxShape3D" id="bench_shape"]
+size = Vector3(1.2, 0.5, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="fountain_mat"]
+albedo_color = Color(0.65, 0.65, 0.7, 1)
+
+[sub_resource type="CylinderMesh" id="fountain_mesh"]
+material = SubResource("fountain_mat")
+top_radius = 1.5
+bottom_radius = 1.8
+height = 0.8
+
+[sub_resource type="CylinderShape3D" id="fountain_shape"]
+height = 0.8
+radius = 1.8
+
+[sub_resource type="StandardMaterial3D" id="trunk_mat"]
+albedo_color = Color(0.4, 0.25, 0.1, 1)
+
+[sub_resource type="CylinderMesh" id="trunk_mesh"]
+material = SubResource("trunk_mat")
+top_radius = 0.15
+bottom_radius = 0.2
+
+[sub_resource type="StandardMaterial3D" id="canopy_mat"]
+albedo_color = Color(0.2, 0.55, 0.15, 1)
+
+[sub_resource type="SphereMesh" id="canopy_mesh"]
+material = SubResource("canopy_mat")
+radius = 1.2
+height = 2.0
+
+[sub_resource type="CylinderShape3D" id="trunk_shape"]
+radius = 0.2
+
+[sub_resource type="StandardMaterial3D" id="cart_mat"]
+albedo_color = Color(0.6, 0.3, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="cart_mesh"]
+material = SubResource("cart_mat")
+size = Vector3(1.5, 0.6, 0.8)
+
+[sub_resource type="BoxShape3D" id="cart_shape"]
+size = Vector3(1.5, 0.6, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="debris_mat"]
+albedo_color = Color(0.5, 0.5, 0.5, 1)
+
+[sub_resource type="BoxMesh" id="debris_mesh_a"]
+material = SubResource("debris_mat")
+size = Vector3(0.5, 0.2, 0.3)
+
+[sub_resource type="BoxShape3D" id="debris_shape_a"]
+size = Vector3(0.5, 0.2, 0.3)
+
+[sub_resource type="BoxMesh" id="debris_mesh_b"]
+material = SubResource("debris_mat")
+size = Vector3(0.4, 0.2, 0.6)
+
+[sub_resource type="BoxShape3D" id="debris_shape_b"]
+size = Vector3(0.4, 0.2, 0.6)
+
+[node name="MassCasualty" type="Node3D" unique_id=570522849]
+script = ExtResource("1_level")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1973666994]
+transform = Transform3D(0.906308, -0.298836, 0.3, 0, 0.766044, 0.642788, -0.422618, -0.569517, 0.694272, 0, 12, 0)
+light_energy = 1.3
+shadow_enabled = true
+
+[node name="EmergencyLightRed" type="OmniLight3D" parent="." unique_id=1086646357]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2, 20)
+light_color = Color(1, 0.1, 0.1, 1)
+light_energy = 2.0
+omni_range = 8.0
+
+[node name="EmergencyLightBlue" type="OmniLight3D" parent="." unique_id=135010637]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2, 22)
+light_color = Color(0.1, 0.2, 1, 1)
+light_energy = 2.0
+omni_range = 8.0
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1572226134]
+navigation_mesh = SubResource("nav_mesh")
+
+[node name="Tiles" type="Node3D" parent="NavigationRegion3D" unique_id=1355996021]
+
+[node name="GrassGround" parent="NavigationRegion3D/Tiles" unique_id=121153183 instance=ExtResource("5_grass")]
+transform = Transform3D(20, 0, 0, 0, 1, 0, 0, 0, 20, 18.87448, -0.01, 18.993778)
+
+[node name="Road_0_0" parent="NavigationRegion3D/Tiles" unique_id=2076726833 instance=ExtResource("7_road")]
+
+[node name="Road_0_1" parent="NavigationRegion3D/Tiles" unique_id=1401148374 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+
+[node name="Road_0_2" parent="NavigationRegion3D/Tiles" unique_id=1742566950 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
+
+[node name="Road_0_3" parent="NavigationRegion3D/Tiles" unique_id=1327151508 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6)
+
+[node name="Road_0_4" parent="NavigationRegion3D/Tiles" unique_id=1687289754 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8)
+
+[node name="Road_0_5" parent="NavigationRegion3D/Tiles" unique_id=874400233 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
+
+[node name="Road_0_6" parent="NavigationRegion3D/Tiles" unique_id=268598007 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 12)
+
+[node name="Road_0_7" parent="NavigationRegion3D/Tiles" unique_id=29610635 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 14)
+
+[node name="Road_0_8" parent="NavigationRegion3D/Tiles" unique_id=1238724153 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
+
+[node name="Road_0_9" parent="NavigationRegion3D/Tiles" unique_id=1592808139 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 18)
+
+[node name="Road_0_10" parent="NavigationRegion3D/Tiles" unique_id=1491632280 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20)
+
+[node name="Road_0_11" parent="NavigationRegion3D/Tiles" unique_id=1846452620 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 22)
+
+[node name="Road_0_12" parent="NavigationRegion3D/Tiles" unique_id=1700477263 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 24)
+
+[node name="Road_0_13" parent="NavigationRegion3D/Tiles" unique_id=185954135 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 26)
+
+[node name="Road_0_14" parent="NavigationRegion3D/Tiles" unique_id=251672858 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 28)
+
+[node name="Road_0_15" parent="NavigationRegion3D/Tiles" unique_id=2088390265 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 30)
+
+[node name="Road_0_16" parent="NavigationRegion3D/Tiles" unique_id=1478142844 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 32)
+
+[node name="Road_0_17" parent="NavigationRegion3D/Tiles" unique_id=324078894 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 34)
+
+[node name="Road_0_18" parent="NavigationRegion3D/Tiles" unique_id=1235937522 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 36)
+
+[node name="Road_0_19" parent="NavigationRegion3D/Tiles" unique_id=1096996605 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 38)
+
+[node name="Road_19_0" parent="NavigationRegion3D/Tiles" unique_id=1572796315 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 0)
+
+[node name="Road_19_1" parent="NavigationRegion3D/Tiles" unique_id=1278140716 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 2)
+
+[node name="Road_19_2" parent="NavigationRegion3D/Tiles" unique_id=1597021562 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 4)
+
+[node name="Road_19_3" parent="NavigationRegion3D/Tiles" unique_id=1162838566 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 6)
+
+[node name="Road_19_4" parent="NavigationRegion3D/Tiles" unique_id=641148800 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 8)
+
+[node name="Road_19_5" parent="NavigationRegion3D/Tiles" unique_id=1684866254 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 10)
+
+[node name="Road_19_6" parent="NavigationRegion3D/Tiles" unique_id=255342231 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 12)
+
+[node name="Road_19_7" parent="NavigationRegion3D/Tiles" unique_id=1382665665 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 14)
+
+[node name="Road_19_8" parent="NavigationRegion3D/Tiles" unique_id=1026186067 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 16)
+
+[node name="Road_19_9" parent="NavigationRegion3D/Tiles" unique_id=670105626 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 18)
+
+[node name="Road_19_10" parent="NavigationRegion3D/Tiles" unique_id=262559023 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 20)
+
+[node name="Road_19_11" parent="NavigationRegion3D/Tiles" unique_id=328541451 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 22)
+
+[node name="Road_19_12" parent="NavigationRegion3D/Tiles" unique_id=68695896 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 24)
+
+[node name="Road_19_13" parent="NavigationRegion3D/Tiles" unique_id=670811893 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 26)
+
+[node name="Road_19_14" parent="NavigationRegion3D/Tiles" unique_id=581680833 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 28)
+
+[node name="Road_19_15" parent="NavigationRegion3D/Tiles" unique_id=311452007 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 30)
+
+[node name="Road_19_16" parent="NavigationRegion3D/Tiles" unique_id=59852078 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 32)
+
+[node name="Road_19_17" parent="NavigationRegion3D/Tiles" unique_id=1282191843 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 34)
+
+[node name="Road_19_18" parent="NavigationRegion3D/Tiles" unique_id=1694217471 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 36)
+
+[node name="Road_19_19" parent="NavigationRegion3D/Tiles" unique_id=2068371231 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0, 38)
+
+[node name="Road_top_1" parent="NavigationRegion3D/Tiles" unique_id=2024727415 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0)
+
+[node name="Road_top_2" parent="NavigationRegion3D/Tiles" unique_id=1355546810 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+
+[node name="Road_top_3" parent="NavigationRegion3D/Tiles" unique_id=708386039 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
+
+[node name="Road_top_4" parent="NavigationRegion3D/Tiles" unique_id=1168421291 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
+
+[node name="Road_top_5" parent="NavigationRegion3D/Tiles" unique_id=868357232 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 0)
+
+[node name="Road_top_6" parent="NavigationRegion3D/Tiles" unique_id=1014625101 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 0)
+
+[node name="Road_top_7" parent="NavigationRegion3D/Tiles" unique_id=1295760319 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 0)
+
+[node name="Road_top_8" parent="NavigationRegion3D/Tiles" unique_id=1487063745 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 0)
+
+[node name="Road_top_9" parent="NavigationRegion3D/Tiles" unique_id=830919118 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, 0)
+
+[node name="Road_top_10" parent="NavigationRegion3D/Tiles" unique_id=735076430 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
+
+[node name="Road_top_11" parent="NavigationRegion3D/Tiles" unique_id=1592847383 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 0)
+
+[node name="Road_top_12" parent="NavigationRegion3D/Tiles" unique_id=1366032424 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 0)
+
+[node name="Road_top_13" parent="NavigationRegion3D/Tiles" unique_id=1125308287 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 0)
+
+[node name="Road_top_14" parent="NavigationRegion3D/Tiles" unique_id=784573908 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, 0)
+
+[node name="Road_top_15" parent="NavigationRegion3D/Tiles" unique_id=1980532756 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 0)
+
+[node name="Road_top_16" parent="NavigationRegion3D/Tiles" unique_id=758164542 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 0)
+
+[node name="Road_top_17" parent="NavigationRegion3D/Tiles" unique_id=2124530326 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0, 0)
+
+[node name="Road_top_18" parent="NavigationRegion3D/Tiles" unique_id=1465659830 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 0)
+
+[node name="Road_bot_1" parent="NavigationRegion3D/Tiles" unique_id=271906462 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 38)
+
+[node name="Road_bot_2" parent="NavigationRegion3D/Tiles" unique_id=1794031261 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 38)
+
+[node name="Road_bot_3" parent="NavigationRegion3D/Tiles" unique_id=1043369985 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 38)
+
+[node name="Road_bot_4" parent="NavigationRegion3D/Tiles" unique_id=2014436721 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 38)
+
+[node name="Road_bot_5" parent="NavigationRegion3D/Tiles" unique_id=458357163 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 38)
+
+[node name="Road_bot_6" parent="NavigationRegion3D/Tiles" unique_id=748343075 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 38)
+
+[node name="Road_bot_7" parent="NavigationRegion3D/Tiles" unique_id=532767049 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 38)
+
+[node name="Road_bot_8" parent="NavigationRegion3D/Tiles" unique_id=373342771 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 38)
+
+[node name="Road_bot_9" parent="NavigationRegion3D/Tiles" unique_id=1079915740 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, 38)
+
+[node name="Road_bot_10" parent="NavigationRegion3D/Tiles" unique_id=130893007 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 38)
+
+[node name="Road_bot_11" parent="NavigationRegion3D/Tiles" unique_id=767540438 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 38)
+
+[node name="Road_bot_12" parent="NavigationRegion3D/Tiles" unique_id=1674250384 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 38)
+
+[node name="Road_bot_13" parent="NavigationRegion3D/Tiles" unique_id=1082053241 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 38)
+
+[node name="Road_bot_14" parent="NavigationRegion3D/Tiles" unique_id=1899070761 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, 38)
+
+[node name="Road_bot_15" parent="NavigationRegion3D/Tiles" unique_id=765014318 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 38)
+
+[node name="Road_bot_16" parent="NavigationRegion3D/Tiles" unique_id=221045303 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 38)
+
+[node name="Road_bot_17" parent="NavigationRegion3D/Tiles" unique_id=1265960934 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0, 38)
+
+[node name="Road_bot_18" parent="NavigationRegion3D/Tiles" unique_id=1305790792 instance=ExtResource("7_road")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 38)
+
+[node name="Sidewalk_1_1" parent="NavigationRegion3D/Tiles" unique_id=511722410 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 2)
+
+[node name="Sidewalk_1_2" parent="NavigationRegion3D/Tiles" unique_id=123508413 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 4)
+
+[node name="Sidewalk_1_3" parent="NavigationRegion3D/Tiles" unique_id=336669097 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 6)
+
+[node name="Sidewalk_1_4" parent="NavigationRegion3D/Tiles" unique_id=164126882 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 8)
+
+[node name="Sidewalk_1_5" parent="NavigationRegion3D/Tiles" unique_id=470165121 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 10)
+
+[node name="Sidewalk_1_6" parent="NavigationRegion3D/Tiles" unique_id=516721644 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 12)
+
+[node name="Sidewalk_1_7" parent="NavigationRegion3D/Tiles" unique_id=221975842 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 14)
+
+[node name="Sidewalk_1_8" parent="NavigationRegion3D/Tiles" unique_id=1824475916 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 16)
+
+[node name="Sidewalk_1_9" parent="NavigationRegion3D/Tiles" unique_id=793505334 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 18)
+
+[node name="Sidewalk_1_10" parent="NavigationRegion3D/Tiles" unique_id=1667746346 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 20)
+
+[node name="Sidewalk_1_11" parent="NavigationRegion3D/Tiles" unique_id=261484345 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 22)
+
+[node name="Sidewalk_1_12" parent="NavigationRegion3D/Tiles" unique_id=1038192338 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 24)
+
+[node name="Sidewalk_1_13" parent="NavigationRegion3D/Tiles" unique_id=644105202 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 26)
+
+[node name="Sidewalk_1_14" parent="NavigationRegion3D/Tiles" unique_id=1206812306 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 28)
+
+[node name="Sidewalk_1_15" parent="NavigationRegion3D/Tiles" unique_id=1282776029 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 30)
+
+[node name="Sidewalk_1_16" parent="NavigationRegion3D/Tiles" unique_id=2094649212 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 32)
+
+[node name="Sidewalk_1_17" parent="NavigationRegion3D/Tiles" unique_id=600134018 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 34)
+
+[node name="Sidewalk_1_18" parent="NavigationRegion3D/Tiles" unique_id=1000586222 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 36)
+
+[node name="Sidewalk_18_1" parent="NavigationRegion3D/Tiles" unique_id=721434295 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 2)
+
+[node name="Sidewalk_18_2" parent="NavigationRegion3D/Tiles" unique_id=832363404 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 4)
+
+[node name="Sidewalk_18_3" parent="NavigationRegion3D/Tiles" unique_id=1733898337 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 6)
+
+[node name="Sidewalk_18_4" parent="NavigationRegion3D/Tiles" unique_id=389546793 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 8)
+
+[node name="Sidewalk_18_5" parent="NavigationRegion3D/Tiles" unique_id=1743542322 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 10)
+
+[node name="Sidewalk_18_6" parent="NavigationRegion3D/Tiles" unique_id=2111977360 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 12)
+
+[node name="Sidewalk_18_7" parent="NavigationRegion3D/Tiles" unique_id=1678411857 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 14)
+
+[node name="Sidewalk_18_8" parent="NavigationRegion3D/Tiles" unique_id=737602151 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 16)
+
+[node name="Sidewalk_18_9" parent="NavigationRegion3D/Tiles" unique_id=1508407730 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 18)
+
+[node name="Sidewalk_18_10" parent="NavigationRegion3D/Tiles" unique_id=66902577 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 20)
+
+[node name="Sidewalk_18_11" parent="NavigationRegion3D/Tiles" unique_id=925210576 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 22)
+
+[node name="Sidewalk_18_12" parent="NavigationRegion3D/Tiles" unique_id=154738202 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 24)
+
+[node name="Sidewalk_18_13" parent="NavigationRegion3D/Tiles" unique_id=1797269141 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 26)
+
+[node name="Sidewalk_18_14" parent="NavigationRegion3D/Tiles" unique_id=1955824773 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 28)
+
+[node name="Sidewalk_18_15" parent="NavigationRegion3D/Tiles" unique_id=779446494 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 30)
+
+[node name="Sidewalk_18_16" parent="NavigationRegion3D/Tiles" unique_id=1058497706 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 32)
+
+[node name="Sidewalk_18_17" parent="NavigationRegion3D/Tiles" unique_id=786974877 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 34)
+
+[node name="Sidewalk_18_18" parent="NavigationRegion3D/Tiles" unique_id=22277760 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0, 36)
+
+[node name="Sidewalk_top_2" parent="NavigationRegion3D/Tiles" unique_id=173379296 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 2)
+
+[node name="Sidewalk_top_3" parent="NavigationRegion3D/Tiles" unique_id=2067964502 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 2)
+
+[node name="Sidewalk_top_4" parent="NavigationRegion3D/Tiles" unique_id=1211993789 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 2)
+
+[node name="Sidewalk_top_5" parent="NavigationRegion3D/Tiles" unique_id=47809176 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 2)
+
+[node name="Sidewalk_top_6" parent="NavigationRegion3D/Tiles" unique_id=1685177051 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 2)
+
+[node name="Sidewalk_top_7" parent="NavigationRegion3D/Tiles" unique_id=662588338 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 2)
+
+[node name="Sidewalk_top_8" parent="NavigationRegion3D/Tiles" unique_id=1681516271 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 2)
+
+[node name="Sidewalk_top_9" parent="NavigationRegion3D/Tiles" unique_id=1541195974 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, 2)
+
+[node name="Sidewalk_top_10" parent="NavigationRegion3D/Tiles" unique_id=1264513183 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 2)
+
+[node name="Sidewalk_top_11" parent="NavigationRegion3D/Tiles" unique_id=2129130196 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 2)
+
+[node name="Sidewalk_top_12" parent="NavigationRegion3D/Tiles" unique_id=1818973457 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 2)
+
+[node name="Sidewalk_top_13" parent="NavigationRegion3D/Tiles" unique_id=902913549 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 2)
+
+[node name="Sidewalk_top_14" parent="NavigationRegion3D/Tiles" unique_id=806640454 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, 2)
+
+[node name="Sidewalk_top_15" parent="NavigationRegion3D/Tiles" unique_id=1366836148 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 2)
+
+[node name="Sidewalk_top_16" parent="NavigationRegion3D/Tiles" unique_id=1877861481 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 2)
+
+[node name="Sidewalk_top_17" parent="NavigationRegion3D/Tiles" unique_id=2086771245 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0, 2)
+
+[node name="Sidewalk_bot_2" parent="NavigationRegion3D/Tiles" unique_id=716879324 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 36)
+
+[node name="Sidewalk_bot_3" parent="NavigationRegion3D/Tiles" unique_id=1107079972 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 36)
+
+[node name="Sidewalk_bot_4" parent="NavigationRegion3D/Tiles" unique_id=1207388805 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 36)
+
+[node name="Sidewalk_bot_5" parent="NavigationRegion3D/Tiles" unique_id=2011460513 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 36)
+
+[node name="Sidewalk_bot_6" parent="NavigationRegion3D/Tiles" unique_id=1219331640 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 36)
+
+[node name="Sidewalk_bot_7" parent="NavigationRegion3D/Tiles" unique_id=1768388127 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 36)
+
+[node name="Sidewalk_bot_8" parent="NavigationRegion3D/Tiles" unique_id=1735321014 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 36)
+
+[node name="Sidewalk_bot_9" parent="NavigationRegion3D/Tiles" unique_id=971437621 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, 36)
+
+[node name="Sidewalk_bot_10" parent="NavigationRegion3D/Tiles" unique_id=182678255 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 36)
+
+[node name="Sidewalk_bot_11" parent="NavigationRegion3D/Tiles" unique_id=1442905285 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 36)
+
+[node name="Sidewalk_bot_12" parent="NavigationRegion3D/Tiles" unique_id=1075471132 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 36)
+
+[node name="Sidewalk_bot_13" parent="NavigationRegion3D/Tiles" unique_id=1502318267 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 36)
+
+[node name="Sidewalk_bot_14" parent="NavigationRegion3D/Tiles" unique_id=1779554425 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, 36)
+
+[node name="Sidewalk_bot_15" parent="NavigationRegion3D/Tiles" unique_id=113845636 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 36)
+
+[node name="Sidewalk_bot_16" parent="NavigationRegion3D/Tiles" unique_id=522263842 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 36)
+
+[node name="Sidewalk_bot_17" parent="NavigationRegion3D/Tiles" unique_id=229246185 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0, 36)
+
+[node name="CrossH_2" parent="NavigationRegion3D/Tiles" unique_id=571650041 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 20)
+
+[node name="CrossH_3" parent="NavigationRegion3D/Tiles" unique_id=1151984919 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 20)
+
+[node name="CrossH_4" parent="NavigationRegion3D/Tiles" unique_id=1804151749 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 20)
+
+[node name="CrossH_5" parent="NavigationRegion3D/Tiles" unique_id=1240458123 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 20)
+
+[node name="CrossH_6" parent="NavigationRegion3D/Tiles" unique_id=174132271 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 20)
+
+[node name="CrossH_7" parent="NavigationRegion3D/Tiles" unique_id=1588006860 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 20)
+
+[node name="CrossH_8" parent="NavigationRegion3D/Tiles" unique_id=192151467 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 20)
+
+[node name="CrossH_9" parent="NavigationRegion3D/Tiles" unique_id=182438052 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, 20)
+
+[node name="CrossH_10" parent="NavigationRegion3D/Tiles" unique_id=574899331 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 20)
+
+[node name="CrossH_11" parent="NavigationRegion3D/Tiles" unique_id=266846768 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 20)
+
+[node name="CrossH_12" parent="NavigationRegion3D/Tiles" unique_id=106558612 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 20)
+
+[node name="CrossH_13" parent="NavigationRegion3D/Tiles" unique_id=1742769135 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 20)
+
+[node name="CrossH_14" parent="NavigationRegion3D/Tiles" unique_id=1258141441 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, 20)
+
+[node name="CrossH_15" parent="NavigationRegion3D/Tiles" unique_id=1735578686 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 20)
+
+[node name="CrossH_16" parent="NavigationRegion3D/Tiles" unique_id=1413332794 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 20)
+
+[node name="CrossH_17" parent="NavigationRegion3D/Tiles" unique_id=259772996 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0, 20)
+
+[node name="CrossV_2" parent="NavigationRegion3D/Tiles" unique_id=77579391 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 4)
+
+[node name="CrossV_3" parent="NavigationRegion3D/Tiles" unique_id=102086653 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 6)
+
+[node name="CrossV_4" parent="NavigationRegion3D/Tiles" unique_id=864235568 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 8)
+
+[node name="CrossV_5" parent="NavigationRegion3D/Tiles" unique_id=587152680 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 10)
+
+[node name="CrossV_6" parent="NavigationRegion3D/Tiles" unique_id=1045496747 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 12)
+
+[node name="CrossV_7" parent="NavigationRegion3D/Tiles" unique_id=2105322298 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 14)
+
+[node name="CrossV_8" parent="NavigationRegion3D/Tiles" unique_id=1510460886 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 16)
+
+[node name="CrossV_9" parent="NavigationRegion3D/Tiles" unique_id=2085126504 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 18)
+
+[node name="CrossV_11" parent="NavigationRegion3D/Tiles" unique_id=698862354 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 22)
+
+[node name="CrossV_12" parent="NavigationRegion3D/Tiles" unique_id=28582391 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 24)
+
+[node name="CrossV_13" parent="NavigationRegion3D/Tiles" unique_id=58251871 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 26)
+
+[node name="CrossV_14" parent="NavigationRegion3D/Tiles" unique_id=971203100 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 28)
+
+[node name="CrossV_15" parent="NavigationRegion3D/Tiles" unique_id=820828137 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 30)
+
+[node name="CrossV_16" parent="NavigationRegion3D/Tiles" unique_id=885468895 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 32)
+
+[node name="CrossV_17" parent="NavigationRegion3D/Tiles" unique_id=489074082 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 34)
+
+[node name="Diag_4" parent="NavigationRegion3D/Tiles" unique_id=111387798 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 8)
+
+[node name="Diag_4b" parent="NavigationRegion3D/Tiles" unique_id=90416696 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 8)
+
+[node name="Diag_5" parent="NavigationRegion3D/Tiles" unique_id=998637547 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 10)
+
+[node name="Diag_5b" parent="NavigationRegion3D/Tiles" unique_id=523172638 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 10)
+
+[node name="Diag_6" parent="NavigationRegion3D/Tiles" unique_id=1098795190 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 12)
+
+[node name="Diag_6b" parent="NavigationRegion3D/Tiles" unique_id=1018928362 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 12)
+
+[node name="Diag_7" parent="NavigationRegion3D/Tiles" unique_id=1067522286 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 14)
+
+[node name="Diag_7b" parent="NavigationRegion3D/Tiles" unique_id=1680656325 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 14)
+
+[node name="Diag_8" parent="NavigationRegion3D/Tiles" unique_id=439467091 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 16)
+
+[node name="Diag_8b" parent="NavigationRegion3D/Tiles" unique_id=1241842174 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, 16)
+
+[node name="Diag_9" parent="NavigationRegion3D/Tiles" unique_id=1978087155 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, 18)
+
+[node name="Diag_10" parent="NavigationRegion3D/Tiles" unique_id=1307339782 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 22)
+
+[node name="Diag_10b" parent="NavigationRegion3D/Tiles" unique_id=1346459981 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0, 24)
+
+[node name="Diag_11" parent="NavigationRegion3D/Tiles" unique_id=1558034586 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 24)
+
+[node name="Diag_11b" parent="NavigationRegion3D/Tiles" unique_id=1707052607 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 26)
+
+[node name="Diag_12" parent="NavigationRegion3D/Tiles" unique_id=767853530 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 26)
+
+[node name="Diag_12b" parent="NavigationRegion3D/Tiles" unique_id=2113587601 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 28)
+
+[node name="Diag_13" parent="NavigationRegion3D/Tiles" unique_id=1592990757 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, 28)
+
+[node name="Diag_13b" parent="NavigationRegion3D/Tiles" unique_id=752372020 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, 30)
+
+[node name="Diag_14" parent="NavigationRegion3D/Tiles" unique_id=795359811 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 30)
+
+[node name="Diag_14b" parent="NavigationRegion3D/Tiles" unique_id=1056681990 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 32)
+
+[node name="Diag_15" parent="NavigationRegion3D/Tiles" unique_id=2135814280 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 32)
+
+[node name="Diag_15b" parent="NavigationRegion3D/Tiles" unique_id=228970130 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 34)
+
+[node name="Barrier_North" parent="NavigationRegion3D/Tiles" unique_id=1653846775 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(21, 0, 0, 0, 105, 0, 0, 0, 1, 20, 0, -2)
+visible = false
+
+[node name="Barrier_South" parent="NavigationRegion3D/Tiles" unique_id=2035852186 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(21, 0, 0, 0, 105, 0, 0, 0, 1, 20, 0, 42)
+visible = false
+
+[node name="Barrier_West" parent="NavigationRegion3D/Tiles" unique_id=504956179 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 105, 0, 0, 0, 23, -2, 0, 20)
+visible = false
+
+[node name="Barrier_East" parent="NavigationRegion3D/Tiles" unique_id=1411867801 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 105, 0, 0, 0, 23, 42, 0, 20)
+visible = false
+
+[node name="Props" type="Node3D" parent="NavigationRegion3D" unique_id=115727144]
+
+[node name="Bench_01" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1269348233]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.25, 20)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Bench_01" unique_id=223676110]
+mesh = SubResource("bench_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Bench_01" unique_id=422602938]
+shape = SubResource("bench_shape")
+
+[node name="Bench_02" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=986015994]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.25, 20)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Bench_02" unique_id=1150706890]
+mesh = SubResource("bench_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Bench_02" unique_id=1993848356]
+shape = SubResource("bench_shape")
+
+[node name="Bench_03" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=69654605]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.25, 10)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Bench_03" unique_id=1650296039]
+mesh = SubResource("bench_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Bench_03" unique_id=126710702]
+shape = SubResource("bench_shape")
+
+[node name="Bench_04" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=2063651749]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.25, 30)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Bench_04" unique_id=905389371]
+mesh = SubResource("bench_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Bench_04" unique_id=1342434452]
+shape = SubResource("bench_shape")
+
+[node name="Fountain" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1518958684]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 20)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Fountain" unique_id=1381217591]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+mesh = SubResource("fountain_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Fountain" unique_id=1013249030]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("fountain_shape")
+
+[node name="Tree_01" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1283545135]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 8)
+
+[node name="Trunk" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_01" unique_id=1580519344]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("trunk_mesh")
+
+[node name="Canopy" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_01" unique_id=300869730]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
+mesh = SubResource("canopy_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Tree_01" unique_id=230597054]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("trunk_shape")
+
+[node name="Tree_02" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=2141542519]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 8)
+
+[node name="Trunk" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_02" unique_id=665172734]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("trunk_mesh")
+
+[node name="Canopy" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_02" unique_id=654682722]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
+mesh = SubResource("canopy_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Tree_02" unique_id=1098117493]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("trunk_shape")
+
+[node name="Tree_03" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1645927349]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 32)
+
+[node name="Trunk" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_03" unique_id=358675602]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("trunk_mesh")
+
+[node name="Canopy" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_03" unique_id=1006272649]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
+mesh = SubResource("canopy_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Tree_03" unique_id=260898321]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("trunk_shape")
+
+[node name="Tree_04" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=656133633]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0, 32)
+
+[node name="Trunk" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_04" unique_id=1533175028]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("trunk_mesh")
+
+[node name="Canopy" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_04" unique_id=2133248965]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
+mesh = SubResource("canopy_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Tree_04" unique_id=2099665174]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("trunk_shape")
+
+[node name="Tree_05" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=727141010]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 14)
+
+[node name="Trunk" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_05" unique_id=1364710366]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("trunk_mesh")
+
+[node name="Canopy" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_05" unique_id=2088785853]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
+mesh = SubResource("canopy_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Tree_05" unique_id=1334185442]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("trunk_shape")
+
+[node name="Tree_06" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1466795810]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, 26)
+
+[node name="Trunk" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_06" unique_id=186049775]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mesh = SubResource("trunk_mesh")
+
+[node name="Canopy" type="MeshInstance3D" parent="NavigationRegion3D/Props/Tree_06" unique_id=1780151625]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
+mesh = SubResource("canopy_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Tree_06" unique_id=1128017780]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("trunk_shape")
+
+[node name="VendorCart" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=578836850]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0.3, 18)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/VendorCart" unique_id=1585592988]
+mesh = SubResource("cart_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/VendorCart" unique_id=1217663813]
+shape = SubResource("cart_shape")
+
+[node name="Debris_01" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=2024459634]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.1, 22)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Debris_01" unique_id=1983184514]
+mesh = SubResource("debris_mesh_a")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Debris_01" unique_id=715006957]
+shape = SubResource("debris_shape_a")
+
+[node name="Debris_02" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1440488133]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0.1, 16)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Debris_02" unique_id=200608016]
+mesh = SubResource("debris_mesh_b")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Debris_02" unique_id=904078248]
+shape = SubResource("debris_shape_b")
+
+[node name="Spawns" type="Node3D" parent="." unique_id=1477305672]
+
+[node name="PlayerSpawn" type="Marker3D" parent="Spawns" unique_id=1578184656]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.1, 36)
+
+[node name="PatientSpawn_01" type="Marker3D" parent="Spawns" unique_id=21691667]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.1, 18)
+
+[node name="PatientSpawn_02" type="Marker3D" parent="Spawns" unique_id=2051214517]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0.1, 16)
+
+[node name="PatientSpawn_03" type="Marker3D" parent="Spawns" unique_id=877648214]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.1, 24)
+
+[node name="PatientSpawn_04" type="Marker3D" parent="Spawns" unique_id=186140578]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.1, 12)
+
+[node name="PatientSpawn_05" type="Marker3D" parent="Spawns" unique_id=939430776]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.1, 30)
+
+[node name="PatientSpawn_06" type="Marker3D" parent="Spawns" unique_id=2030355376]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.1, 28)
+
+[node name="EquipmentSpawn_01" type="Marker3D" parent="Spawns" unique_id=1871961512]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.1, 20)
+
+[node name="EquipmentSpawn_02" type="Marker3D" parent="Spawns" unique_id=1517558398]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 0.1, 20)
+
+[node name="EquipmentSpawn_03" type="Marker3D" parent="Spawns" unique_id=882825914]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.1, 4)
+
+[node name="Player" parent="." unique_id=994287796 instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.1, 36)
+
+[node name="IsometricCamera" type="Camera3D" parent="." unique_id=997895819]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 18, 24)
+script = ExtResource("2_camera")
+offset = Vector3(12, 14, 12)
+zoom_min = 6.0
+zoom_max = 24.0
+
+[node name="HUD" parent="." unique_id=674066838 instance=ExtResource("4_hud")]

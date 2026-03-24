@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://djemvnxp40tv5"]
+
+[ext_resource type="Material" uid="uid://cc1cejtj7r4rb" path="res://assets/Sidewalk4/PavingStones105_8K-PNG.tres" id="1_46638"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_sidewalk"]
+material = ExtResource("1_46638")
+size = Vector3(2, 0.1, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape_sidewalk"]
+size = Vector3(2, 0.1, 2)
+
+[node name="Sidewalk" type="StaticBody3D" unique_id=1708436032]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=396895406]
+transform = Transform3D(-0.00095991674, 0, 0.9999995, 0, 1, 0, -0.9999995, 0, -0.00095991674, 0, 0, 0)
+mesh = SubResource("BoxMesh_sidewalk")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=173619623]
+shape = SubResource("BoxShape_sidewalk")

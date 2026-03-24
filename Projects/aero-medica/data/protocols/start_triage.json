@@ -1,0 +1,70 @@
+{
+	"protocol_id": "START",
+	"protocol_name": "Simple Triage and Rapid Treatment",
+	"description": "START triage algorithm — rapid mass casualty triage decision tree",
+	"decision_tree": {
+		"root": "can_walk",
+		"nodes": {
+			"can_walk": {
+				"question": "Can the patient walk?",
+				"assessment": "assess_consciousness",
+				"yes": "GREEN",
+				"no": "check_breathing"
+			},
+			"check_breathing": {
+				"question": "Is the patient breathing?",
+				"assessment": "assess_breathing",
+				"yes": "check_respiratory_rate",
+				"no": "open_airway"
+			},
+			"open_airway": {
+				"question": "After opening airway — breathing now?",
+				"action": "head_tilt_chin_lift",
+				"yes": "RED",
+				"no": "BLACK"
+			},
+			"check_respiratory_rate": {
+				"question": "Respiratory rate > 30/min?",
+				"assessment": "assess_breathing",
+				"threshold": 30.0,
+				"yes": "RED",
+				"no": "check_perfusion"
+			},
+			"check_perfusion": {
+				"question": "Capillary refill > 2 sec OR no radial pulse?",
+				"assessment": "assess_pulse",
+				"yes": "RED",
+				"no": "check_mental_status"
+			},
+			"check_mental_status": {
+				"question": "Can follow simple commands?",
+				"assessment": "assess_consciousness",
+				"yes": "YELLOW",
+				"no": "RED"
+			}
+		}
+	},
+	"tag_definitions": {
+		"GREEN": {
+			"label": "Minor",
+			"priority": 4,
+			"description": "Walking wounded — delayed treatment acceptable"
+		},
+		"YELLOW": {
+			"label": "Delayed",
+			"priority": 3,
+			"description": "Serious but stable — treatment within 1 hour"
+		},
+		"RED": {
+			"label": "Immediate",
+			"priority": 1,
+			"description": "Life-threatening — immediate treatment required"
+		},
+		"BLACK": {
+			"label": "Deceased / Expectant",
+			"priority": 5,
+			"description": "Dead or non-survivable injuries"
+		}
+	},
+	"notes": "Based on START Triage protocol used internationally. GREEN patients are assessed last."
+}

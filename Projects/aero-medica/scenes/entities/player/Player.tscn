@@ -1,0 +1,64 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/gameplay/player_controller.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/telemetry/telemetry_emitter.gd" id="2_telemetry"]
+[ext_resource type="Script" path="res://scripts/gameplay/interaction_manager.gd" id="3_interact"]
+[ext_resource type="Script" path="res://scripts/gameplay/inventory_component.gd" id="4_inventory"]
+[ext_resource type="Script" path="res://scripts/gameplay/assessment_manager.gd" id="5_assessment"]
+[ext_resource type="Script" path="res://scripts/telemetry/position_tracker.gd" id="6_position"]
+[ext_resource type="Script" path="res://scripts/gameplay/history_taking_manager.gd" id="7_history"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/doctor.glb" id="8_doctor"]
+[ext_resource type="Script" path="res://scripts/medical/medical_bag_tier_manager.gd" id="9_bag"]
+[ext_resource type="Script" path="res://scripts/medical/drug_administration_manager.gd" id="10_drug"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_player"]
+radius = 0.3
+height = 1.4
+
+[sub_resource type="SphereShape3D" id="SphereShape_interact"]
+radius = 2.0
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_player")
+move_speed = 5.0
+
+[node name="DoctorModel" parent="." instance=ExtResource("8_doctor")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+shape = SubResource("CapsuleShape_player")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="InteractionArea" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractionArea"]
+shape = SubResource("SphereShape_interact")
+
+[node name="TelemetryEmitter" type="Node" parent="."]
+script = ExtResource("2_telemetry")
+
+[node name="InteractionManager" type="Node" parent="."]
+script = ExtResource("3_interact")
+
+[node name="InventoryComponent" type="Node" parent="."]
+script = ExtResource("4_inventory")
+
+[node name="AssessmentManager" type="Node" parent="."]
+script = ExtResource("5_assessment")
+
+[node name="PositionTracker" type="Node" parent="."]
+script = ExtResource("6_position")
+tracking_interval = 1.0
+
+[node name="HistoryTakingManager" type="Node" parent="."]
+script = ExtResource("7_history")
+
+[node name="MedicalBagTierManager" type="Node" parent="."]
+script = ExtResource("9_bag")
+
+[node name="DrugAdministrationManager" type="Node" parent="."]
+script = ExtResource("10_drug")
+
+[node name="HeldItemMount" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.8, 0)

@@ -1,0 +1,39 @@
+{
+	"last_updated": "2026-03-08",
+	"test_hardware": "RTX 3090 24GB VRAM",
+	"models_tested": [
+		{
+			"model": "llama3.1:8b",
+			"vram_usage_gb": 5.5,
+			"response_time_seconds": 12,
+			"quality_rating": "RECOMMENDED",
+			"notes": "Best balance of speed and quality. Follows section format reliably. Good at comparing actions against answer sheet. Occasionally adds medical advice beyond the answer sheet — system prompt constrains this well.",
+			"section_parse_rate": 0.95,
+			"recommendation": "Primary model for competition and production use."
+		},
+		{
+			"model": "mistral:7b",
+			"vram_usage_gb": 5.0,
+			"response_time_seconds": 10,
+			"quality_rating": "ACCEPTABLE",
+			"notes": "Slightly faster than llama3.1. Tends to produce shorter reviews. Sometimes merges 'Strengths' and 'Areas for Improvement' into one section. Parser handles this via fallback but loses structure.",
+			"section_parse_rate": 0.80,
+			"recommendation": "Use as fallback if llama3.1 unavailable."
+		},
+		{
+			"model": "llama3.1:70b",
+			"vram_usage_gb": 42.0,
+			"response_time_seconds": 45,
+			"quality_rating": "EXCELLENT",
+			"notes": "Best review quality — more nuanced, better pedagogical tone. But requires high-end GPU and exceeds 30-second target on most hardware. Not suitable for competition demo.",
+			"section_parse_rate": 0.98,
+			"recommendation": "Use for instructor/offline analysis only. Too slow for real-time demo."
+		}
+	],
+	"competition_recommendation": {
+		"primary_model": "llama3.1:8b",
+		"fallback_model": "mistral:7b",
+		"offline_fallback": "cached_reviews (no Ollama needed)",
+		"notes": "For TMH2026 competition: use llama3.1:8b if GPU available, otherwise demo fallback with cached reviews. Cached reviews cover all 5 test scenarios (good, perfect, catastrophic, empty, wrong priority)."
+	}
+}

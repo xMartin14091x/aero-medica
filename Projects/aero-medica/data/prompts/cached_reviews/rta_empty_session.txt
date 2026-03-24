@@ -1,0 +1,19 @@
+## Overall Assessment
+No actions were taken during this scenario. The timer expired at 600 seconds with zero patient assessments, zero treatments, and zero triage tags assigned. Protocol adherence: 0%. This appears to be either a first attempt where the controls were unfamiliar, or the scenario was started accidentally.
+
+## Strengths
+- The scenario was started, which is the first step in any training exercise
+
+## Areas for Improvement
+- No patients were approached or assessed during the entire 10-minute scenario
+- No equipment was picked up or used
+- No triage tags were assigned
+
+## Critical Errors
+- Complete inaction: all patients went untreated for the full scenario duration
+- Without any assessment, the system cannot evaluate clinical decision-making
+
+## Recommendations
+- If you are new to the simulation, start with the Tutorial scenario which guides you through the basic controls and assessment steps
+- Remember: press E near a patient to begin an assessment, and use the number keys 1-5 to perform ABCDE checks
+- The goal is to assess every patient as quickly as possible — even an incomplete assessment is better than none

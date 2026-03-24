@@ -1,0 +1,25 @@
+## Overall Assessment
+This session requires significant improvement. Of three patients in the Building Fire scenario, two deteriorated critically or died due to lack of intervention. Ploy's obstructed airway went unmanaged and Arthit's unconscious state was not addressed. Protocol adherence: below 20%. 4 critical errors detected. In a multi-patient fire environment, every patient's condition is actively worsening — delay means death.
+
+## Strengths
+- You entered the fire environment and engaged with the scenario
+- At least one patient was approached
+
+## Areas for Improvement
+- Ploy (RED) had an obstructed airway with breathing rate of 10/min — no airway management was performed and she deteriorated
+- Arthit (RED) was unconscious with obstructed airway and significant bleeding — received no effective treatment
+- Niran (YELLOW) may have been the only patient assessed, despite being the lowest priority
+- Triage tags were either not assigned or grossly incorrect for multiple patients
+- No systematic approach to scene management was evident
+
+## Critical Errors
+- Ploy's obstructed airway not managed — progressive airway obstruction in a smoke inhalation patient is rapidly fatal
+- Arthit received no care despite being unconscious with obstructed airway and active bleeding — patient deteriorated to cardiac arrest
+- Multiple incorrect or missing triage assignments — cannot allocate resources correctly without accurate triage
+- Lowest-priority patient treated while highest-priority patients died
+
+## Recommendations
+- Learn the 30-second triage sweep: before treating anyone, quickly walk past all patients and classify them as RED, YELLOW, or GREEN
+- The two rules that save lives in multi-casualty scenarios: (1) treat RED before YELLOW, (2) manage airways before anything else
+- Practice single-patient fire scenarios until airway management is automatic, then return to multi-patient
+- Consider restarting this scenario and focusing exclusively on getting the priority order correct — even incomplete assessments in the right order is better than complete assessments in the wrong order

@@ -1,0 +1,91 @@
+{
+	"protocol_id": "BCLS",
+	"protocol_name": "Basic Cardiac Life Support",
+	"description": "Standard BLS sequence for cardiac arrest — AHA/Thai Red Cross guidelines",
+	"steps": [
+		{
+			"step": 1,
+			"action": "scene_safety_check",
+			"label": "Check Scene Safety",
+			"condition": "always",
+			"required_equipment": null,
+			"time_window_seconds": null,
+			"notes": "Ensure the scene is safe before approaching"
+		},
+		{
+			"step": 2,
+			"action": "assess_consciousness",
+			"label": "Check Responsiveness",
+			"condition": "always",
+			"required_equipment": null,
+			"time_window_seconds": 10,
+			"notes": "Tap shoulders, shout — AVPU scale assessment"
+		},
+		{
+			"step": 3,
+			"action": "call_for_help",
+			"label": "Call for Help / Activate EMS",
+			"condition": "patient_unresponsive",
+			"required_equipment": null,
+			"time_window_seconds": null,
+			"notes": "Activate emergency response system, request AED"
+		},
+		{
+			"step": 4,
+			"action": "assess_breathing",
+			"label": "Check Breathing",
+			"condition": "always",
+			"required_equipment": null,
+			"time_window_seconds": 10,
+			"notes": "Look-listen-feel for no more than 10 seconds"
+		},
+		{
+			"step": 5,
+			"action": "assess_pulse",
+			"label": "Check Pulse",
+			"condition": "no_normal_breathing",
+			"required_equipment": null,
+			"time_window_seconds": 10,
+			"notes": "Carotid pulse check — simultaneously with breathing if trained"
+		},
+		{
+			"step": 6,
+			"action": "head_tilt_chin_lift",
+			"label": "Open Airway",
+			"condition": "airway_obstructed",
+			"required_equipment": null,
+			"time_window_seconds": null,
+			"notes": "Head-tilt chin-lift for non-trauma, jaw-thrust for trauma"
+		},
+		{
+			"step": 7,
+			"action": "cpr",
+			"label": "Begin CPR (30:2)",
+			"condition": "no_pulse",
+			"required_equipment": null,
+			"time_window_seconds": null,
+			"notes": "30 compressions : 2 breaths, rate 100-120/min, depth 5-6cm"
+		},
+		{
+			"step": 8,
+			"action": "aed",
+			"label": "Apply AED",
+			"condition": "no_pulse",
+			"required_equipment": "AED",
+			"time_window_seconds": null,
+			"notes": "Attach pads, follow AED prompts, shock if advised"
+		},
+		{
+			"step": 9,
+			"action": "reassess",
+			"label": "Reassess Patient",
+			"condition": "after_treatment",
+			"required_equipment": null,
+			"time_window_seconds": 120,
+			"notes": "Reassess after 2 minutes of CPR or after AED shock"
+		}
+	],
+	"critical_actions": ["cpr", "aed", "assess_breathing", "assess_pulse"],
+	"order_matters": true,
+	"notes": "Based on AHA 2020 Guidelines and Thai Red Cross BLS curriculum"
+}

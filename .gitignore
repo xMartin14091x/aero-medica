@@ -1,0 +1,25 @@
+# Godot
+.godot/
+*.import
+export_presets.cfg
+
+# Runtime data
+user_data/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+*.swp
+*.swo
+
+# Build
+build/
+export/
+
+# Heavy assets (transfer via AnyDesk, not git)
+# 3D models, textures, audio — 5.8GB total
+Projects/aero-medica/assets/

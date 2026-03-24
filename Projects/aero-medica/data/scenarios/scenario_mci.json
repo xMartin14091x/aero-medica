@@ -1,0 +1,613 @@
+{
+	"scenario_id": "mci_market_01",
+	"scenario_name": "Mass Casualty — Market Explosion",
+	"description": "An explosion at a crowded market. Six casualties with varying severity, limited resources. Practice START triage to prioritise patients and allocate equipment effectively under extreme time pressure.",
+	"environment_scene_path": "",
+	"difficulty_rating": 5,
+	"guided_hints": false,
+	"time_limit_seconds": 1200,
+	"patients": [
+		{
+			"position": { "x": 5.0, "y": 0.0, "z": 3.0 },
+			"persona": {
+				"name": "Lek",
+				"age": 22,
+				"consciousness_level": "ALERT",
+				"pain_level": 3,
+				"panic_level": 0.9,
+				"language_clarity": 1.0
+			},
+			"initial_state": "CONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 0,
+				"airway_status": "CLEAR",
+				"breathing_rate": 18.0,
+				"pulse_present": true
+			},
+			"vitals": {
+				"heart_rate": 95,
+				"blood_pressure_systolic": 125,
+				"blood_pressure_diastolic": 78,
+				"spo2": 98,
+				"temperature": 36.9,
+				"blood_glucose": 100,
+				"capillary_refill": 1.5,
+				"pupil_left_size": 4,
+				"pupil_right_size": 4,
+				"pupil_left_reactive": true,
+				"pupil_right_reactive": true,
+				"skin_color": "NORMAL",
+				"skin_temperature": "WARM",
+				"skin_moisture": "MOIST",
+				"ecg_rhythm": "NORMAL_SINUS",
+				"gcs_eye": 4,
+				"gcs_verbal": 5,
+				"gcs_motor": 6
+			},
+			"examination_findings": {
+				"head": "No head injury. Tinnitus — bilateral blast ear injury. No bleeding from ears. GCS 15 (E4V5M6). Alert, oriented, ambulatory.",
+				"neck": "No cervical injury. Trachea midline.",
+				"chest": "Clear breath sounds. RR 18 /min — normal. SpO2 98%. No chest wall injury.",
+				"abdomen": "Soft, non-tender. No penetrating injuries.",
+				"pelvis": "No injury.",
+				"back": "No injuries.",
+				"extremities": "Multiple superficial lacerations both forearms from shrapnel — minor, no active bleeding. Can walk. CRT 1.5 sec. START triage: GREEN — Minor."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "There was a huge explosion! I was at the fruit stall... things flew everywhere!",
+					"where_hurts": "My ears are ringing... and I have some cuts on my arms from the debris...",
+					"when_started": "Just now! The explosion just happened!",
+					"pain_scale": "Maybe 3... I'm more scared than hurt... but my ears won't stop ringing..."
+				},
+				"allergies": {
+					"any_allergies": "No allergies.",
+					"medication_allergies": "None."
+				},
+				"medications": {
+					"current_meds": "No, nothing.",
+					"what_meds": "I don't take any medicine."
+				},
+				"past_history": {
+					"medical_conditions": "No, I'm healthy.",
+					"surgeries": "Never had surgery."
+				},
+				"last_meal": {
+					"when_ate": "I was eating when the explosion happened...",
+					"what_ate": "Mango sticky rice from the market."
+				},
+				"events": {
+					"what_doing": "Shopping at the market... I was buying fruit when the blast knocked me down...",
+					"witnesses": "Everyone was here... there are so many people hurt... please help the others first, I can walk!"
+				}
+			},
+			"deterioration": {
+				"rate": 0.2,
+				"enabled": true,
+				"bleeding_interval": 60.0
+			},
+			"correct_protocol_sequence": [
+				"assess_consciousness",
+				"assess_breathing",
+				"assess_pulse",
+				"triage_assign"
+			]
+		},
+		{
+			"position": { "x": 8.0, "y": 0.0, "z": 6.0 },
+			"persona": {
+				"name": "Malee",
+				"age": 40,
+				"consciousness_level": "VERBAL",
+				"pain_level": 7,
+				"panic_level": 0.5,
+				"language_clarity": 0.7
+			},
+			"initial_state": "CONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 2,
+				"airway_status": "CLEAR",
+				"breathing_rate": 24.0,
+				"pulse_present": true
+			},
+			"vitals": {
+				"heart_rate": 115,
+				"blood_pressure_systolic": 95,
+				"blood_pressure_diastolic": 60,
+				"spo2": 94,
+				"temperature": 36.5,
+				"blood_glucose": 110,
+				"capillary_refill": 3.0,
+				"pupil_left_size": 4,
+				"pupil_right_size": 4,
+				"pupil_left_reactive": true,
+				"pupil_right_reactive": true,
+				"skin_color": "PALE",
+				"skin_temperature": "COOL",
+				"skin_moisture": "DIAPHORETIC",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 4,
+				"gcs_verbal": 4,
+				"gcs_motor": 6
+			},
+			"examination_findings": {
+				"head": "No head injury. Crying, confused. Pupils 4mm, reactive. GCS 14 (E4V4M6).",
+				"neck": "No cervical injury. Trachea midline.",
+				"chest": "Clear breath sounds. RR 24 /min — tachypnoea. SpO2 94%.",
+				"abdomen": "Tender left lower quadrant. No rigidity. Possible contusion from blast debris.",
+				"pelvis": "No pelvic injury.",
+				"back": "No injuries.",
+				"extremities": "⚠ Left thigh: penetrating shrapnel wound — 15cm metal fragment embedded. Active arterial bleeding, severity 2. Tourniquet required proximal to wound. Right arm abrasions. CRT 3 sec — delayed. Allergy: Sulfonamides. START triage: RED — Immediate."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "*groaning* ...the explosion... something hit my leg... I'm bleeding...",
+					"where_hurts": "My left thigh... there's metal in it... *crying* ...and my stomach hurts...",
+					"when_started": "The explosion... just now...",
+					"pain_scale": "*crying* ...7... the leg is the worst... I can see the blood..."
+				},
+				"allergies": {
+					"any_allergies": "Sulfa drugs... I had a bad reaction before...",
+					"medication_allergies": "Sulfonamides."
+				},
+				"medications": {
+					"current_meds": "Thyroid medicine...",
+					"what_meds": "Levothyroxine 50 micrograms every morning."
+				},
+				"past_history": {
+					"medical_conditions": "Hypothyroid... diagnosed 5 years ago...",
+					"surgeries": "Caesarean section 8 years ago."
+				},
+				"last_meal": {
+					"when_ate": "I was eating at the market when it happened...",
+					"what_ate": "Pad thai..."
+				},
+				"events": {
+					"what_doing": "Eating lunch at the market... the blast came from the gas stall...",
+					"witnesses": "*crying* ...my friend was with me... I don't know where she is..."
+				}
+			},
+			"deterioration": {
+				"rate": 1.0,
+				"enabled": true,
+				"bleeding_interval": 25.0
+			},
+			"correct_protocol_sequence": [
+				"assess_consciousness",
+				"assess_airway",
+				"assess_breathing",
+				"assess_pulse",
+				"control_bleeding",
+				"triage_assign"
+			]
+		},
+		{
+			"position": { "x": 12.0, "y": 0.0, "z": 4.0 },
+			"persona": {
+				"name": "Tawan",
+				"age": 65,
+				"consciousness_level": "UNRESPONSIVE",
+				"pain_level": 0,
+				"panic_level": 0.0,
+				"language_clarity": 0.0
+			},
+			"initial_state": "UNCONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 1,
+				"airway_status": "OBSTRUCTED",
+				"breathing_rate": 8.0,
+				"pulse_present": true
+			},
+			"vitals": {
+				"heart_rate": 55,
+				"blood_pressure_systolic": 85,
+				"blood_pressure_diastolic": 50,
+				"spo2": 80,
+				"temperature": 36.0,
+				"blood_glucose": 90,
+				"capillary_refill": 4.0,
+				"pupil_left_size": 6,
+				"pupil_right_size": 4,
+				"pupil_left_reactive": false,
+				"pupil_right_reactive": true,
+				"skin_color": "PALE",
+				"skin_temperature": "COOL",
+				"skin_moisture": "DIAPHORETIC",
+				"ecg_rhythm": "SINUS_BRADYCARDIA",
+				"gcs_eye": 1,
+				"gcs_verbal": 1,
+				"gcs_motor": 2
+			},
+			"examination_findings": {
+				"head": "⚠ Large temporal laceration with active bleeding. Blood from left ear — suspect basilar skull fracture. GCS 4 (E1V1M2). Left pupil 6mm fixed, right 4mm reactive — unilateral blown pupil, raised ICP. Do NOT insert NPA.",
+				"neck": "⚠ Airway obstructed — blood and vomitus. Position recovery or suction required. Trachea midline. No JVD.",
+				"chest": "RR 8 /min — bradypnoea. Reduced bilateral air entry. SpO2 80% — critical. BVM ventilation required.",
+				"abdomen": "Soft. No obvious penetrating injury.",
+				"pelvis": "Unable to assess — patient unresponsive.",
+				"back": "Not assessed — maintain spinal precautions.",
+				"extremities": "Cool, pale, diaphoretic. CRT 4 sec. No obvious fractures. Weak distal pulses. START triage: RED — Immediate."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "(Patient is unresponsive — found face-down near the blast epicentre.)",
+					"where_hurts": "(Patient is unresponsive — visible head wound, blood from left ear.)",
+					"when_started": "(Bystander: He was right next to the stall when it exploded.)",
+					"pain_scale": "(Patient is unresponsive.)"
+				},
+				"allergies": {
+					"any_allergies": "(Unknown — no one at the scene knows this patient.)",
+					"medication_allergies": "(Unknown.)"
+				},
+				"medications": {
+					"current_meds": "(No medications found on person.)",
+					"what_meds": "(Unknown.)"
+				},
+				"past_history": {
+					"medical_conditions": "(Unknown.)",
+					"surgeries": "(Unknown.)"
+				},
+				"last_meal": {
+					"when_ate": "(Unknown.)",
+					"what_ate": "(Unknown.)"
+				},
+				"events": {
+					"what_doing": "(Appeared to be a market vendor — stall nearby has his name tag: 'Tawan'.)",
+					"witnesses": "(Multiple bystanders. He was closest to the explosion source.)"
+				}
+			},
+			"deterioration": {
+				"rate": 1.2,
+				"enabled": true,
+				"bleeding_interval": 35.0,
+				"airway_to_unconscious": 30.0,
+				"unconscious_to_cardiac": 50.0,
+				"cardiac_to_dead": 25.0
+			},
+			"correct_protocol_sequence": [
+				"assess_consciousness",
+				"assess_airway",
+				"head_tilt_chin_lift",
+				"assess_breathing",
+				"assess_pulse",
+				"control_bleeding",
+				"triage_assign"
+			]
+		},
+		{
+			"position": { "x": 3.0, "y": 0.0, "z": 8.0 },
+			"persona": {
+				"name": "Kanda",
+				"age": 33,
+				"consciousness_level": "ALERT",
+				"pain_level": 5,
+				"panic_level": 0.6,
+				"language_clarity": 0.8
+			},
+			"initial_state": "CONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 1,
+				"airway_status": "CLEAR",
+				"breathing_rate": 26.0,
+				"pulse_present": true
+			},
+			"vitals": {
+				"heart_rate": 100,
+				"blood_pressure_systolic": 118,
+				"blood_pressure_diastolic": 75,
+				"spo2": 96,
+				"temperature": 37.0,
+				"blood_glucose": 105,
+				"capillary_refill": 2.0,
+				"pupil_left_size": 4,
+				"pupil_right_size": 4,
+				"pupil_left_reactive": true,
+				"pupil_right_reactive": true,
+				"skin_color": "NORMAL",
+				"skin_temperature": "WARM",
+				"skin_moisture": "MOIST",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 4,
+				"gcs_verbal": 5,
+				"gcs_motor": 6
+			},
+			"examination_findings": {
+				"head": "No head injury. Alert, oriented. Pupils 4mm, equal, reactive. GCS 15 (E4V5M6).",
+				"neck": "No cervical injury. Trachea midline.",
+				"chest": "Clear breath sounds. RR 26 /min — mild tachypnoea from anxiety. SpO2 96%.",
+				"abdomen": "Soft. No tenderness. No penetrating injuries.",
+				"pelvis": "No injury.",
+				"back": "No injuries.",
+				"extremities": "Right forearm: 10cm laceration, active venous bleeding severity 1 — direct pressure required. Right ankle swollen and tender — possible sprain or fracture. Can bear weight with difficulty. CRT 2 sec. Carries EpiPen for peanut allergy. START triage: YELLOW — Delayed."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "I heard a boom... then I was on the ground... something cut my arm...",
+					"where_hurts": "My right arm is bleeding... and I think I twisted my ankle running away...",
+					"when_started": "When the explosion happened... just a few minutes ago...",
+					"pain_scale": "Maybe 5... the arm is bleeding but I think the ankle is worse..."
+				},
+				"allergies": {
+					"any_allergies": "Peanuts... I have a peanut allergy...",
+					"medication_allergies": "No medicine allergies."
+				},
+				"medications": {
+					"current_meds": "I carry an EpiPen for my allergy, but no daily medicine.",
+					"what_meds": "Just the EpiPen, in my bag... I don't know where my bag is..."
+				},
+				"past_history": {
+					"medical_conditions": "Peanut allergy... that's it, I'm otherwise healthy.",
+					"surgeries": "No surgeries."
+				},
+				"last_meal": {
+					"when_ate": "About 30 minutes ago at the market...",
+					"what_ate": "Grilled chicken skewers and som tam."
+				},
+				"events": {
+					"what_doing": "Shopping with my friend Malee... we were at the noodle stall...",
+					"witnesses": "Malee was right next to me... she's hurt worse than me... over there..."
+				}
+			},
+			"deterioration": {
+				"rate": 0.6,
+				"enabled": true,
+				"bleeding_interval": 40.0
+			},
+			"correct_protocol_sequence": [
+				"assess_consciousness",
+				"assess_breathing",
+				"assess_pulse",
+				"control_bleeding",
+				"triage_assign"
+			]
+		},
+		{
+			"position": { "x": 10.0, "y": 0.0, "z": 10.0 },
+			"persona": {
+				"name": "Boonsri",
+				"age": 70,
+				"consciousness_level": "UNRESPONSIVE",
+				"pain_level": 0,
+				"panic_level": 0.0,
+				"language_clarity": 0.0
+			},
+			"initial_state": "CARDIAC_ARREST",
+			"modifiers": {
+				"bleeding_severity": 2,
+				"airway_status": "OBSTRUCTED",
+				"breathing_rate": 0.0,
+				"pulse_present": false
+			},
+			"vitals": {
+				"heart_rate": 0,
+				"blood_pressure_systolic": 0,
+				"blood_pressure_diastolic": 0,
+				"spo2": 0,
+				"temperature": 35.5,
+				"blood_glucose": 0,
+				"capillary_refill": 6.0,
+				"pupil_left_size": 7,
+				"pupil_right_size": 7,
+				"pupil_left_reactive": false,
+				"pupil_right_reactive": false,
+				"skin_color": "CYANOTIC",
+				"skin_temperature": "COLD",
+				"skin_moisture": "DRY",
+				"ecg_rhythm": "ASYSTOLE",
+				"gcs_eye": 1,
+				"gcs_verbal": 1,
+				"gcs_motor": 1
+			},
+			"examination_findings": {
+				"head": "⚠ Massive head trauma — open skull fracture with brain matter visible. Pupils bilateral 7mm, fixed and dilated. GCS 3 (E1V1M1). Incompatible with survival.",
+				"neck": "No pulse. No breathing. Trachea deviated — possible massive thoracic injury.",
+				"chest": "⚠ No spontaneous breathing. Massive thoracic crush injury — flail segment visible. No breath sounds. Asystole on monitor. In MCI context: expectant (BLACK) — resources better allocated to salvageable patients.",
+				"abdomen": "Distended. Likely internal haemorrhage. Not survivable with injuries sustained.",
+				"pelvis": "Unable to assess — massive trauma.",
+				"back": "Not assessed.",
+				"extremities": "⚠ Cold, cyanotic, mottled. No pulses. No response to any stimulus. START triage: BLACK — Expectant/Deceased."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "(Patient is in cardiac arrest — no pulse, no breathing. Found under collapsed stall debris.)",
+					"where_hurts": "(Patient is unresponsive — massive thoracic trauma visible.)",
+					"when_started": "(Unknown — may have been in arrest since the explosion.)",
+					"pain_scale": "(Patient is unresponsive.)"
+				},
+				"allergies": {
+					"any_allergies": "(Unknown.)",
+					"medication_allergies": "(Unknown.)"
+				},
+				"medications": {
+					"current_meds": "(Unknown.)",
+					"what_meds": "(Unknown.)"
+				},
+				"past_history": {
+					"medical_conditions": "(Unknown.)",
+					"surgeries": "(Unknown.)"
+				},
+				"last_meal": {
+					"when_ate": "(Unknown.)",
+					"what_ate": "(Unknown.)"
+				},
+				"events": {
+					"what_doing": "(Found under collapsed market stall. Likely a shopper caught in the blast.)",
+					"witnesses": "(No one saw this patient before the explosion.)"
+				}
+			},
+			"deterioration": {
+				"rate": 1.5,
+				"enabled": true,
+				"cardiac_to_dead": 20.0
+			},
+			"correct_protocol_sequence": [
+				"assess_consciousness",
+				"assess_airway",
+				"assess_breathing",
+				"assess_pulse",
+				"triage_assign"
+			]
+		},
+		{
+			"position": { "x": 14.0, "y": 0.0, "z": 7.0 },
+			"persona": {
+				"name": "Chai",
+				"age": 48,
+				"consciousness_level": "VERBAL",
+				"pain_level": 9,
+				"panic_level": 0.3,
+				"language_clarity": 0.5
+			},
+			"initial_state": "CONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 3,
+				"airway_status": "CLEAR",
+				"breathing_rate": 30.0,
+				"pulse_present": true
+			},
+			"vitals": {
+				"heart_rate": 135,
+				"blood_pressure_systolic": 75,
+				"blood_pressure_diastolic": 45,
+				"spo2": 91,
+				"temperature": 35.8,
+				"blood_glucose": 85,
+				"capillary_refill": 4.5,
+				"pupil_left_size": 4,
+				"pupil_right_size": 4,
+				"pupil_left_reactive": true,
+				"pupil_right_reactive": true,
+				"skin_color": "PALE",
+				"skin_temperature": "COLD",
+				"skin_moisture": "DIAPHORETIC",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 3,
+				"gcs_verbal": 4,
+				"gcs_motor": 5
+			},
+			"examination_findings": {
+				"head": "No head injury. Pale, diaphoretic. Confused, responds to voice. GCS 12 (E3V4M5). Pupils 4mm, reactive.",
+				"neck": "No cervical injury. Trachea midline. Flat neck veins — hypovolaemia.",
+				"chest": "Tachypnoea RR 30 /min. Clear breath sounds. SpO2 91%.",
+				"abdomen": "⚠ Rigid, distended abdomen. Rebound tenderness — peritonism. Penetrating shrapnel wound right upper quadrant. Suspected hepatic/bowel injury with active internal haemorrhage. Surgical emergency.",
+				"pelvis": "Tender on compression — possible pelvic fracture. Pelvic binder indicated.",
+				"back": "Not assessed — patient in extremis.",
+				"extremities": "⚠ Left leg: open femur fracture with severe active haemorrhage — severity 3. Bone visible. Tourniquet required immediately. CRT 4.5 sec. Cold, pale, shocked. BP 75/45 — Class III haemorrhagic shock. START triage: RED — Immediate."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "*weakly* ...explosion... my stomach... *groaning*...",
+					"where_hurts": "*pressing abdomen* ...here... and my legs... I can't feel my left leg...",
+					"when_started": "The blast... *groaning* ...few minutes ago...",
+					"pain_scale": "*grimacing* ...9... the stomach is... *trails off*..."
+				},
+				"allergies": {
+					"any_allergies": "*weakly* ...no...",
+					"medication_allergies": "...no..."
+				},
+				"medications": {
+					"current_meds": "Blood pressure... *fading* ...and cholesterol pills...",
+					"what_meds": "...I can't remember the names... *groaning*..."
+				},
+				"past_history": {
+					"medical_conditions": "High blood pressure... high cholesterol... *weakly*",
+					"surgeries": "Hernia repair... 10 years ago..."
+				},
+				"last_meal": {
+					"when_ate": "*weakly* ...just eating... at the market...",
+					"what_ate": "...noodle soup..."
+				},
+				"events": {
+					"what_doing": "Buying spices... the stall next to mine exploded...",
+					"witnesses": "...many people... *fading*..."
+				}
+			},
+			"deterioration": {
+				"rate": 1.3,
+				"enabled": true,
+				"bleeding_interval": 20.0
+			},
+			"correct_protocol_sequence": [
+				"assess_consciousness",
+				"assess_airway",
+				"assess_breathing",
+				"assess_pulse",
+				"control_bleeding",
+				"triage_assign"
+			]
+		}
+	],
+	"bag_tier": "ALS",
+	"equipment": [
+		{
+			"type": "STRETCHER",
+			"name": "Stretcher",
+			"use_label": "Load Patient",
+			"position": { "x": 1.0, "y": 0.0, "z": 10.0 }
+		}
+	],
+	"correct_diagnosis": ["Blast Injury", "Penetrating Trauma", "Hemorrhagic Shock", "Traumatic Cardiac Arrest"],
+	"hazards": [],
+	"random_events": [
+		{
+			"type": "NEW_PATIENT",
+			"trigger_time_min": 300.0,
+			"trigger_time_max": 480.0,
+			"data": {
+				"position": { "x": 6.0, "y": 0.0, "z": 12.0 },
+				"persona": {
+					"name": "Anong",
+					"age": 19,
+					"consciousness_level": "ALERT",
+					"pain_level": 5,
+					"panic_level": 0.8,
+					"language_clarity": 1.0
+				},
+				"initial_state": "CONSCIOUS",
+				"modifiers": {
+					"bleeding_severity": 1,
+					"airway_status": "CLEAR",
+					"breathing_rate": 22.0,
+					"pulse_present": true
+				},
+				"vitals": {
+					"heart_rate": 98,
+					"blood_pressure_systolic": 120,
+					"blood_pressure_diastolic": 75,
+					"spo2": 97,
+					"temperature": 36.9,
+					"blood_glucose": 95,
+					"capillary_refill": 2.0,
+					"pupil_left_size": 4,
+					"pupil_right_size": 4,
+					"pupil_left_reactive": true,
+					"pupil_right_reactive": true,
+					"skin_color": "NORMAL",
+					"skin_temperature": "WARM",
+					"skin_moisture": "MOIST",
+					"ecg_rhythm": "SINUS_TACHYCARDIA",
+					"gcs_eye": 4,
+					"gcs_verbal": 5,
+					"gcs_motor": 6
+				},
+				"examination_findings": {
+					"head": "No head injury. Alert, frightened. GCS 15.",
+					"neck": "No injury.",
+					"chest": "Clear. RR 22. SpO2 97%.",
+					"abdomen": "Soft. No tenderness.",
+					"pelvis": "No injury.",
+					"back": "No injuries.",
+					"extremities": "Laceration right forearm — venous bleeding, severity 1. Direct pressure. Ambulatory. START triage: GREEN."
+				},
+				"deterioration": {
+					"rate": 0.5,
+					"enabled": true
+				}
+			}
+		}
+	],
+	"passing_criteria": {
+		"min_patients_assessed": 5,
+		"triage_tags_required": true,
+		"all_red_treated": true
+	}
+}

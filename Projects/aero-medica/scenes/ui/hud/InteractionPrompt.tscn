@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/interaction_prompt.gd" id="1_prompt"]
+
+[node name="InteractionPrompt" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_prompt")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_right = 200.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="PanelContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "[E] Interact"

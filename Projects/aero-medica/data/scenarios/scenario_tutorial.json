@@ -1,0 +1,106 @@
+{
+	"scenario_id": "tutorial_01",
+	"scenario_name": "Tutorial — Single Patient Response",
+	"description": "A single conscious patient with minor bleeding. Practice the primary survey (ABCDE) in a safe, guided environment with no time pressure.",
+	"environment_scene_path": "",
+	"difficulty_rating": 1,
+	"guided_hints": true,
+	"time_limit_seconds": 0,
+	"patients": [
+		{
+			"position": { "x": 10.0, "y": 0.0, "z": 10.0 },
+			"persona": {
+				"name": "Somchai",
+				"age": 45,
+				"consciousness_level": "VERBAL",
+				"pain_level": 4,
+				"panic_level": 0.3,
+				"language_clarity": 0.9
+			},
+			"initial_state": "CONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 1,
+				"airway_status": "CLEAR",
+				"breathing_rate": 20.0,
+				"pulse_present": true
+			},
+			"vitals": {
+				"heart_rate": 92,
+				"blood_pressure_systolic": 128,
+				"blood_pressure_diastolic": 82,
+				"spo2": 97,
+				"temperature": 36.8,
+				"blood_glucose": 95,
+				"capillary_refill": 2.0,
+				"pupil_left_size": 4,
+				"pupil_right_size": 4,
+				"pupil_left_reactive": true,
+				"pupil_right_reactive": true,
+				"skin_color": "NORMAL",
+				"skin_temperature": "WARM",
+				"skin_moisture": "MOIST",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 4,
+				"gcs_verbal": 4,
+				"gcs_motor": 6
+			},
+			"examination_findings": {
+				"head": "No head injury. No scalp laceration. Alert, responds to voice. Pupils equal 4mm, briskly reactive bilaterally. No facial trauma.",
+				"neck": "No cervical tenderness. Trachea midline. No JVD.",
+				"chest": "Clear bilateral breath sounds. No chest wall tenderness. RR 20 /min. SpO2 97%.",
+				"abdomen": "Soft. Mild left flank tenderness on palpation — likely from impact. No guarding or rigidity.",
+				"pelvis": "Stable on compression. No pelvic tenderness.",
+				"back": "No midline spinal tenderness. No deformity.",
+				"extremities": "Left lower leg: 8cm laceration with active venous bleeding, severity 1. Glass and road debris visible. Right leg intact. Distal pulses present bilaterally. CRT 2 sec."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "I was crossing the road... a motorcycle came out of nowhere and hit me...",
+					"where_hurts": "My left leg... it hurts so much... and my side too...",
+					"when_started": "Just now, maybe 5 minutes ago...",
+					"pain_scale": "It's... maybe a 7? The leg is worse..."
+				},
+				"allergies": {
+					"any_allergies": "No, I don't have any allergies.",
+					"medication_allergies": "No, none that I know of."
+				},
+				"medications": {
+					"current_meds": "I take blood pressure medicine... metoprolol...",
+					"what_meds": "Metoprolol 50mg, once in the morning."
+				},
+				"past_history": {
+					"medical_conditions": "High blood pressure... I've had it for years...",
+					"surgeries": "I had my appendix removed when I was young."
+				},
+				"last_meal": {
+					"when_ate": "I had lunch about 2 hours ago...",
+					"what_ate": "Rice and curry... some water..."
+				},
+				"events": {
+					"what_doing": "I was walking to the market... just crossing the street...",
+					"witnesses": "I think... some people were around... I don't remember clearly..."
+				}
+			},
+			"deterioration": {
+				"rate": 0.3,
+				"enabled": true,
+				"bleeding_interval": 60.0
+			},
+			"correct_protocol_sequence": [
+				"scene_safety_check",
+				"assess_consciousness",
+				"call_for_help",
+				"assess_airway",
+				"assess_breathing",
+				"assess_pulse",
+				"control_bleeding",
+				"reassess"
+			]
+		}
+	],
+	"bag_tier": "BLS",
+	"equipment": [],
+	"correct_diagnosis": ["Minor Bleeding / Laceration", "Soft Tissue Injury"],
+	"hazards": [],
+	"random_events": []
+}

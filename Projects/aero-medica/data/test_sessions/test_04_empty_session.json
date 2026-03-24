@@ -1,0 +1,11 @@
+{
+	"test_name": "Empty Session — No Actions Taken",
+	"description": "Student starts scenario but takes no actions at all. Timer expires. Expected: gentle encouragement to try.",
+	"scenario_id": "rta_intersection_01",
+	"duration_seconds": 600.0,
+	"events": [
+		{"type": "scenario_started", "target": "", "timestamp": 0.0, "details": {}},
+		{"type": "scenario_time_expired", "target": "timer", "timestamp": 600.0, "details": {}},
+		{"type": "scenario_ended", "target": "", "timestamp": 600.0, "details": {}}
+	]
+}

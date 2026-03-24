@@ -1,0 +1,21 @@
+## Overall Assessment
+The tutorial was completed but with notable errors in assessment protocol. Somchai was assessed with an incomplete primary survey and triage was assigned incorrectly. Protocol adherence: approximately 45%. While you engaged with the patient, the assessment sequence needs significant improvement before advancing to more complex scenarios.
+
+## Strengths
+- Somchai was approached and assessment was attempted
+- Some examination steps were performed correctly
+- The scenario was completed rather than abandoned
+
+## Areas for Improvement
+- Triage tag was incorrectly assigned — Somchai is a GREEN patient (conscious, alert, ambulatory with minor bleeding), not YELLOW or RED
+- Multiple ABCDE steps were skipped or performed out of order
+- Bleeding was identified but no bandage was applied — leaving even minor bleeding untreated is a protocol gap
+- Assessment appeared rushed without systematic coverage of all body regions
+
+## Critical Errors
+- Incorrect triage assignment: Somchai's minor laceration and stable vitals make him GREEN priority. Over-triaging wastes resources in multi-casualty scenarios; under-triaging delays necessary care.
+
+## Recommendations
+- Review the START triage criteria: GREEN = can walk, follows commands, minor injuries. Somchai fits this category clearly
+- Practice the ABCDE sequence on this tutorial until every step is automatic: Airway, Breathing, Circulation, Disability, Exposure
+- Do not advance to timed scenarios until you can complete the tutorial with correct triage and full assessment

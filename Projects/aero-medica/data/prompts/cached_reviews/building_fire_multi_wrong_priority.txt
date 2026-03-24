@@ -1,0 +1,24 @@
+## Overall Assessment
+The multi-patient Building Fire scenario was completed with significant prioritisation and triage errors. Three patients were present — Ploy and Arthit (both RED) and Niran (YELLOW) — but patient priority order was incorrect and at least one triage tag was wrong. Protocol adherence: approximately 42%. 2 critical errors detected.
+
+## Strengths
+- All three patients were approached and received some level of assessment
+- Some ABCDE steps were performed correctly on each patient
+- Equipment was used during the scenario
+- The scenario was completed within the time limit
+
+## Areas for Improvement
+- Niran (YELLOW — conscious, alert, minor bleeding) was treated before Ploy or Arthit (both RED) — this is a critical prioritisation error
+- Ploy's obstructed airway was either not identified or not treated — her breathing rate of 10/min with airway obstruction requires immediate intervention
+- Arthit was unconscious with obstructed airway and significant bleeding but received delayed attention
+- At least one triage tag was incorrectly assigned — verify: Ploy is RED (obstructed airway, respiratory distress), Arthit is RED (unconscious, obstructed airway, bleeding), Niran is YELLOW (alert, minor injuries)
+
+## Critical Errors
+- Wrong treatment order: YELLOW patient treated before RED patients — in triage, RED (immediate) always comes before YELLOW (delayed)
+- Missed or delayed airway management on Ploy: obstructed airway with breathing rate of 10/min is a life-threatening emergency requiring immediate head-tilt chin-lift
+
+## Recommendations
+- Before treating anyone, do a 30-second scene sweep: identify who is unconscious, who has laboured breathing, who is alert and talking — this determines your treatment order
+- Remember: obstructed airway = RED. Unconscious = RED. Alert with minor injuries = YELLOW. Treat RED first, always
+- Practice the START triage algorithm: can they walk? Are they breathing? What is their respiratory rate? Do they have a pulse?
+- Repeat this scenario focusing only on getting the priority order correct before worrying about assessment completeness

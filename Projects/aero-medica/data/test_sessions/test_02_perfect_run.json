@@ -1,0 +1,30 @@
+{
+	"test_name": "Perfect Run — 100% Adherence",
+	"description": "Student achieves perfect protocol adherence, correct triage, correct priority, fast times. Expected: glowing praise.",
+	"scenario_id": "rta_intersection_01",
+	"duration_seconds": 280.0,
+	"events": [
+		{"type": "scenario_started", "target": "", "timestamp": 0.0, "details": {}},
+		{"type": "assess_consciousness", "target": "Nanthida", "timestamp": 8.0, "details": {"result": "VERBAL"}},
+		{"type": "assess_breathing", "target": "Nanthida", "timestamp": 12.0, "details": {"breathing_rate": 28.0}},
+		{"type": "assess_pulse", "target": "Nanthida", "timestamp": 16.0, "details": {"pulse_present": true}},
+		{"type": "assess_airway", "target": "Nanthida", "timestamp": 20.0, "details": {"airway_status": "OBSTRUCTED"}},
+		{"type": "treatment_applied", "target": "Nanthida", "timestamp": 25.0, "details": {"equipment_name": "Head Tilt", "was_correct": true}},
+		{"type": "triage_assign", "target": "Nanthida", "timestamp": 28.0, "details": {"assigned_tag": "RED", "correct_tag": "RED", "was_correct": true}},
+		{"type": "assess_consciousness", "target": "Prasert", "timestamp": 35.0, "details": {"result": "UNRESPONSIVE"}},
+		{"type": "assess_breathing", "target": "Prasert", "timestamp": 39.0, "details": {"breathing_rate": 6.0}},
+		{"type": "assess_pulse", "target": "Prasert", "timestamp": 43.0, "details": {"pulse_present": true}},
+		{"type": "assess_airway", "target": "Prasert", "timestamp": 47.0, "details": {"airway_status": "OBSTRUCTED"}},
+		{"type": "treatment_applied", "target": "Prasert", "timestamp": 52.0, "details": {"equipment_name": "Head Tilt", "was_correct": true}},
+		{"type": "assess_bleeding", "target": "Prasert", "timestamp": 56.0, "details": {"bleeding_present": true, "severity": 3}},
+		{"type": "treatment_applied", "target": "Prasert", "timestamp": 62.0, "details": {"equipment_name": "Bandage", "was_correct": true}},
+		{"type": "triage_assign", "target": "Prasert", "timestamp": 66.0, "details": {"assigned_tag": "RED", "correct_tag": "RED", "was_correct": true}},
+		{"type": "assess_consciousness", "target": "Somchai", "timestamp": 80.0, "details": {"result": "ALERT"}},
+		{"type": "assess_breathing", "target": "Somchai", "timestamp": 84.0, "details": {"breathing_rate": 22.0}},
+		{"type": "assess_pulse", "target": "Somchai", "timestamp": 88.0, "details": {"pulse_present": true}},
+		{"type": "assess_bleeding", "target": "Somchai", "timestamp": 92.0, "details": {"bleeding_present": true, "severity": 2}},
+		{"type": "treatment_applied", "target": "Somchai", "timestamp": 98.0, "details": {"equipment_name": "Bandage", "was_correct": true}},
+		{"type": "triage_assign", "target": "Somchai", "timestamp": 102.0, "details": {"assigned_tag": "YELLOW", "correct_tag": "YELLOW", "was_correct": true}},
+		{"type": "scenario_ended", "target": "", "timestamp": 280.0, "details": {}}
+	]
+}

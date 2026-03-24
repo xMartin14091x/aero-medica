@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dwbkcxks5nim5"]
+
+[ext_resource type="Material" path="res://assets/Grass1/forest_leaves_02_4k.tres" id="1_leaves"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_grass"]
+material = ExtResource("1_leaves")
+size = Vector3(2, 0.1, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape_grass"]
+size = Vector3(2, 0.1, 2)
+
+[node name="Grass" type="StaticBody3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0005209446, 0, 0.0018918067)
+mesh = SubResource("BoxMesh_grass")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape_grass")

@@ -1,0 +1,21 @@
+## Overall Assessment
+No actions were taken during this Cardiac Arrest scenario. The patient was in ventricular fibrillation — a lethal but treatable rhythm — and received no assessment, no CPR, no defibrillation, and no triage. The 480-second timer expired with zero interventions. Protocol adherence: 0%. In cardiac arrest, survival drops to near zero after 10 minutes without CPR and defibrillation.
+
+## Strengths
+- The scenario was started
+
+## Areas for Improvement
+- The patient was not approached at any point during the 8-minute scenario
+- No CPR was initiated despite the patient being in cardiac arrest
+- The AED was not picked up or applied
+- No triage tag was assigned
+
+## Critical Errors
+- Complete inaction on a cardiac arrest patient — without CPR and defibrillation, this patient cannot survive
+- Without any interaction, the system cannot evaluate clinical decision-making
+
+## Recommendations
+- If the scenario felt overwhelming, remember that cardiac arrest has a simple protocol: check responsiveness, check breathing, check pulse, start CPR, apply AED
+- Walk towards the patient and press E to begin assessment — the system will guide you through pulse and breathing checks
+- The AED is available as equipment — pick it up and attach it to the patient's chest
+- Consider starting with the tutorial scenario if the controls are unfamiliar, then return to cardiac arrest once the basic assessment flow is comfortable

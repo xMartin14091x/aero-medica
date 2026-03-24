@@ -1,0 +1,407 @@
+{
+	"scenario_id": "building_fire_multi",
+	"scenario_name": "Building Fire — Apartment Complex",
+	"description": "Fire in a residential apartment building. Three patients trapped in or near the structure. Spreading fire and structural collapse create evolving hazard zones. Prioritise patient extraction and treatment while managing environmental danger.",
+	"environment_scene_path": "",
+	"difficulty_rating": 4,
+	"guided_hints": false,
+	"time_limit_seconds": 720,
+	"patients": [
+		{
+			"position": { "x": 21.3, "y": 0.0, "z": 26.0 },
+			"persona": {
+				"name": "Niran",
+				"age": 30,
+				"consciousness_level": "ALERT",
+				"pain_level": 7,
+				"panic_level": 0.9,
+				"language_clarity": 0.8
+			},
+			"initial_state": "CONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 1,
+				"airway_status": "CLEAR",
+				"breathing_rate": 28.0,
+				"pulse_present": true
+			},
+			"vitals": {
+				"heart_rate": 110,
+				"blood_pressure_systolic": 135,
+				"blood_pressure_diastolic": 85,
+				"spo2": 93,
+				"temperature": 37.4,
+				"blood_glucose": 120,
+				"capillary_refill": 2.0,
+				"pupil_left_size": 4,
+				"pupil_right_size": 4,
+				"pupil_left_reactive": true,
+				"pupil_right_reactive": true,
+				"skin_color": "FLUSHED",
+				"skin_temperature": "HOT",
+				"skin_moisture": "DIAPHORETIC",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 4,
+				"gcs_verbal": 5,
+				"gcs_motor": 6
+			},
+			"examination_findings": {
+				"head": "No head injury. Alert and oriented. Soot around nostrils — mild inhalation exposure. Pupils 4mm equal, reactive. GCS 15 (E4V5M6).",
+				"neck": "No cervical tenderness. Trachea midline. No stridor. No JVD.",
+				"chest": "Mild bilateral wheezing — smoke exposure. Adequate air entry. RR 28 /min — tachypnoea. SpO2 93%. Supplemental oxygen indicated.",
+				"abdomen": "Soft, non-tender. No burns to trunk.",
+				"pelvis": "No injury. Stable.",
+				"back": "No spinal tenderness. No burns.",
+				"extremities": "⚠ Left forearm: second-degree burn, partial thickness, 10cm area with blistering. Active bleeding from 5cm laceration right shin — severity 1. Distal pulses present. CRT 2 sec."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "The ceiling collapsed... burning debris fell on me... I ran out but my arm got caught...",
+					"where_hurts": "My left arm... it's burned... and I cut my leg on something when I was running out...",
+					"when_started": "The fire started maybe 15 minutes ago... I got hurt trying to escape...",
+					"pain_scale": "The burn is terrible... maybe 7... please help the others, they're still inside!"
+				},
+				"allergies": {
+					"any_allergies": "No, no allergies.",
+					"medication_allergies": "None."
+				},
+				"medications": {
+					"current_meds": "No, I'm healthy, I don't take anything.",
+					"what_meds": "Nothing."
+				},
+				"past_history": {
+					"medical_conditions": "No medical problems.",
+					"surgeries": "Never had surgery."
+				},
+				"last_meal": {
+					"when_ate": "Dinner about 2 hours ago...",
+					"what_ate": "Fried rice and water."
+				},
+				"events": {
+					"what_doing": "I live on the second floor... I smelled smoke and tried to get the others out...",
+					"witnesses": "My neighbours... Ploy and Uncle Arthit are still in there... please!"
+				}
+			},
+			"deterioration": {
+				"rate": 0.7,
+				"enabled": true,
+				"bleeding_interval": 35.0
+			},
+			"correct_protocol_sequence": [
+				"scene_safety_check",
+				"assess_consciousness",
+				"assess_airway",
+				"assess_breathing",
+				"oxygen_mask",
+				"assess_pulse",
+				"control_bleeding",
+				"triage_assign"
+			]
+		},
+		{
+			"position": { "x": 20.0, "y": 0.0, "z": 26.0 },
+			"persona": {
+				"name": "Ploy",
+				"age": 25,
+				"consciousness_level": "VERBAL",
+				"pain_level": 6,
+				"panic_level": 0.5,
+				"language_clarity": 0.6
+			},
+			"initial_state": "CONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 0,
+				"airway_status": "OBSTRUCTED",
+				"breathing_rate": 10.0,
+				"pulse_present": true
+			},
+			"vitals": {
+				"heart_rate": 125,
+				"blood_pressure_systolic": 100,
+				"blood_pressure_diastolic": 65,
+				"spo2": 82,
+				"temperature": 37.6,
+				"blood_glucose": 105,
+				"capillary_refill": 3.5,
+				"pupil_left_size": 4,
+				"pupil_right_size": 4,
+				"pupil_left_reactive": true,
+				"pupil_right_reactive": true,
+				"skin_color": "PALE",
+				"skin_temperature": "COOL",
+				"skin_moisture": "DIAPHORETIC",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 3,
+				"gcs_verbal": 4,
+				"gcs_motor": 6,
+				"co_exposure": true
+			},
+			"examination_findings": {
+				"head": "Soot deposits around mouth and nose. Singed eyebrows. No head trauma from fall. Confused, responds to voice. Pupils 4mm equal, reactive. GCS 13 (E3V4M6).",
+				"neck": "⚠ Audible stridor — upper airway oedema from inhalation injury. Trachea midline. No JVD. Immediate airway management required — consider early advanced airway.",
+				"chest": "⚠ Severe bilateral wheezing. Marked intercostal recession. RR 10 /min — bradypnoea, exhaustion. SpO2 82% — critical hypoxia. High-flow O2 + BVM assist ventilation needed. Note: SpO2 unreliable with CO exposure.",
+				"abdomen": "Soft. No tenderness. No burns.",
+				"pelvis": "No injury.",
+				"back": "No spinal tenderness. Minor soot contamination.",
+				"extremities": "Cool peripherally. CRT 3.5 sec — delayed. No burns on extremities. No fractures. Distal pulses weak but present."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "*coughing heavily* ...the smoke... I couldn't see... I fell down the stairs...",
+					"where_hurts": "*wheezing* My chest... burning inside... can't breathe properly... *cough*",
+					"when_started": "The fire... I don't know... someone pulled me out...",
+					"pain_scale": "*gasping* ...6... the breathing is... *cough* ...the worst..."
+				},
+				"allergies": {
+					"any_allergies": "*cough* ...no...",
+					"medication_allergies": "No..."
+				},
+				"medications": {
+					"current_meds": "Asthma inhaler... *wheeze* ...I use it sometimes...",
+					"what_meds": "Salbutamol... *coughing*"
+				},
+				"past_history": {
+					"medical_conditions": "Asthma... since childhood... *cough*",
+					"surgeries": "No..."
+				},
+				"last_meal": {
+					"when_ate": "Dinner... maybe 3 hours ago...",
+					"what_ate": "Noodle soup..."
+				},
+				"events": {
+					"what_doing": "I was sleeping... woke up to smoke... *cough* ...tried to get out...",
+					"witnesses": "Niran... he helped me... *wheeze*"
+				}
+			},
+			"deterioration": {
+				"rate": 1.0,
+				"enabled": true,
+				"airway_to_unconscious": 40.0,
+				"unconscious_to_cardiac": 50.0
+			},
+			"correct_protocol_sequence": [
+				"scene_safety_check",
+				"assess_consciousness",
+				"assess_airway",
+				"head_tilt_chin_lift",
+				"assess_breathing",
+				"oxygen_mask",
+				"assess_pulse",
+				"triage_assign"
+			]
+		},
+		{
+			"position": { "x": 22.5, "y": 0.0, "z": 26.0 },
+			"persona": {
+				"name": "Arthit",
+				"age": 60,
+				"consciousness_level": "UNRESPONSIVE",
+				"pain_level": 0,
+				"panic_level": 0.0,
+				"language_clarity": 0.0
+			},
+			"initial_state": "UNCONSCIOUS",
+			"modifiers": {
+				"bleeding_severity": 2,
+				"airway_status": "OBSTRUCTED",
+				"breathing_rate": 4.0,
+				"pulse_present": true
+			},
+			"vitals": {
+				"heart_rate": 130,
+				"blood_pressure_systolic": 80,
+				"blood_pressure_diastolic": 50,
+				"spo2": 75,
+				"temperature": 38.2,
+				"blood_glucose": 250,
+				"capillary_refill": 4.5,
+				"pupil_left_size": 5,
+				"pupil_right_size": 5,
+				"pupil_left_reactive": false,
+				"pupil_right_reactive": false,
+				"skin_color": "MOTTLED",
+				"skin_temperature": "HOT",
+				"skin_moisture": "DRY",
+				"ecg_rhythm": "SINUS_TACHYCARDIA",
+				"gcs_eye": 1,
+				"gcs_verbal": 1,
+				"gcs_motor": 2,
+				"co_exposure": true
+			},
+			"examination_findings": {
+				"head": "⚠ 6cm scalp laceration from falling debris — active bleeding. GCS 4 (E1V1M2) — extension to pain only. Pupils bilateral 5mm, fixed — raised ICP. Soot in airway. Cherry-red discolouration — CO poisoning.",
+				"neck": "⚠ Airway obstructed — soot, oedema, possible thermal injury to upper airway. Jaw thrust required. Trachea midline. No JVD.",
+				"chest": "⚠ RR 4 /min — near apnoea. Bilateral reduced air entry. Scattered crackles. SpO2 75% — critical. BVM ventilation required immediately. Second/third-degree burns to anterior chest wall — approximately 18% TBSA.",
+				"abdomen": "Firm. Mild distension. Burns extending to upper abdomen. Suspect fluid loss from burns and possible internal injury from crush.",
+				"pelvis": "Stable. No incontinence.",
+				"back": "⚠ Second-degree burns to upper back. Debris impact marks. Unable to fully assess — maintain spinal precautions.",
+				"extremities": "⚠ Bilateral upper extremity burns — second/third degree. CRT 4.5 sec — severely delayed. Weak distal pulses. Known diabetic (BGL 250) — Metformin, Enalapril, Aspirin found. Medical bracelet: DIABETIC."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "(Patient is unresponsive — found unconscious on the third floor, carried out by firefighters.)",
+					"where_hurts": "(Patient is unresponsive — visible burns on torso and arms, head laceration from falling debris.)",
+					"when_started": "(Neighbour Niran reports: Uncle Arthit was on the top floor. The ceiling may have collapsed on him.)",
+					"pain_scale": "(Patient is unresponsive.)"
+				},
+				"allergies": {
+					"any_allergies": "(Niran reports: I think he takes a lot of medicine but I don't know about allergies.)",
+					"medication_allergies": "(Unknown.)"
+				},
+				"medications": {
+					"current_meds": "(Niran reports: He's diabetic and has heart problems. Takes many pills every day.)",
+					"what_meds": "(Pill bottles recovered from apartment — partially readable: Metformin, Enalapril, Aspirin.)"
+				},
+				"past_history": {
+					"medical_conditions": "(Niran reports: Diabetes and heart disease. He's been in hospital before for his heart.)",
+					"surgeries": "(Unknown.)"
+				},
+				"last_meal": {
+					"when_ate": "(Unknown.)",
+					"what_ate": "(Unknown.)"
+				},
+				"events": {
+					"what_doing": "(Likely sleeping when fire broke out. Found unconscious on third floor near bedroom.)",
+					"witnesses": "(Niran attempted rescue but couldn't reach him. Firefighters extracted him.)"
+				}
+			},
+			"deterioration": {
+				"rate": 1.3,
+				"enabled": true,
+				"bleeding_interval": 25.0,
+				"airway_to_unconscious": 25.0,
+				"unconscious_to_cardiac": 40.0,
+				"cardiac_to_dead": 25.0
+			},
+			"correct_protocol_sequence": [
+				"scene_safety_check",
+				"assess_consciousness",
+				"assess_airway",
+				"jaw_thrust",
+				"assess_breathing",
+				"bag_valve_mask",
+				"assess_pulse",
+				"control_bleeding",
+				"triage_assign"
+			]
+		}
+	],
+	"bag_tier": "ALS",
+	"equipment": [
+		{
+			"type": "STRETCHER",
+			"name": "Stretcher",
+			"use_label": "Load Patient",
+			"position": { "x": 0.0, "y": 0.0, "z": 5.0 }
+		}
+	],
+	"correct_diagnosis": ["Smoke Inhalation", "Second-Degree Burns", "Crush Injury"],
+	"hazards": [
+		{
+			"type": "FIRE",
+			"position": { "x": 21.0, "y": 0.0, "z": 3.0 },
+			"radius": 3.0,
+			"spread_rate": 0.2,
+			"max_radius": 8.0,
+			"damage_per_second": 12.0,
+			"initial_active": true
+		},
+		{
+			"type": "FIRE",
+			"position": { "x": 18.0, "y": 0.0, "z": 6.0 },
+			"radius": 3.0,
+			"spread_rate": 0.15,
+			"max_radius": 6.0,
+			"damage_per_second": 10.0,
+			"initial_active": true
+		},
+		{
+			"type": "FIRE",
+			"position": { "x": 23.0, "y": 0.0, "z": 6.0 },
+			"radius": 3.0,
+			"spread_rate": 0.15,
+			"max_radius": 6.0,
+			"damage_per_second": 10.0,
+			"initial_active": true
+		},
+		{
+			"type": "COLLAPSE",
+			"position": { "x": 20.0, "y": 0.0, "z": 4.0 },
+			"radius": 2.5,
+			"spread_rate": 0.0,
+			"initial_active": false
+		}
+	],
+	"random_events": [
+		{
+			"type": "NEW_PATIENT",
+			"trigger_time_min": 180.0,
+			"trigger_time_max": 300.0,
+			"data": {
+				"position": { "x": 5.0, "y": 0.0, "z": 9.0 },
+				"persona": {
+					"name": "Suda",
+					"age": 45,
+					"consciousness_level": "VERBAL",
+					"pain_level": 8,
+					"panic_level": 0.7,
+					"language_clarity": 0.5
+				},
+				"initial_state": "CONSCIOUS",
+				"modifiers": {
+					"bleeding_severity": 2,
+					"airway_status": "CLEAR",
+					"breathing_rate": 30.0,
+					"pulse_present": true
+				},
+				"vitals": {
+					"heart_rate": 120,
+					"blood_pressure_systolic": 95,
+					"blood_pressure_diastolic": 60,
+					"spo2": 90,
+					"temperature": 37.5,
+					"blood_glucose": 100,
+					"capillary_refill": 3.0,
+					"pupil_left_size": 4,
+					"pupil_right_size": 4,
+					"pupil_left_reactive": true,
+					"pupil_right_reactive": true,
+					"skin_color": "PALE",
+					"skin_temperature": "COOL",
+					"skin_moisture": "DIAPHORETIC",
+					"ecg_rhythm": "SINUS_TACHYCARDIA",
+					"gcs_eye": 3,
+					"gcs_verbal": 4,
+					"gcs_motor": 6
+				},
+				"examination_findings": {
+					"head": "No head injury. Confused, responds to voice. Soot around face. Pupils 4mm, reactive.",
+					"neck": "No cervical injury. Trachea midline.",
+					"chest": "Bilateral wheezing. RR 30. SpO2 90%.",
+					"abdomen": "Soft. No tenderness.",
+					"pelvis": "Stable.",
+					"back": "No injuries.",
+					"extremities": "⚠ Deep laceration left thigh — arterial bleeding, severity 2. Tourniquet site identified. Burns to both hands — second degree."
+				},
+				"deterioration": {
+					"rate": 1.0,
+					"enabled": true,
+					"bleeding_interval": 25.0
+				}
+			}
+		},
+		{
+			"type": "EQUIPMENT_FAILURE",
+			"trigger_time_min": 240.0,
+			"trigger_time_max": 360.0,
+			"data": {
+				"equipment_type": "OXYGEN_MASK",
+				"equipment_name": "Oxygen Mask"
+			}
+		}
+	],
+	"passing_criteria": {
+		"min_patients_assessed": 3,
+		"triage_tags_required": true,
+		"patients_extracted_from_hazard": true
+	}
+}

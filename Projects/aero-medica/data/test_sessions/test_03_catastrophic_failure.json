@@ -1,0 +1,21 @@
+{
+	"test_name": "Catastrophic Failure — All Patients Dead",
+	"description": "Student takes no meaningful action, patients deteriorate to death. Expected: constructive but serious review highlighting critical failures.",
+	"scenario_id": "rta_intersection_01",
+	"duration_seconds": 600.0,
+	"events": [
+		{"type": "scenario_started", "target": "", "timestamp": 0.0, "details": {}},
+		{"type": "interact", "target": "AED", "timestamp": 45.0, "details": {"label": "Pick Up AED"}},
+		{"type": "patient_state_changed", "target": "Prasert", "timestamp": 120.0, "details": {"old_state": "UNCONSCIOUS", "new_state": "CARDIAC_ARREST"}},
+		{"type": "patient_state_changed", "target": "Nanthida", "timestamp": 180.0, "details": {"old_state": "CONSCIOUS", "new_state": "UNCONSCIOUS"}},
+		{"type": "assess_consciousness", "target": "Somchai", "timestamp": 200.0, "details": {"result": "ALERT"}},
+		{"type": "triage_assign", "target": "Somchai", "timestamp": 220.0, "details": {"assigned_tag": "GREEN", "correct_tag": "YELLOW", "was_correct": false}},
+		{"type": "patient_state_changed", "target": "Prasert", "timestamp": 300.0, "details": {"old_state": "CARDIAC_ARREST", "new_state": "DEAD"}},
+		{"type": "patient_state_changed", "target": "Nanthida", "timestamp": 400.0, "details": {"old_state": "UNCONSCIOUS", "new_state": "CARDIAC_ARREST"}},
+		{"type": "patient_state_changed", "target": "Somchai", "timestamp": 480.0, "details": {"old_state": "CONSCIOUS", "new_state": "UNCONSCIOUS"}},
+		{"type": "patient_state_changed", "target": "Nanthida", "timestamp": 520.0, "details": {"old_state": "CARDIAC_ARREST", "new_state": "DEAD"}},
+		{"type": "patient_state_changed", "target": "Somchai", "timestamp": 580.0, "details": {"old_state": "UNCONSCIOUS", "new_state": "DEAD"}},
+		{"type": "scenario_time_expired", "target": "timer", "timestamp": 600.0, "details": {}},
+		{"type": "scenario_ended", "target": "", "timestamp": 600.0, "details": {}}
+	]
+}

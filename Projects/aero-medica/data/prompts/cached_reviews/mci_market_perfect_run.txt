@@ -1,0 +1,23 @@
+## Overall Assessment
+Outstanding performance on the Mass Casualty scenario. All six patients assessed, treated, and triaged correctly under extreme time pressure. RED patients (Malee, Tawan, Chai) prioritised appropriately. Boonsri correctly identified as BLACK (expectant). GREEN patients (Lek, Kanda) assessed last. Protocol adherence: 100%. 0 errors detected. This is exemplary START triage execution across a 6-patient mass casualty incident.
+
+## Strengths
+- Perfect triage accuracy across all six patients: Malee (RED), Tawan (RED), Chai (RED), Lek (GREEN), Kanda (GREEN), Boonsri (BLACK)
+- Correct prioritisation: RED patients treated first, GREEN patients assessed after, BLACK patient identified and documented
+- Boonsri correctly classified as BLACK — cardiac arrest with no pulse and no breathing in an MCI means expectant category, not resuscitation
+- Malee's severe bleeding (severity 2) identified and controlled with direct pressure and bandage
+- Tawan's obstructed airway managed with head-tilt chin-lift despite unconscious state
+- Chai's critical bleeding (severity 3) controlled rapidly — highest bleeding severity in the scenario
+- Rapid initial triage sweep completed before deep assessments — textbook START protocol
+- All interventions completed within the 1200-second time limit
+
+## Areas for Improvement
+- At this performance level, focus on consistency — mass casualty incidents are high-stress and performance can vary between attempts
+
+## Critical Errors
+No critical errors detected.
+
+## Recommendations
+- This is the highest-difficulty scenario in the current set — consider repeating under self-imposed tighter time limits to build speed
+- Practice delegating GREEN patients to bystanders so you can focus exclusively on RED patients
+- Review post-incident documentation protocols for real-world MCI preparedness

@@ -1,0 +1,169 @@
+key,th,en
+GAME_TITLE,AeroMedica,AeroMedica
+GAME_SUBTITLE,ระบบจำลองการแพทย์ฉุกเฉิน,Emergency Medical Simulation
+
+MENU_START_TUTORIAL,เริ่มบทเรียน,Start Tutorial
+MENU_SELECT_SCENARIO,เลือกสถานการณ์,Select Scenario
+MENU_DASHBOARD,แดชบอร์ด,Dashboard
+MENU_SETTINGS,ตั้งค่า,Settings
+MENU_QUIT,ออกจากเกม,Quit
+MENU_BACK,กลับ,Back
+MENU_CONFIRM,ยืนยัน,Confirm
+MENU_CANCEL,ยกเลิก,Cancel
+MENU_RESUME,เล่นต่อ,Resume
+MENU_RESTART,เริ่มใหม่,Restart
+MENU_QUIT_TO_MENU,กลับสู่เมนูหลัก,Quit to Menu
+MENU_APPLY,ใช้งาน,Apply
+MENU_START,เริ่ม,Start
+
+QUIT_CONFIRM_TITLE,ออกจากเกม?,Quit Game?
+QUIT_CONFIRM_MSG,คุณแน่ใจหรือไม่ว่าต้องการออกจากเกม?,Are you sure you want to quit?
+
+SCENARIO_TUTORIAL,บทเรียนเบื้องต้น,Tutorial
+SCENARIO_TUTORIAL_DESC,เรียนรู้การควบคุมพื้นฐาน การประเมินผู้ป่วย และการคัดกรอง — ไม่มีแรงกดดันเวลา,Learn basic controls assessment and triage — no time pressure
+SCENARIO_RTA,อุบัติเหตุจราจร,Road Traffic Accident
+SCENARIO_RTA_DESC,รถชนบริเวณสี่แยก — ผู้ป่วย 3 ราย อุปกรณ์กระจัดกระจาย เขตอันตรายจราจร,Vehicle collision at intersection — 3 patients scattered equipment traffic hazard zone
+SCENARIO_CARDIAC,หัวใจหยุดเต้น,Cardiac Arrest
+SCENARIO_CARDIAC_DESC,ผู้ป่วยหัวใจหยุดเต้นในสำนักงาน — ต้องทำ CPR และใช้ AED ทันที,Patient in cardiac arrest in office — immediate CPR and AED required
+SCENARIO_MCE,เหตุการณ์ผู้บาดเจ็บหมู่,Mass Casualty Event
+SCENARIO_MCE_DESC,ผู้ป่วยจำนวนมากในพื้นที่กว้าง — ทรัพยากรจำกัด ต้องคัดกรองภายใต้ความกดดัน,Multiple patients across wide area — limited resources triage under extreme pressure
+SCENARIO_FIRE,อพยพผู้ประสบเหตุอัคคีภัย,Building Fire Evacuation
+SCENARIO_FIRE_DESC,อาคารเกิดเพลิงไหม้ — นำผู้ป่วยออกจากเขตอันตรายแล้วรักษา,Building on fire — extract patients from danger zones then treat
+
+SCENARIO_DIFFICULTY,ระดับความยาก,Difficulty
+SCENARIO_PATIENTS,จำนวนผู้ป่วย,Patients
+SCENARIO_TIME_LIMIT,เวลาจำกัด,Time Limit
+SCENARIO_BEST_SCORE,คะแนนดีที่สุด,Best Score
+SCENARIO_LOCKED,ล็อก — จบบทเรียนก่อน,Locked — Complete tutorial first
+SCENARIO_OBJECTIVES,วัตถุประสงค์,Objectives
+SCENARIO_NONE_PLAYED,ยังไม่เคยเล่น,Not played yet
+
+HUD_TIMER,เวลา,Time
+HUD_EQUIPMENT,อุปกรณ์,Equipment
+HUD_EMPTY,ว่างเปล่า,Empty
+HUD_MINIMAP,แผนที่ย่อ,Minimap
+HUD_PATIENTS,ผู้ป่วย,Patients
+HUD_PAUSE,หยุดชั่วคราว,Paused
+HUD_PAUSED_TITLE,หยุดเกม,Game Paused
+
+ASSESS_BREATHING,ตรวจการหายใจ,Check Breathing
+ASSESS_PULSE,ตรวจชีพจร,Check Pulse
+ASSESS_CONSCIOUSNESS,ตรวจระดับความรู้สึกตัว,Check Consciousness
+ASSESS_BLEEDING,ตรวจเลือดออก,Check Bleeding
+ASSESS_FRACTURE,ตรวจกระดูกหัก,Check Fractures
+
+TRIAGE_GREEN,เขียว (เล็กน้อย),GREEN (Minor)
+TRIAGE_YELLOW,เหลือง (หน่วงเวลาได้),YELLOW (Delayed)
+TRIAGE_RED,แดง (ฉุกเฉิน),RED (Immediate)
+TRIAGE_BLACK,ดำ (เสียชีวิต),BLACK (Deceased)
+TRIAGE_UNASSESSED,ยังไม่ประเมิน,Unassessed
+TRIAGE_ASSIGN,กำหนดแท็กคัดกรอง,Assign Triage Tag
+
+TREAT_BANDAGE,ผ้าพันแผล,Bandage
+TREAT_SPLINT,เฝือก,Splint
+TREAT_AED,เครื่องกระตุกหัวใจ,AED
+TREAT_OXYGEN,หน้ากากออกซิเจน,Oxygen Mask
+TREAT_STRETCHER,เปลหาม,Stretcher
+TREAT_CPR,ช่วยฟื้นคืนชีพ,CPR
+
+EQUIP_BANDAGE,ผ้าพันแผล,Bandage
+EQUIP_SPLINT,เฝือก,Splint
+EQUIP_AED,เครื่อง AED,AED
+EQUIP_OXYGEN,ถังออกซิเจน,Oxygen Tank
+EQUIP_STRETCHER,เปลหาม,Stretcher
+
+INTERACT_ASSESS,กด E เพื่อประเมิน,Press E to Assess
+INTERACT_PICKUP,กด E เพื่อหยิบ,Press E to Pick Up
+INTERACT_USE,กด E เพื่อใช้งาน,Press E to Use
+
+PATIENT_CONSCIOUS,รู้สึกตัว,Conscious
+PATIENT_UNCONSCIOUS,หมดสติ,Unconscious
+PATIENT_CARDIAC_ARREST,หัวใจหยุดเต้น,Cardiac Arrest
+PATIENT_DEAD,เสียชีวิต,Dead
+PATIENT_BREATHING_NORMAL,หายใจปกติ,Breathing Normal
+PATIENT_BREATHING_DIFFICULTY,หายใจลำบาก,Breathing Difficulty
+PATIENT_NOT_BREATHING,ไม่หายใจ,Not Breathing
+PATIENT_BLEEDING_NONE,ไม่มีเลือดออก,No Bleeding
+PATIENT_BLEEDING_MINOR,เลือดออกเล็กน้อย,Minor Bleeding
+PATIENT_BLEEDING_SEVERE,เลือดออกมาก,Severe Bleeding
+PATIENT_BLEEDING_CRITICAL,เลือดออกรุนแรง,Critical Bleeding
+
+DEBRIEF_TITLE,สรุปผลสถานการณ์,Scenario Debrief
+DEBRIEF_TIME_TAKEN,เวลาที่ใช้,Time Taken
+DEBRIEF_PATIENTS_ASSESSED,ผู้ป่วยที่ประเมินแล้ว,Patients Assessed
+DEBRIEF_TRIAGE_ACCURACY,ความถูกต้องการคัดกรอง,Triage Accuracy
+DEBRIEF_ACTIONS_TAKEN,การปฏิบัติที่ทำ,Actions Taken
+DEBRIEF_PASS,ผ่าน,PASS
+DEBRIEF_FAIL,ไม่ผ่าน,FAIL
+
+REVIEW_TITLE,บทวิจารณ์ AI,AI Review
+REVIEW_OVERALL,ภาพรวม,Overall
+REVIEW_STRENGTHS,จุดแข็ง,Strengths
+REVIEW_IMPROVEMENTS,จุดที่ควรปรับปรุง,Areas for Improvement
+REVIEW_ERRORS,ข้อผิดพลาด,Critical Errors
+REVIEW_RECOMMENDATIONS,คำแนะนำ,Recommendations
+REVIEW_LOADING,กำลังสร้างบทวิจารณ์...,Generating review...
+REVIEW_ERROR,ไม่สามารถสร้างบทวิจารณ์ได้,Could not generate review
+REVIEW_CONTINUE,ดำเนินการต่อ,Continue
+
+DASHBOARD_STUDENT,แดชบอร์ดนักเรียน,Student Dashboard
+DASHBOARD_INSTRUCTOR,แดชบอร์ดผู้สอน,Instructor Dashboard
+DASHBOARD_HISTORY,ประวัติ,History
+DASHBOARD_OVERALL_SCORE,คะแนนรวม,Overall Score
+DASHBOARD_PASS_RATE,อัตราผ่าน,Pass Rate
+DASHBOARD_TOTAL_ATTEMPTS,จำนวนครั้งที่เล่น,Total Attempts
+DASHBOARD_TOTAL_STUDENTS,จำนวนนักเรียน,Total Students
+DASHBOARD_AVG_SCORE,คะแนนเฉลี่ย,Average Score
+DASHBOARD_WEAKEST_AXIS,จุดอ่อนของชั้นเรียน,Class Weakness
+DASHBOARD_WEAKEST_MSG,ชั้นเรียนของคุณมีปัญหามากที่สุดกับ %s,Your class struggles most with %s
+DASHBOARD_VIEW_BREAKDOWN,ดูรายละเอียด,View Breakdown
+DASHBOARD_EXPORT,ส่งออกข้อมูล,Export Data
+
+AXIS_ASSESSMENT,การประเมิน,Assessment
+AXIS_TRIAGE,การคัดกรอง,Triage
+AXIS_TREATMENT,การรักษา,Treatment
+AXIS_COMMUNICATION,การสื่อสาร,Communication
+AXIS_TIME_MANAGEMENT,การบริหารเวลา,Time Management
+
+SETTINGS_AUDIO,เสียง,Audio
+SETTINGS_LANGUAGE,ภาษา,Language
+SETTINGS_CONTROLS,การควบคุม,Controls
+SETTINGS_ACCESSIBILITY,การเข้าถึง,Accessibility
+SETTINGS_MASTER_VOLUME,ระดับเสียงหลัก,Master Volume
+SETTINGS_MUSIC_VOLUME,ระดับเสียงเพลง,Music Volume
+SETTINGS_SFX_VOLUME,ระดับเสียงเอฟเฟกต์,SFX Volume
+SETTINGS_LANGUAGE_TH,ไทย,Thai
+SETTINGS_LANGUAGE_EN,English,English
+SETTINGS_UI_SCALE,ขนาดตัวอักษร UI,UI Scale
+SETTINGS_HIGH_CONTRAST,โหมดคอนทราสต์สูง,High Contrast Mode
+SETTINGS_COLOURBLIND,รูปแบบสีสำหรับตาบอดสี,Colourblind Triage Patterns
+
+CONTROLS_MOVE,เคลื่อนที่,Movement
+CONTROLS_WASD,W/A/S/D — เคลื่อนที่,W/A/S/D — Move
+CONTROLS_INTERACT,E — โต้ตอบ,E — Interact
+CONTROLS_CANCEL,Q — ยกเลิก,Q — Cancel
+CONTROLS_PAUSE,Esc — หยุดชั่วคราว,Esc — Pause
+CONTROLS_NUMBERS,1-5 — เลือกการปฏิบัติ,1-5 — Select Action
+
+HINT_MOVE,กด W/A/S/D เพื่อเคลื่อนที่,Press W/A/S/D to move around
+HINT_INTERACT,กด E เพื่อโต้ตอบกับผู้ป่วย,Press E to interact with the patient
+HINT_ASSESS,เลือกการประเมินจากเมนู,Select an assessment action from the menu
+HINT_TRIAGE,กำหนดแท็กคัดกรองให้ผู้ป่วย,Assign a triage tag to the patient
+HINT_EQUIPMENT,เก็บอุปกรณ์แล้วใช้กับผู้ป่วย,Pick up equipment and use it on the patient
+
+TUTORIAL_COMPLETE_TITLE,จบบทเรียน!,Tutorial Complete!
+TUTORIAL_COMPLETE_MSG,คุณพร้อมสำหรับสถานการณ์แรกแล้ว!,Ready for your first scenario!
+
+HAZARD_FIRE,ไฟ,Fire
+HAZARD_COLLAPSE,ถล่ม,Collapse
+HAZARD_TRAFFIC,จราจร,Traffic
+HAZARD_WARNING,อันตราย!,Danger!
+
+TIMELINE_ACTION,การปฏิบัติ,Action
+TIMELINE_TIME,เวลา,Time
+TIMELINE_TARGET,เป้าหมาย,Target
+
+MINUTES,นาที,min
+SECONDS,วินาที,sec
+PERCENT,เปอร์เซ็นต์,%
+STARS,ดาว,stars

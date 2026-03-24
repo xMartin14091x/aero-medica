@@ -1,0 +1,27 @@
+## Overall Assessment
+The Mass Casualty scenario was completed with significant triage and prioritisation errors. Six patients were present — Malee, Tawan, and Chai (RED), Lek and Kanda (GREEN), Boonsri (BLACK) — but treatment order was incorrect and multiple triage tags were wrong. Protocol adherence: approximately 38%. 3 critical errors detected. In an MCI, correct triage determines who lives and who dies.
+
+## Strengths
+- Most patients were approached and received some assessment
+- Some treatments were applied correctly
+- The scenario was completed within the time limit
+- Equipment was accessed and used
+
+## Areas for Improvement
+- GREEN patients (Lek and/or Kanda) were treated before RED patients (Malee, Tawan, Chai) — this is a fundamental triage violation
+- Boonsri may have been incorrectly triaged as RED instead of BLACK — in an MCI, a patient in cardiac arrest with no pulse and no breathing is expectant (BLACK), not immediate (RED)
+- Tawan was unconscious with obstructed airway but received delayed or no airway management
+- Chai had the highest bleeding severity (severity 3) but was not prioritised among the RED patients
+- Malee's bleeding was identified but not controlled effectively
+- No initial triage sweep was performed — patients were assessed in encounter order rather than priority order
+
+## Critical Errors
+- GREEN patients treated before RED patients — in MCI, RED (immediate life threat) must always come before GREEN (walking wounded)
+- Boonsri incorrectly triaged — cardiac arrest in MCI = BLACK (expectant). Attempting CPR on Boonsri while Malee, Tawan, and Chai need immediate care costs lives
+- Tawan's obstructed airway not managed — unconscious patient with breathing rate of 8/min and obstructed airway will die without intervention
+
+## Recommendations
+- Before treating anyone in an MCI: walk past every patient in 60 seconds and classify them. Can they walk? Are they breathing? What is their pulse?
+- Remember the MCI rule: do not perform CPR when other salvageable patients need immediate care — BLACK means expectant, not abandoned
+- Practice the START triage algorithm until the classification is automatic: walk/breathe/pulse — that is all you need for initial triage
+- Repeat this scenario focusing only on correct triage order before worrying about treatment completeness

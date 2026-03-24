@@ -1,0 +1,24 @@
+## Overall Assessment
+The Cardiac Arrest scenario was completed with significant protocol errors. While the patient was eventually assessed, critical delays in CPR initiation and AED use substantially reduced the chance of survival. Protocol adherence: approximately 40%. In cardiac arrest, every minute without defibrillation reduces survival by 7-10%. 2 critical errors detected.
+
+## Strengths
+- The patient was approached and assessed
+- CPR was eventually initiated
+- Some assessment steps were performed correctly
+- The AED was accessed during the scenario
+
+## Areas for Improvement
+- CPR was not started immediately after confirming cardiac arrest — the patient was pulseless and apnoeic but compressions did not begin for over 60 seconds
+- ABCDE assessment steps were performed in full before starting CPR — in cardiac arrest, CPR takes absolute priority over completing the primary survey
+- The AED was either not applied or applied very late in the scenario
+- Airway management was attempted before confirming the need for CPR — check pulse and breathing first
+
+## Critical Errors
+- Delayed CPR initiation: performing a full assessment before starting compressions on a pulseless patient wastes critical time. In cardiac arrest, start CPR immediately after confirming no pulse and no breathing
+- AED delay or non-use: the patient was in ventricular fibrillation — a shockable rhythm. Without timely defibrillation, VFib degrades to asystole which has a much lower survival rate
+
+## Recommendations
+- In cardiac arrest, the protocol changes: Confirm no pulse + no breathing, then immediately start CPR and apply AED. Full ABCDE assessment comes after resuscitation
+- Practice the recognition: unresponsive + no pulse + no breathing = start CPR now
+- The AED should be applied as soon as physically possible — it analyses the rhythm and tells you whether to shock
+- Review the difference between a primary survey on a breathing patient versus a cardiac arrest protocol

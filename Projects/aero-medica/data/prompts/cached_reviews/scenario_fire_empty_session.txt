@@ -1,0 +1,21 @@
+## Overall Assessment
+No meaningful actions were taken during this Fire scenario. Anong was not assessed, not treated, and no triage tag was assigned. The timer expired with zero interventions. Protocol adherence: 0%. Anong had a compromised airway from smoke inhalation — a progressive, life-threatening condition that required immediate management.
+
+## Strengths
+- The scenario was started
+
+## Areas for Improvement
+- Anong was not approached or assessed at any point during the scenario
+- No airway management was performed despite Anong's audible respiratory distress
+- No equipment was picked up or used
+- No triage tag was assigned
+
+## Critical Errors
+- Complete inaction: a smoke inhalation patient with compromised airway received no care for the full scenario duration
+- Without any interaction, the system cannot evaluate clinical decision-making
+
+## Recommendations
+- If the fire environment was confusing, look for the patient marker on screen and walk towards it
+- Press E near Anong to begin the assessment — the system will prompt you through each step
+- Your first check should always be the airway — in fire scenarios, this is the most likely life-threatening problem
+- If the assessment controls are unfamiliar, replay the tutorial scenario first — it provides guided hints with no time pressure

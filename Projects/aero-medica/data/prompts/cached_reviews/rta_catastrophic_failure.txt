@@ -1,0 +1,25 @@
+## Overall Assessment
+This session requires significant improvement. Protocol adherence was approximately 10% — only one patient (Somchai) received a partial assessment, and all three patients deteriorated to death during the scenario. The scenario timer expired at 600 seconds. 5 critical errors detected. This is a learning opportunity — let's identify exactly what went wrong and how to improve.
+
+## Strengths
+- You did attempt to assess Somchai, which shows willingness to engage with the scenario
+- You interacted with the AED equipment, indicating awareness of available tools
+
+## Areas for Improvement
+- No assessment was performed on Nanthida or Prasert — both RED priority patients who needed immediate attention
+- Somchai was the lowest priority patient (YELLOW) but was the only one assessed — this is a critical prioritisation error
+- Somchai was incorrectly triaged as GREEN when the correct tag was YELLOW
+- No treatments were applied to any patient — bleeding and airway obstruction went unmanaged
+- The AED was picked up at 45 seconds but never used — 45 seconds of inaction at the start of the scenario
+
+## Critical Errors
+- No assessment or treatment for Prasert (RED, unconscious, obstructed airway, severe bleeding) — patient died at 300 seconds
+- No assessment or treatment for Nanthida (RED, obstructed airway) — patient died at 520 seconds
+- Incorrect triage: Somchai tagged GREEN instead of YELLOW
+- Treated lowest priority patient while highest priority patients were dying
+- No CPR or AED use despite cardiac arrest events
+
+## Recommendations
+- Start with the ABC approach: immediately scan for the most critically injured patient first (look for unconsciousness, laboured breathing, visible bleeding)
+- Practice the assessment sequence on a single patient until it becomes automatic: Consciousness → Breathing → Pulse → Airway → Bleeding
+- Use the tutorial scenario to build confidence with the basic protocol before attempting multi-casualty scenarios

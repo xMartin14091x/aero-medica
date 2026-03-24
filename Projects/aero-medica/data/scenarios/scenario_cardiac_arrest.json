@@ -1,0 +1,108 @@
+{
+	"scenario_id": "cardiac_arrest_01",
+	"scenario_name": "Cardiac Arrest — Sudden Collapse",
+	"description": "A man has collapsed suddenly at a park. Bystanders report he was clutching his chest before going down. No pulse detected. Time is critical.",
+	"environment_scene_path": "",
+	"difficulty_rating": 3,
+	"guided_hints": false,
+	"time_limit_seconds": 480,
+	"bag_tier": "ALS",
+	"patients": [
+		{
+			"position": { "x": 8.0, "y": 0.0, "z": 12.0 },
+			"persona": {
+				"name": "Prasert",
+				"age": 62,
+				"consciousness_level": "UNRESPONSIVE",
+				"pain_level": 0,
+				"panic_level": 0.0,
+				"language_clarity": 0.0
+			},
+			"initial_state": "CARDIAC_ARREST",
+			"modifiers": {
+				"bleeding_severity": 0,
+				"airway_status": "OBSTRUCTED",
+				"breathing_rate": 0.0,
+				"pulse_present": false
+			},
+			"vitals": {
+				"heart_rate": 0,
+				"blood_pressure_systolic": 0,
+				"blood_pressure_diastolic": 0,
+				"spo2": 0,
+				"temperature": 36.2,
+				"blood_glucose": 160,
+				"capillary_refill": 6.0,
+				"pupil_left_size": 6,
+				"pupil_right_size": 6,
+				"pupil_left_reactive": false,
+				"pupil_right_reactive": false,
+				"skin_color": "CYANOTIC",
+				"skin_temperature": "COOL",
+				"skin_moisture": "DIAPHORETIC",
+				"ecg_rhythm": "VENTRICULAR_FIBRILLATION",
+				"gcs_eye": 1,
+				"gcs_verbal": 1,
+				"gcs_motor": 1
+			},
+			"examination_findings": {
+				"head": "⚠ Cyanotic lips and face. Pupils bilaterally dilated 6mm, fixed — consistent with cardiac arrest. No head trauma from fall. GCS 3 (E1V1M1). No response to any stimulus.",
+				"neck": "No carotid pulse palpable. No JVD. Trachea midline. No neck trauma. Airway obstructed — head tilt chin lift required.",
+				"chest": "⚠ No spontaneous breathing. No chest rise. No breath sounds. AED analysis: Ventricular Fibrillation — shockable rhythm. CPR site: lower half of sternum. Begin 30:2 compressions immediately.",
+				"abdomen": "Soft. No distension. No visible trauma. Not relevant to acute management — focus on CPR/defibrillation.",
+				"pelvis": "No injury. No incontinence noted.",
+				"back": "No visible injuries. Minor abrasion from collapse onto path. Not priority — do not delay CPR.",
+				"extremities": "⚠ Cool, cyanotic, mottled peripherally. No distal pulses palpable. CRT >5 sec. Pill bottle in pocket: Atorvastatin 40mg — cardiovascular history. No medical alert bracelet."
+			},
+			"history": {
+				"symptoms": {
+					"what_happened": "(Patient is unresponsive — bystander reports: He grabbed his chest and fell down suddenly.)",
+					"where_hurts": "(Patient is unresponsive — cannot report pain.)",
+					"when_started": "(Bystander: It just happened, maybe 2 minutes ago.)",
+					"pain_scale": "(Patient is unresponsive.)"
+				},
+				"allergies": {
+					"any_allergies": "(Bystander: I don't know him, sorry.)",
+					"medication_allergies": "(Unknown — no one present knows the patient.)"
+				},
+				"medications": {
+					"current_meds": "(A small pill bottle found in his pocket — label reads 'Atorvastatin 40mg'.)",
+					"what_meds": "(Atorvastatin 40mg — a cholesterol medication. No other medications visible.)"
+				},
+				"past_history": {
+					"medical_conditions": "(Unknown — bystander has no information. Cholesterol medication suggests cardiovascular history.)",
+					"surgeries": "(Unknown.)"
+				},
+				"last_meal": {
+					"when_ate": "(Unknown — bystander cannot provide this information.)",
+					"what_ate": "(Unknown.)"
+				},
+				"events": {
+					"what_doing": "(Bystander: He was walking in the park, then he stopped, grabbed his chest, and collapsed.)",
+					"witnesses": "(Bystander: I was sitting on a bench nearby. I saw the whole thing. A few other people are around too.)"
+				}
+			},
+			"deterioration": {
+				"rate": 1.0,
+				"enabled": true,
+				"bleeding_interval": 0.0
+			},
+			"correct_protocol_sequence": [
+				"scene_safety_check",
+				"assess_consciousness",
+				"call_for_help",
+				"assess_airway",
+				"open_airway",
+				"assess_breathing",
+				"assess_pulse",
+				"cpr",
+				"aed",
+				"reassess"
+			]
+		}
+	],
+	"equipment": [],
+	"correct_diagnosis": ["Cardiac Arrest", "Ventricular Fibrillation"],
+	"hazards": [],
+	"random_events": []
+}

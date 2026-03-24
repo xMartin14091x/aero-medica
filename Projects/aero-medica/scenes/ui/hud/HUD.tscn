@@ -1,0 +1,42 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/hud_controller.gd" id="1_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/InteractionPrompt.tscn" id="2_prompt"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/ActionMenu.tscn" id="3_menu"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/ScenarioTimer.tscn" id="4_timer"]
+[ext_resource type="PackedScene" path="res://scenes/ui/review/DebriefScreen.tscn" id="5_debrief"]
+[ext_resource type="PackedScene" path="res://scenes/ui/review/ReviewPanel.tscn" id="6_review"]
+[ext_resource type="Script" path="res://scripts/ui/hazard_visual_effects.gd" id="7_hazard_vfx"]
+[ext_resource type="Script" path="res://scripts/ui/environmental_audio.gd" id="8_env_audio"]
+[ext_resource type="Script" path="res://scripts/ui/audio_system.gd" id="9_audio_sys"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/AssessmentResultPanel.tscn" id="10_result"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HistoryDialoguePanel.tscn" id="11_history"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/PatientInteractionUI.tscn" id="12_interaction"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="InteractionPrompt" parent="." instance=ExtResource("2_prompt")]
+
+[node name="ActionMenu" parent="." instance=ExtResource("3_menu")]
+
+[node name="ScenarioTimer" parent="." instance=ExtResource("4_timer")]
+
+[node name="DebriefScreen" parent="." instance=ExtResource("5_debrief")]
+
+[node name="ReviewPanel" parent="." instance=ExtResource("6_review")]
+
+[node name="HazardVisualEffects" type="Node" parent="."]
+script = ExtResource("7_hazard_vfx")
+
+[node name="EnvironmentalAudio" type="Node" parent="."]
+script = ExtResource("8_env_audio")
+
+[node name="AudioSystem" type="Node" parent="."]
+script = ExtResource("9_audio_sys")
+
+[node name="AssessmentResultPanel" parent="." instance=ExtResource("10_result")]
+
+[node name="HistoryDialoguePanel" parent="." instance=ExtResource("11_history")]
+
+[node name="PatientInteractionUI" parent="." instance=ExtResource("12_interaction")]

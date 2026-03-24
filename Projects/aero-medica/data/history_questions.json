@@ -1,0 +1,36 @@
+{
+	"symptoms": [
+		{"key": "what_happened", "label": "What happened?"},
+		{"key": "where_hurts", "label": "Where does it hurt?"},
+		{"key": "when_started", "label": "When did it start?"},
+		{"key": "pain_scale", "label": "How bad is the pain (1-10)?"}
+	],
+	"allergies": [
+		{"key": "any_allergies", "label": "Do you have any allergies?"},
+		{"key": "medication_allergies", "label": "Allergic to any medications?"}
+	],
+	"medications": [
+		{"key": "current_meds", "label": "Are you taking any medications?"},
+		{"key": "what_meds", "label": "What medications do you take?"}
+	],
+	"past_history": [
+		{"key": "medical_conditions", "label": "Any medical conditions?"},
+		{"key": "surgeries", "label": "Have you had surgery before?"}
+	],
+	"last_meal": [
+		{"key": "when_ate", "label": "When did you last eat or drink?"},
+		{"key": "what_ate", "label": "What did you have?"}
+	],
+	"events": [
+		{"key": "what_doing", "label": "What were you doing?"},
+		{"key": "witnesses", "label": "Did anyone see what happened?"}
+	],
+	"opqrst": [
+		{"key": "onset", "label": "What were you doing when it started?"},
+		{"key": "provocation", "label": "Does anything make it worse or better?"},
+		{"key": "quality", "label": "Can you describe the pain? Sharp? Dull? Crushing?"},
+		{"key": "radiation", "label": "Does the pain spread anywhere else?"},
+		{"key": "severity", "label": "On a scale of 0 to 10, how bad is the pain?"},
+		{"key": "time_course", "label": "Is it constant or does it come and go?"}
+	]
+}

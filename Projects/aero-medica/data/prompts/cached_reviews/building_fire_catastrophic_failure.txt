@@ -1,0 +1,23 @@
+## Overall Assessment
+This session requires significant improvement. Anong received minimal or no effective care during the Building Fire scenario. The compromised airway went unmanaged and the patient deteriorated. Protocol adherence: below 20%. 3 critical errors detected. Smoke inhalation is a time-critical emergency — every minute without airway management increases the risk of complete obstruction.
+
+## Strengths
+- You engaged with the scenario and entered the fire environment
+
+## Areas for Improvement
+- Anong's compromised airway was not managed — no head-tilt chin-lift performed despite audible stridor and hoarse voice
+- No oxygen applied despite SpO2 of 88% — critically low saturation in a smoke inhalation patient
+- Assessment was either not started or abandoned before completion
+- Triage was not assigned or was grossly incorrect
+- Patient deteriorated during the scenario due to lack of intervention
+
+## Critical Errors
+- Failure to manage compromised airway — Anong's developing upper airway oedema from smoke inhalation required immediate intervention
+- No oxygen therapy for critically low SpO2 — 88% saturation with suspected CO exposure is a medical emergency
+- Patient deterioration due to inaction — Anong's condition worsened because critical interventions were not performed
+
+## Recommendations
+- In any fire scenario, airway is your absolute first priority — smoke inhalation causes progressive airway swelling that can become fatal
+- Practice this sequence on every patient: check airway status first, intervene immediately if compromised, then continue ABCDE
+- Start with the tutorial scenario to reinforce basic assessment skills before returning to timed fire scenarios
+- Remember: a patient who can speak in a hoarse voice now may have a completely obstructed airway within minutes — time is critical

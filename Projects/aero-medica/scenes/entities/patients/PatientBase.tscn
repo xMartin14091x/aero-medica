@@ -1,0 +1,50 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/medical/patient_entity.gd" id="1_entity"]
+[ext_resource type="Script" path="res://scripts/medical/medical_state_component.gd" id="2_medical"]
+[ext_resource type="Script" path="res://scripts/gameplay/interactable_component.gd" id="3_interact"]
+[ext_resource type="Script" path="res://scripts/medical/deterioration_system.gd" id="4_deterioration"]
+[ext_resource type="Script" path="res://scripts/ui/triage_tag_visual.gd" id="5_triage_vis"]
+[ext_resource type="Script" path="res://scripts/ui/patient_status_visual.gd" id="6_status_vis"]
+[ext_resource type="PackedScene" path="res://assets/models/Man.glb" id="7_man_model"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_patient"]
+radius = 0.25
+height = 1.2
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_triage"]
+size = Vector2(0.4, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="Mat_triage_default"]
+albedo_color = Color(1, 1, 1, 1)
+
+[node name="PatientBase" type="CharacterBody3D"]
+script = ExtResource("1_entity")
+
+[node name="PatientModel" parent="." instance=ExtResource("7_man_model")]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.25, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.25, 0)
+shape = SubResource("CapsuleShape_patient")
+
+[node name="MedicalStateComponent" type="Node" parent="."]
+script = ExtResource("2_medical")
+
+[node name="InteractableComponent" type="Node" parent="."]
+script = ExtResource("3_interact")
+interaction_label = "Assess Patient"
+dialogue_capable = true
+
+[node name="DeteriorationSystem" type="Node" parent="."]
+script = ExtResource("4_deterioration")
+
+[node name="TriageTagVisual" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+visible = false
+mesh = SubResource("PlaneMesh_triage")
+surface_material_override/0 = SubResource("Mat_triage_default")
+script = ExtResource("5_triage_vis")
+
+[node name="PatientStatusVisual" type="Node" parent="."]
+script = ExtResource("6_status_vis")

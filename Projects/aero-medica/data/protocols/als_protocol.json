@@ -1,0 +1,100 @@
+{
+	"protocol_id": "ALS",
+	"protocol_name": "Advanced Life Support",
+	"description": "ALS sequence building on BLS — includes advanced airway and medication",
+	"steps": [
+		{
+			"step": 1,
+			"action": "scene_safety_check",
+			"label": "Check Scene Safety",
+			"condition": "always",
+			"required_equipment": null,
+			"time_window_seconds": null,
+			"notes": "Scene safety — BSI, hazards"
+		},
+		{
+			"step": 2,
+			"action": "assess_consciousness",
+			"label": "Check Responsiveness",
+			"condition": "always",
+			"required_equipment": null,
+			"time_window_seconds": 10,
+			"notes": "AVPU scale assessment"
+		},
+		{
+			"step": 3,
+			"action": "call_for_help",
+			"label": "Activate ALS Team",
+			"condition": "patient_unresponsive",
+			"required_equipment": null,
+			"time_window_seconds": null,
+			"notes": "Request ALS team, advanced airway, medications"
+		},
+		{
+			"step": 4,
+			"action": "assess_breathing",
+			"label": "Assess Airway & Breathing",
+			"condition": "always",
+			"required_equipment": null,
+			"time_window_seconds": 10,
+			"notes": "Assess for obstruction, breathing adequacy"
+		},
+		{
+			"step": 5,
+			"action": "assess_pulse",
+			"label": "Check Pulse & Rhythm",
+			"condition": "no_normal_breathing",
+			"required_equipment": null,
+			"time_window_seconds": 10,
+			"notes": "Pulse check with cardiac rhythm assessment"
+		},
+		{
+			"step": 6,
+			"action": "head_tilt_chin_lift",
+			"label": "Airway Management",
+			"condition": "airway_obstructed",
+			"required_equipment": null,
+			"time_window_seconds": null,
+			"notes": "Basic airway first, then advanced (OPA/NPA/intubation)"
+		},
+		{
+			"step": 7,
+			"action": "cpr",
+			"label": "High-Quality CPR",
+			"condition": "no_pulse",
+			"required_equipment": null,
+			"time_window_seconds": null,
+			"notes": "Continuous high-quality CPR, minimize interruptions"
+		},
+		{
+			"step": 8,
+			"action": "aed",
+			"label": "Defibrillation",
+			"condition": "shockable_rhythm",
+			"required_equipment": "AED",
+			"time_window_seconds": null,
+			"notes": "Defibrillate if VF/pVT, resume CPR immediately after"
+		},
+		{
+			"step": 9,
+			"action": "oxygen_mask",
+			"label": "Ventilation Support",
+			"condition": "breathing_inadequate",
+			"required_equipment": "OXYGEN_MASK",
+			"time_window_seconds": null,
+			"notes": "Bag-valve-mask or advanced airway with oxygen"
+		},
+		{
+			"step": 10,
+			"action": "reassess",
+			"label": "Reassess & Identify Cause",
+			"condition": "after_treatment",
+			"required_equipment": null,
+			"time_window_seconds": 120,
+			"notes": "Reassess rhythm every 2 min, identify reversible causes (Hs and Ts)"
+		}
+	],
+	"critical_actions": ["cpr", "aed", "assess_breathing", "assess_pulse", "oxygen_mask"],
+	"order_matters": true,
+	"notes": "Based on AHA 2020 ACLS Guidelines and Thai Red Cross ALS curriculum"
+}

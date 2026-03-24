@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/gameplay/equipment_entity.gd" id="1_equip"]
+[ext_resource type="Script" path="res://scripts/gameplay/interactable_component.gd" id="2_interact"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_oxygen"]
+albedo_color = Color(0.2, 0.6, 0.9, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_oxygen"]
+size = Vector3(0.3, 0.25, 0.3)
+material = SubResource("Mat_oxygen")
+
+[sub_resource type="BoxShape3D" id="BoxShape_oxygen"]
+size = Vector3(0.3, 0.25, 0.3)
+
+[node name="OxygenMask" type="StaticBody3D"]
+script = ExtResource("1_equip")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125, 0)
+mesh = SubResource("BoxMesh_oxygen")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125, 0)
+shape = SubResource("BoxShape_oxygen")
+
+[node name="InteractableComponent" type="Node" parent="."]
+script = ExtResource("2_interact")
+interaction_label = "Pick Up Oxygen Mask"

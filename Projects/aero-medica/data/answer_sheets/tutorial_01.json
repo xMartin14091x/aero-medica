@@ -1,0 +1,30 @@
+{
+	"scenario_id": "tutorial_01",
+	"scenario_name": "Tutorial — Single Patient Assessment",
+	"correct_protocol": "BCLS",
+	"patients": [
+		{
+			"patient_id": "Tutorial_Patient",
+			"correct_triage": "YELLOW",
+			"priority_order": 1,
+			"correct_actions": [
+				"assess_consciousness",
+				"assess_breathing",
+				"assess_pulse",
+				"assess_bleeding",
+				"apply_bandage"
+			],
+			"critical_actions": ["assess_breathing", "assess_pulse"],
+			"correct_equipment": ["BANDAGE"],
+			"notes": "Single conscious patient with minor bleeding. Good for learning the assessment flow."
+		}
+	],
+	"timing_benchmarks": {
+		"first_assessment_excellent": 20,
+		"first_assessment_acceptable": 45,
+		"first_triage_excellent": 45,
+		"first_triage_acceptable": 90,
+		"total_scenario_target": 300
+	},
+	"priority_order_notes": "Single patient — no prioritisation needed."
+}

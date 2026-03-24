@@ -1,0 +1,540 @@
+[gd_scene format=3 uid="uid://88h6g2ajag0g"]
+
+[ext_resource type="Script" uid="uid://brbbtui85vpqa" path="res://scripts/gameplay/building_fire_level.gd" id="1_level"]
+[ext_resource type="Script" uid="uid://bgs1ivm88l835" path="res://scripts/core/isometric_camera.gd" id="2_camera"]
+[ext_resource type="Material" uid="uid://c2rfyglbhur4d" path="res://assets/WoodenFloor1/WoodFloor007_4K-PNG.tres" id="3_11x3m"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player/Player.tscn" id="3_player"]
+[ext_resource type="Material" uid="uid://cc1cejtj7r4rb" path="res://assets/Sidewalk4/PavingStones105_8K-PNG.tres" id="4_bxisn"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/HUD.tscn" id="4_hud"]
+[ext_resource type="PackedScene" uid="uid://cb52vj4dvyote" path="res://scenes/environments/Grass.tscn" id="5_grass"]
+[ext_resource type="PackedScene" uid="uid://djemvnxp40tv5" path="res://scenes/environments/Sidewalk.tscn" id="6_sidewalk"]
+
+[sub_resource type="NavigationMesh" id="nav_mesh"]
+geometry_parsed_geometry_type = 1
+
+[sub_resource type="BoxShape3D" id="BoxShape_sidewalk"]
+size = Vector3(2, 0.1, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_u4abd"]
+material = ExtResource("3_11x3m")
+
+[sub_resource type="BoxMesh" id="BoxMesh_63xj6"]
+material = ExtResource("4_bxisn")
+size = Vector3(2, 0.1, 2)
+
+[sub_resource type="StandardMaterial3D" id="ext_wall_mat"]
+albedo_color = Color(0.75, 0.72, 0.68, 1)
+
+[sub_resource type="BoxMesh" id="north_wall_mesh"]
+material = SubResource("ext_wall_mat")
+size = Vector3(20, 2.6, 0.15)
+
+[sub_resource type="BoxShape3D" id="north_wall_shape"]
+size = Vector3(20, 2.6, 0.15)
+
+[sub_resource type="BoxMesh" id="west_wall_mesh"]
+material = SubResource("ext_wall_mat")
+size = Vector3(0.15, 2.6, 24)
+
+[sub_resource type="BoxShape3D" id="west_wall_shape"]
+size = Vector3(0.15, 2.6, 24)
+
+[sub_resource type="BoxMesh" id="east_wall_mesh"]
+material = SubResource("ext_wall_mat")
+size = Vector3(0.15, 2.6, 24)
+
+[sub_resource type="BoxShape3D" id="east_wall_shape"]
+size = Vector3(0.15, 2.6, 24)
+
+[sub_resource type="StandardMaterial3D" id="ext_wall_dark_mat"]
+albedo_color = Color(0.5, 0.45, 0.4, 1)
+
+[sub_resource type="BoxMesh" id="south_wall_left_mesh"]
+material = SubResource("ext_wall_dark_mat")
+size = Vector3(6, 2.6, 0.15)
+
+[sub_resource type="BoxShape3D" id="south_wall_left_shape"]
+size = Vector3(6, 2.6, 0.15)
+
+[sub_resource type="BoxMesh" id="south_wall_right_mesh"]
+material = SubResource("ext_wall_dark_mat")
+size = Vector3(6, 2.6, 0.15)
+
+[sub_resource type="BoxShape3D" id="south_wall_right_shape"]
+size = Vector3(6, 2.6, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="int_wall_mat"]
+albedo_color = Color(0.75, 0.72, 0.68, 1)
+
+[sub_resource type="BoxMesh" id="room1_vert_mesh"]
+material = SubResource("int_wall_mat")
+size = Vector3(0.15, 2.6, 8)
+
+[sub_resource type="BoxShape3D" id="room1_vert_shape"]
+size = Vector3(0.15, 2.6, 8)
+
+[sub_resource type="BoxMesh" id="room1_horiz_mesh"]
+material = SubResource("int_wall_mat")
+size = Vector3(4, 2.6, 0.15)
+
+[sub_resource type="BoxShape3D" id="room1_horiz_shape"]
+size = Vector3(4, 2.6, 0.15)
+
+[sub_resource type="BoxMesh" id="room2_vert_mesh"]
+material = SubResource("int_wall_mat")
+size = Vector3(0.15, 2.6, 8)
+
+[sub_resource type="BoxShape3D" id="room2_vert_shape"]
+size = Vector3(0.15, 2.6, 8)
+
+[sub_resource type="BoxMesh" id="corridor_left_mesh"]
+material = SubResource("int_wall_mat")
+size = Vector3(8, 2.6, 0.15)
+
+[sub_resource type="BoxShape3D" id="corridor_left_shape"]
+size = Vector3(8, 2.6, 0.15)
+
+[sub_resource type="BoxMesh" id="corridor_right_mesh"]
+material = SubResource("int_wall_mat")
+size = Vector3(8, 2.6, 0.15)
+
+[sub_resource type="BoxShape3D" id="corridor_right_shape"]
+size = Vector3(8, 2.6, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="shelf_mat"]
+albedo_color = Color(0.5, 0.5, 0.5, 1)
+
+[sub_resource type="BoxMesh" id="shelf1_mesh"]
+material = SubResource("shelf_mat")
+size = Vector3(0.5, 1.2, 2)
+
+[sub_resource type="BoxShape3D" id="shelf1_shape"]
+size = Vector3(0.5, 1.2, 2)
+
+[sub_resource type="BoxMesh" id="shelf2_mesh"]
+material = SubResource("shelf_mat")
+size = Vector3(0.5, 1.2, 1)
+
+[sub_resource type="BoxShape3D" id="shelf2_shape"]
+size = Vector3(0.5, 1.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="desk_mat"]
+albedo_color = Color(0.5, 0.35, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="desk1_mesh"]
+material = SubResource("desk_mat")
+size = Vector3(1.4, 0.8, 0.7)
+
+[sub_resource type="BoxShape3D" id="desk1_shape"]
+size = Vector3(1.4, 0.8, 0.7)
+
+[sub_resource type="BoxMesh" id="desk2_mesh"]
+material = SubResource("desk_mat")
+size = Vector3(1.4, 0.8, 0.7)
+
+[sub_resource type="BoxShape3D" id="desk2_shape"]
+size = Vector3(1.4, 0.8, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="beam_mat"]
+albedo_color = Color(0.4, 0.35, 0.3, 1)
+
+[sub_resource type="BoxMesh" id="beam_mesh"]
+material = SubResource("beam_mat")
+size = Vector3(4, 0.3, 0.25)
+
+[sub_resource type="BoxShape3D" id="beam_shape"]
+size = Vector3(4, 0.3, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="debris_mat"]
+albedo_color = Color(0.55, 0.5, 0.45, 1)
+
+[sub_resource type="BoxMesh" id="debris_mesh"]
+material = SubResource("debris_mat")
+size = Vector3(2, 0.6, 1.5)
+
+[sub_resource type="BoxShape3D" id="debris_shape"]
+size = Vector3(2, 0.6, 1.5)
+
+[sub_resource type="StandardMaterial3D" id="debris_small_mat"]
+albedo_color = Color(0.6, 0.55, 0.5, 1)
+
+[sub_resource type="BoxMesh" id="debris_small_mesh"]
+material = SubResource("debris_small_mat")
+size = Vector3(1, 0.3, 0.8)
+
+[sub_resource type="BoxShape3D" id="debris_small_shape"]
+size = Vector3(1, 0.3, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="charred_mat"]
+albedo_color = Color(0.2, 0.15, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="charred1_mesh"]
+material = SubResource("charred_mat")
+size = Vector3(1, 0.6, 0.8)
+
+[sub_resource type="BoxShape3D" id="charred1_shape"]
+size = Vector3(1, 0.6, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="charred2_mat"]
+albedo_color = Color(0.25, 0.2, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="charred2_mesh"]
+material = SubResource("charred2_mat")
+size = Vector3(0.8, 0.4, 0.6)
+
+[sub_resource type="BoxShape3D" id="charred2_shape"]
+size = Vector3(0.8, 0.4, 0.6)
+
+[sub_resource type="StandardMaterial3D" id="ambulance_mat"]
+albedo_color = Color(0.95, 0.95, 0.95, 1)
+
+[sub_resource type="BoxMesh" id="ambulance_mesh"]
+material = SubResource("ambulance_mat")
+size = Vector3(2, 1.4, 3)
+
+[sub_resource type="BoxShape3D" id="ambulance_shape"]
+size = Vector3(2, 1.4, 3)
+
+[sub_resource type="StandardMaterial3D" id="triage_mat"]
+albedo_color = Color(0.2, 0.5, 0.8, 1)
+
+[sub_resource type="BoxMesh" id="triage_mesh"]
+material = SubResource("triage_mat")
+size = Vector3(3, 0.04, 2)
+
+[sub_resource type="BoxShape3D" id="triage_shape"]
+size = Vector3(3, 0.04, 2)
+
+[node name="BuildingFire" type="Node3D" unique_id=1728543074]
+script = ExtResource("1_level")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1606930996]
+transform = Transform3D(0.75, -0.433, 0.5, 0, 0.866, 0.5, -0.866, -0.25, 0.433, 0, 12, 0)
+light_color = Color(0.9, 0.85, 0.75, 1)
+light_energy = 0.6
+shadow_enabled = true
+
+[node name="StagingFloodlight" type="OmniLight3D" parent="." unique_id=1625771131]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 4, 30)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 2.0
+shadow_enabled = true
+omni_range = 12.0
+
+[node name="EmergencyLight_01" type="OmniLight3D" parent="." unique_id=465699858]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.3, 20)
+light_color = Color(1, 0.2, 0.1, 1)
+light_energy = 0.8
+
+[node name="EmergencyLight_02" type="OmniLight3D" parent="." unique_id=2013419772]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2.3, 20)
+light_color = Color(1, 0.2, 0.1, 1)
+light_energy = 0.8
+
+[node name="EmergencyLight_03" type="OmniLight3D" parent="." unique_id=402736274]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 2.3, 12)
+light_color = Color(1, 0.2, 0.1, 1)
+light_energy = 0.8
+
+[node name="FireLight_01" type="OmniLight3D" parent="." unique_id=1454003357]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 1, 3)
+light_color = Color(1, 0.4, 0.05, 1)
+light_energy = 3.0
+
+[node name="FireGlow_01" type="OmniLight3D" parent="." unique_id=607918206]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 0.3, 3)
+light_color = Color(1, 0.2, 0, 1)
+light_energy = 1.5
+omni_range = 3.0
+
+[node name="FireLight_02" type="OmniLight3D" parent="." unique_id=925912915]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 1, 6)
+light_color = Color(1, 0.4, 0.05, 1)
+light_energy = 3.0
+
+[node name="FireGlow_02" type="OmniLight3D" parent="." unique_id=1800892206]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.3, 6)
+light_color = Color(1, 0.2, 0, 1)
+light_energy = 1.5
+omni_range = 3.0
+
+[node name="FireLight_03" type="OmniLight3D" parent="." unique_id=652105598]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 1, 6)
+light_color = Color(1, 0.4, 0.05, 1)
+light_energy = 3.0
+
+[node name="FireGlow_03" type="OmniLight3D" parent="." unique_id=141757754]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 0.3, 6)
+light_color = Color(1, 0.2, 0, 1)
+light_energy = 1.5
+omni_range = 3.0
+
+[node name="CollapseZoneDark" type="OmniLight3D" parent="." unique_id=1906826356]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1.5, 4)
+light_color = Color(0.3, 0.25, 0.2, 1)
+light_energy = -0.5
+omni_range = 4.0
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=450935093]
+navigation_mesh = SubResource("nav_mesh")
+
+[node name="Tiles" type="Node3D" parent="NavigationRegion3D" unique_id=1231030498]
+
+[node name="GroundGrass" parent="NavigationRegion3D/Tiles" unique_id=1984084777 instance=ExtResource("5_grass")]
+transform = Transform3D(76.91519, 0, 0, 0, 1.004792, 0, 0, 0, 69.27365, 14, -0.01, 18)
+
+[node name="BuildingFloor" type="StaticBody3D" parent="NavigationRegion3D/Tiles" unique_id=1744165130]
+transform = Transform3D(10, 0, 0, 0, 1, 0, 0, 0, 12, 14.017313, 0, 12)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Tiles/BuildingFloor" unique_id=173619623]
+shape = SubResource("BoxShape_sidewalk")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Tiles/BuildingFloor" unique_id=1835406114]
+transform = Transform3D(2.0021243, 0, 0, 0, 1, 0, 0, 0, 2.0207477, 0, -0.42711854, 0)
+mesh = SubResource("BoxMesh_u4abd")
+
+[node name="StagingFloor" type="StaticBody3D" parent="NavigationRegion3D/Tiles" unique_id=176411030]
+transform = Transform3D(12, 0, 0, 0, 1, 0, 0, 0, 6, 14, 0, 30)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Tiles/StagingFloor" unique_id=396895406]
+transform = Transform3D(-0.9999964, 0, -0.002705301, 0, 1, 0, 0.002705301, 0, -0.9999964, 0, 0, 0)
+mesh = SubResource("BoxMesh_63xj6")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Tiles/StagingFloor" unique_id=152131665]
+shape = SubResource("BoxShape_sidewalk")
+
+[node name="Barrier_North" parent="NavigationRegion3D/Tiles" unique_id=979393399 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(14, 0, 0, 0, 105, 0, 0, 0, 1, 14, 0, 23.3065)
+visible = false
+
+[node name="Barrier_South" parent="NavigationRegion3D/Tiles" unique_id=1842052040 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(14, 0, 0, 0, 105, 0, 0, 0, 1, 14, 0, 37)
+visible = false
+
+[node name="Barrier_West" parent="NavigationRegion3D/Tiles" unique_id=449050143 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 105, 0, 0, 0, 18, -1, 0, 18)
+visible = false
+
+[node name="Barrier_East" parent="NavigationRegion3D/Tiles" unique_id=651605512 instance=ExtResource("6_sidewalk")]
+transform = Transform3D(1, 0, 0, 0, 105, 0, 0, 0, 18, 27.024414, 0, 18)
+visible = false
+
+[node name="Walls" type="Node3D" parent="NavigationRegion3D" unique_id=65556930]
+
+[node name="NorthWall" type="StaticBody3D" parent="NavigationRegion3D/Walls" unique_id=160183133]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.3, -0.075)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Walls/NorthWall" unique_id=1143419042]
+mesh = SubResource("north_wall_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Walls/NorthWall" unique_id=984943998]
+shape = SubResource("north_wall_shape")
+
+[node name="WestWall" type="StaticBody3D" parent="NavigationRegion3D/Walls" unique_id=433047500]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.925, 1.3, 12)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Walls/WestWall" unique_id=1359050649]
+mesh = SubResource("west_wall_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Walls/WestWall" unique_id=590973207]
+shape = SubResource("west_wall_shape")
+
+[node name="EastWall" type="StaticBody3D" parent="NavigationRegion3D/Walls" unique_id=99052143]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.075, 1.3, 12)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Walls/EastWall" unique_id=2003138177]
+mesh = SubResource("east_wall_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Walls/EastWall" unique_id=1174753898]
+shape = SubResource("east_wall_shape")
+
+[node name="SouthWallLeft" type="StaticBody3D" parent="NavigationRegion3D/Walls" unique_id=1910466063]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.3, 24.075)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Walls/SouthWallLeft" unique_id=1250671862]
+mesh = SubResource("south_wall_left_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Walls/SouthWallLeft" unique_id=75377609]
+shape = SubResource("south_wall_left_shape")
+
+[node name="SouthWallRight" type="StaticBody3D" parent="NavigationRegion3D/Walls" unique_id=778483892]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 1.3, 24.075)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Walls/SouthWallRight" unique_id=603957952]
+mesh = SubResource("south_wall_right_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Walls/SouthWallRight" unique_id=1042056755]
+shape = SubResource("south_wall_right_shape")
+
+[node name="InteriorWalls" type="Node3D" parent="NavigationRegion3D" unique_id=1685085828]
+
+[node name="Room1Partition" type="StaticBody3D" parent="NavigationRegion3D/InteriorWalls" unique_id=1845773352]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.3, 16)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/InteriorWalls/Room1Partition" unique_id=1463822055]
+mesh = SubResource("room1_vert_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/InteriorWalls/Room1Partition" unique_id=1015904630]
+shape = SubResource("room1_vert_shape")
+
+[node name="Room1HorizWall" type="StaticBody3D" parent="NavigationRegion3D/InteriorWalls" unique_id=446034196]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.3, 15.925)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/InteriorWalls/Room1HorizWall" unique_id=712838170]
+mesh = SubResource("room1_horiz_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/InteriorWalls/Room1HorizWall" unique_id=228361533]
+shape = SubResource("room1_horiz_shape")
+
+[node name="Room2Partition" type="StaticBody3D" parent="NavigationRegion3D/InteriorWalls" unique_id=705989183]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.3, 16)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/InteriorWalls/Room2Partition" unique_id=544579836]
+mesh = SubResource("room2_vert_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/InteriorWalls/Room2Partition" unique_id=726987260]
+shape = SubResource("room2_vert_shape")
+
+[node name="CorridorWallLeft" type="StaticBody3D" parent="NavigationRegion3D/InteriorWalls" unique_id=315663120]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.3, 7.925)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/InteriorWalls/CorridorWallLeft" unique_id=885195129]
+mesh = SubResource("corridor_left_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/InteriorWalls/CorridorWallLeft" unique_id=967647760]
+shape = SubResource("corridor_left_shape")
+
+[node name="CorridorWallRight" type="StaticBody3D" parent="NavigationRegion3D/InteriorWalls" unique_id=154802067]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.3, 7.925)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/InteriorWalls/CorridorWallRight" unique_id=736206319]
+mesh = SubResource("corridor_right_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/InteriorWalls/CorridorWallRight" unique_id=664943883]
+shape = SubResource("corridor_right_shape")
+
+[node name="Props" type="Node3D" parent="NavigationRegion3D" unique_id=234229388]
+
+[node name="Shelf_01" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=341946449]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.6, 18)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Shelf_01" unique_id=1849719329]
+mesh = SubResource("shelf1_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Shelf_01" unique_id=920363769]
+shape = SubResource("shelf1_shape")
+
+[node name="Shelf_02" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=558861108]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.6, 20)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Shelf_02" unique_id=230746270]
+mesh = SubResource("shelf2_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Shelf_02" unique_id=441032983]
+shape = SubResource("shelf2_shape")
+
+[node name="Desk_01" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=476626639]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.4, 19)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Desk_01" unique_id=814597647]
+mesh = SubResource("desk1_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Desk_01" unique_id=1140778603]
+shape = SubResource("desk1_shape")
+
+[node name="Desk_02" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=143376059]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0.4, 20)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Desk_02" unique_id=1813099152]
+mesh = SubResource("desk2_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Desk_02" unique_id=723708581]
+shape = SubResource("desk2_shape")
+
+[node name="CollapsedBeam" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=690561556]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.15, 12)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/CollapsedBeam" unique_id=848611444]
+mesh = SubResource("beam_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/CollapsedBeam" unique_id=342826225]
+shape = SubResource("beam_shape")
+
+[node name="CeilingDebris" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=436217535]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.3, 4)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/CeilingDebris" unique_id=1955477822]
+mesh = SubResource("debris_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/CeilingDebris" unique_id=1747119268]
+shape = SubResource("debris_shape")
+
+[node name="SmallDebris" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1333515424]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.15, 2)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/SmallDebris" unique_id=1686836539]
+mesh = SubResource("debris_small_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/SmallDebris" unique_id=619219210]
+shape = SubResource("debris_small_shape")
+
+[node name="CharredFurniture_01" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1921617780]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.3, 4)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/CharredFurniture_01" unique_id=880211575]
+mesh = SubResource("charred1_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/CharredFurniture_01" unique_id=290723527]
+shape = SubResource("charred1_shape")
+
+[node name="CharredFurniture_02" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=2102091825]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0.2, 2)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/CharredFurniture_02" unique_id=1010165010]
+mesh = SubResource("charred2_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/CharredFurniture_02" unique_id=699009212]
+shape = SubResource("charred2_shape")
+
+[node name="Ambulance" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=1104396484]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.7, 30)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/Ambulance" unique_id=91608281]
+mesh = SubResource("ambulance_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/Ambulance" unique_id=731637029]
+shape = SubResource("ambulance_shape")
+
+[node name="TriageTarp" type="StaticBody3D" parent="NavigationRegion3D/Props" unique_id=748661004]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.02, 28)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Props/TriageTarp" unique_id=436771442]
+mesh = SubResource("triage_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Props/TriageTarp" unique_id=805734158]
+shape = SubResource("triage_shape")
+
+[node name="Spawns" type="Node3D" parent="." unique_id=1064472405]
+
+[node name="PlayerSpawn" type="Marker3D" parent="Spawns" unique_id=449060351]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.1, 32)
+
+[node name="PatientSpawn_01" type="Marker3D" parent="Spawns" unique_id=2054640076]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.340963, 0.1, 25.961443)
+
+[node name="PatientSpawn_02" type="Marker3D" parent="Spawns" unique_id=2130307123]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.027943, 0.1, 26.015915)
+
+[node name="PatientSpawn_03" type="Marker3D" parent="Spawns" unique_id=1813745369]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.525318, 0.1, 25.988066)
+
+[node name="Player" parent="." unique_id=88119892 instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.1, 32)
+
+[node name="IsometricCamera" type="Camera3D" parent="." unique_id=1065540936]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 16, 22)
+script = ExtResource("2_camera")
+offset = Vector3(10, 12, 10)
+zoom_max = 22.0
+
+[node name="HUD" parent="." unique_id=503867509 instance=ExtResource("4_hud")]

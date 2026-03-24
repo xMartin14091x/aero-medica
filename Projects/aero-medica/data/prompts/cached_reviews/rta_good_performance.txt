@@ -1,0 +1,22 @@
+## Overall Assessment
+Solid performance with 85% protocol adherence across all three patients. You demonstrated strong situational awareness by correctly prioritising the two RED patients (Nanthida and Prasert) before attending to Somchai. All triage tags were assigned correctly. First assessment at 12 seconds shows excellent response time. 0 critical errors detected.
+
+## Strengths
+- Correctly identified Nanthida's obstructed airway and performed head-tilt chin-lift within 30 seconds
+- Properly assessed Prasert's unconscious state and managed both airway and severe bleeding
+- All three triage tags assigned correctly (RED, RED, YELLOW)
+- Good prioritisation — treated RED patients before YELLOW
+- Assessments performed in correct ABCDE order for all patients
+
+## Areas for Improvement
+- Time between finishing Nanthida and starting Prasert was 15 seconds — try to move more quickly between patients
+- Somchai's assessment started at 130 seconds — could have been faster after completing RED patients
+- Consider calling for help earlier in the protocol sequence
+
+## Critical Errors
+No critical errors detected.
+
+## Recommendations
+- Practice transitioning between patients more quickly — aim for under 10 seconds between completing one patient and starting the next
+- In scenarios with multiple RED patients, develop a systematic left-to-right or nearest-first scanning pattern
+- Review the full BCLS protocol to ensure the "call for help" step is included in your routine
