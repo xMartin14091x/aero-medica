@@ -228,7 +228,9 @@ func _on_request_completed(result: int, response_code: int, _headers: PackedStri
 	_request_pending = false
 
 	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-		dialogue_failed.emit("Ollama dialogue request failed")
+		# Mark Ollama as offline so UI switches to scripted mode immediately
+		ollama_available = false
+		dialogue_failed.emit("Ollama dialogue request failed (connection lost or service stopped)")
 		return
 
 	var response_text := body.get_string_from_utf8()

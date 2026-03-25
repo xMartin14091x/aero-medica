@@ -1,24 +1,24 @@
-## Overall Assessment
+Overall Assessment
 The Building Fire scenario was completed with significant clinical errors. Anong was assessed but key smoke inhalation findings were missed or not acted upon. Triage was incorrectly assigned. Protocol adherence: approximately 45%. The compromised airway required immediate intervention that was either delayed or omitted.
 
-## Strengths
+Strengths
 - Anong was approached and assessment was initiated
 - Some ABCDE steps were performed correctly
 - The scenario was completed within the time limit
 - Equipment was accessed and used during the assessment
 
-## Areas for Improvement
+Areas for Improvement
 - Anong was incorrectly triaged as YELLOW or GREEN when her compromised airway and SpO2 of 88% clearly indicate RED priority
-- Airway management was either not performed or significantly delayed — Anong's stridor and hoarse voice indicate developing upper airway oedema
+- Airway management was either not performed or significantly delayed -- Anong's stridor and hoarse voice indicate developing upper airway oedema
 - Soot deposits around nostrils and singed nasal hairs were not identified as signs of inhalation injury
 - No oxygen was applied despite critically low oxygen saturation
-- Assessment sequence was out of order — Airway should be addressed before moving to later steps
+- Assessment sequence was out of order -- Airway should be addressed before moving to later steps
 
-## Critical Errors
-- Incorrect triage: Anong has a compromised airway with smoke inhalation — this is RED (immediate) priority, not YELLOW or GREEN
-- Failure to manage compromised airway — head-tilt chin-lift required but not performed or severely delayed
+Critical Errors
+- Incorrect triage: Anong has a compromised airway with smoke inhalation -- this is RED (immediate) priority, not YELLOW or GREEN
+- Failure to manage compromised airway -- head-tilt chin-lift required but not performed or severely delayed
 
-## Recommendations
+Recommendations
 - Remember: any patient with airway compromise is automatically RED priority regardless of other findings
 - In fire scenarios, always assume inhalation injury when you see soot around the nose/mouth or singed facial hair
 - Practice the sequence: identify airway compromise, perform head-tilt chin-lift, reassess breathing, apply oxygen

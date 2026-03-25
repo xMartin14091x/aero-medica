@@ -1,24 +1,24 @@
-## Overall Assessment
-Solid performance on the Cardiac Arrest scenario. Cardiac arrest was recognised and CPR was initiated. AED was applied and shock delivered. RED triage assigned correctly. Protocol adherence: approximately 75%. Some delays in the chain of survival but no critical protocol violations. 0 critical errors detected.
+Overall Assessment
+Solid performance on the Cardiac Arrest scenario. Wichai's cardiac arrest was recognised and CPR was initiated. AED was applied and shock delivered for VFib. RED triage assigned correctly. Protocol adherence: approximately 75%. Some delays in the chain of survival but no critical protocol violations. 0 critical errors detected.
 
-## Strengths
-- Cardiac arrest correctly identified — pulseless, apnoeic state confirmed
+Strengths
+- Cardiac arrest correctly identified -- Wichai confirmed pulseless and apnoeic
 - CPR initiated and 30:2 ratio followed
 - AED applied and VFib rhythm shocked appropriately
 - RED triage correctly assigned
 - Airway managed with head-tilt chin-lift
 
-## Areas for Improvement
-- Time from confirming cardiac arrest to first compression was over 20 seconds — aim for under 10 seconds. Every second without compressions reduces survival probability
-- AED application was delayed — in VFib, early defibrillation is the single most important intervention
-- There was a prolonged pause between AED shock and CPR resumption — resume compressions immediately after shock delivery
-- Call for help should be initiated earlier — ideally before or simultaneously with starting CPR
+Areas for Improvement
+- Time from confirming cardiac arrest to first compression was over 20 seconds -- aim for under 10 seconds. Every second without compressions reduces Wichai's survival probability
+- AED application was delayed -- in VFib, early defibrillation is the single most important intervention
+- There was a prolonged pause between AED shock and CPR resumption -- resume compressions immediately after shock delivery
+- Call for help should be initiated earlier -- ideally before or simultaneously with starting CPR
 
-## Critical Errors
-No critical errors detected.
+Critical Errors
+None detected.
 
-## Recommendations
-- Practice the sequence until it is automatic: confirm arrest, call for help, start CPR, apply AED — all within 30 seconds
-- Focus on minimising hands-off time — any pause in compressions drops perfusion pressure
-- Review the AED prompts carefully — the device guides you through rhythm analysis and shock delivery
+Recommendations
+- Practice the sequence until it is automatic: confirm arrest, call for help, start CPR, apply AED -- all within 30 seconds
+- Focus on minimising hands-off time -- any pause in compressions drops perfusion pressure
+- Review the AED prompts carefully -- the device guides you through rhythm analysis and shock delivery
 - Time yourself: from scenario start to first shock should be under 90 seconds for optimal outcomes

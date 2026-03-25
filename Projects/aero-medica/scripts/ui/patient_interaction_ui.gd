@@ -245,6 +245,11 @@ func open_ui(patient: Node, player: Node) -> void:
 	# sees this panel is active and does not open the legacy ActionMenu.
 	visible = true
 
+	# Notify DeteriorationSystem that this patient is now player-focused
+	var deterioration: Node = patient.get_node_or_null("DeteriorationSystem")
+	if deterioration and deterioration.has_method("set_player_focused"):
+		deterioration.set_player_focused(true)
+
 	# Start history session
 	if _history_manager and not _history_manager.is_active:
 		_history_manager.begin_history(patient)
@@ -290,6 +295,11 @@ func open_ui(patient: Node, player: Node) -> void:
 
 ## Close the UI.
 func close_ui() -> void:
+	# Notify DeteriorationSystem that this patient is no longer player-focused
+	if _patient:
+		var deterioration: Node = _patient.get_node_or_null("DeteriorationSystem")
+		if deterioration and deterioration.has_method("set_player_focused"):
+			deterioration.set_player_focused(false)
 	visible = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if _history_manager and _history_manager.is_active:
@@ -2147,7 +2157,7 @@ func _show_triage_color_picker(qty_label: Label, deploy_btn: Button) -> void:
 		"RED": {"label": "Immediate", "color": Color(1.0, 0.2, 0.2)},
 		"YELLOW": {"label": "Delayed", "color": Color(1.0, 0.9, 0.1)},
 		"GREEN": {"label": "Minor", "color": Color(0.2, 0.9, 0.2)},
-		"BLACK": {"label": "Deceased / Expectant", "color": Color(0.3, 0.3, 0.3)},
+		"BLACK": {"label": "Deceased / Expectant", "color": Color(0.9, 0.9, 0.9)},
 	}
 
 	for tag_name in colours:
@@ -2196,7 +2206,7 @@ func _on_triage_color_selected(tag_name: String, qty_label: Label, deploy_btn: B
 		triage_sys.assign_tag(_patient, tag_int)
 
 	if _drug_feedback_label:
-		var color_map := {"RED": Color(1, 0.2, 0.2), "YELLOW": Color(1, 0.9, 0.1), "GREEN": Color(0.2, 0.9, 0.2), "BLACK": Color(0.5, 0.5, 0.5)}
+		var color_map := {"RED": Color(1, 0.2, 0.2), "YELLOW": Color(1, 0.9, 0.1), "GREEN": Color(0.2, 0.9, 0.2), "BLACK": Color(0.9, 0.9, 0.9)}
 		_drug_feedback_label.text = "Triage tag assigned: %s" % tag_name
 		_drug_feedback_label.add_theme_color_override("font_color", color_map.get(tag_name, Color.WHITE))
 

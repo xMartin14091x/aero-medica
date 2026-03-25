@@ -2,6 +2,12 @@
 ## Attached to each Patient entity. Untreated conditions worsen over time.
 ## Deterioration pauses while the patient is being actively treated.
 ## MON-17: Optimised — permanently disables process on DEAD state.
+##
+## Single-budget deterioration gate:
+##   Each patient has a 5-minute (300s) critical budget. Drains at 1x when unfocused,
+##   3.33x when player is interacting with this patient. Critical state transitions
+##   (unconscious→cardiac, cardiac→dead) are BLOCKED until budget reaches 0.
+##   Non-critical deterioration (bleeding, vitals) always runs normally.
 extends Node
 
 ## Emitted when a condition worsens due to time.
@@ -23,12 +29,25 @@ signal condition_worsened(patient: Node, modifier: String, old_value: Variant, n
 ## Interval (seconds) for vital sign deterioration ticks.
 @export var vitals_interval: float = 10.0
 
+## Single-budget deterioration gate.
+## Each patient starts with a 5 min (300s) budget. The budget drains at:
+##   - 1.0x when unfocused (player not interacting with this patient)
+##   - 3.33x when focused (PatientInteractionUI open for this patient)
+## Critical transitions (unconscious→cardiac, cardiac→dead) are BLOCKED until budget hits 0.
+## At 3.33x focused rate, budget drains in ~90s (1.5 min) of continuous interaction.
+@export var critical_budget: float = 300.0           # 5 min total budget
+@export var focused_drain_rate: float = 3.33         # Multiplier when player is focused
+
 ## Internal timers tracking time since last worsening per condition.
 var _bleeding_timer: float = 0.0
 var _airway_timer: float = 0.0
 var _unconscious_timer: float = 0.0
 var _cardiac_timer: float = 0.0
 var _vitals_timer: float = 0.0
+
+## Budget state.
+var _budget_remaining: float = 300.0   # Initialized to critical_budget in _ready
+var _is_player_focused: bool = false   # True while PatientInteractionUI is open for THIS patient
 
 ## Reference to sibling MedicalStateComponent.
 var _medical: Node = null
@@ -39,6 +58,18 @@ func _ready() -> void:
 	if _medical == null:
 		push_error("DeteriorationSystem: No sibling MedicalStateComponent found.")
 		set_process(false)
+	_budget_remaining = critical_budget
+
+
+## Called by PatientInteractionUI when the player opens/closes interaction with this patient.
+func set_player_focused(focused: bool) -> void:
+	_is_player_focused = focused
+
+
+## Whether critical transitions are currently allowed.
+## Budget must be fully drained (0) before lethal state jumps can fire.
+func _can_critical_transition() -> bool:
+	return _budget_remaining <= 0.0
 
 
 func _process(delta: float) -> void:
@@ -52,6 +83,11 @@ func _process(delta: float) -> void:
 	# Pause deterioration during active treatment
 	if _medical.is_being_treated:
 		return
+
+	# Drain critical budget: faster when player is focused on this patient, normal otherwise.
+	if _budget_remaining > 0.0:
+		var drain: float = delta * (focused_drain_rate if _is_player_focused else 1.0)
+		_budget_remaining = maxf(0.0, _budget_remaining - drain)
 
 	# Apply idle time scale: when player is NOT interacting (mouse captured / walking),
 	# deterioration runs slower (0.3x). When interacting (UI open), runs at normal speed.
@@ -105,6 +141,7 @@ func _process_airway(scaled_delta: float) -> void:
 
 
 ## UNCONSCIOUS: if airway not cleared within time → CARDIAC_ARREST.
+## Gated by interaction-aware timing — blocked until both thresholds met.
 func _process_unconscious(scaled_delta: float) -> void:
 	if _medical.current_state != _medical.PatientState.UNCONSCIOUS:
 		_unconscious_timer = 0.0
@@ -112,6 +149,8 @@ func _process_unconscious(scaled_delta: float) -> void:
 
 	_unconscious_timer += scaled_delta
 	if _unconscious_timer >= unconscious_to_cardiac:
+		if not _can_critical_transition():
+			return  # Hold at threshold — don't reset timer, just wait
 		_unconscious_timer = 0.0
 		_medical.set_modifier("pulse_present", false)
 		_medical.set_modifier("breathing_rate", 0.0)
@@ -120,6 +159,7 @@ func _process_unconscious(scaled_delta: float) -> void:
 
 
 ## CARDIAC_ARREST: if no CPR/AED within time window → DEAD.
+## Gated by interaction-aware timing — blocked until both thresholds met.
 func _process_cardiac(scaled_delta: float) -> void:
 	if _medical.current_state != _medical.PatientState.CARDIAC_ARREST:
 		_cardiac_timer = 0.0
@@ -127,6 +167,8 @@ func _process_cardiac(scaled_delta: float) -> void:
 
 	_cardiac_timer += scaled_delta
 	if _cardiac_timer >= cardiac_to_dead:
+		if not _can_critical_transition():
+			return  # Hold at threshold — don't reset timer, just wait
 		_cardiac_timer = 0.0
 		_medical.set_state(_medical.PatientState.DEAD)
 		condition_worsened.emit(get_parent(), "state", "CARDIAC_ARREST", "DEAD")

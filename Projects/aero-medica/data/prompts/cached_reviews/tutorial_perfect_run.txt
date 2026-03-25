@@ -1,21 +1,21 @@
-## Overall Assessment
+Overall Assessment
 Outstanding performance on the tutorial scenario. Somchai received a complete and correct primary survey with all ABCDE steps performed in order. GREEN triage correctly assigned. Protocol adherence: 100%. 0 errors detected. This is exactly the standard expected before advancing to timed scenarios.
 
-## Strengths
+Strengths
 - Complete ABCDE assessment performed in correct sequence on Somchai
 - Minor bleeding identified and bandage applied promptly
-- GREEN triage tag correctly assigned — Somchai is conscious, alert, ambulatory with minor injuries
+- GREEN triage tag correctly assigned -- Somchai is conscious, alert, ambulatory with minor injuries
 - Calm, methodical approach throughout the assessment
-- All examination findings reviewed systematically — no steps skipped
+- All examination findings reviewed systematically -- no steps skipped
 
-## Areas for Improvement
+Areas for Improvement
 - At this performance level, focus on building speed without sacrificing thoroughness
 - Practice the same assessment flow in timed scenarios to develop muscle memory under pressure
 
-## Critical Errors
-No critical errors detected.
+Critical Errors
+None detected.
 
-## Recommendations
+Recommendations
 - Advance to the Building Fire scenario (single patient, timed) to test your skills under time pressure
-- Practice calling for help as part of your routine — even in single-patient scenarios, early dispatch activation is part of the protocol
+- Practice calling for help as part of your routine -- even in single-patient scenarios, early dispatch activation is part of the protocol
 - Consider attempting multi-casualty scenarios once comfortable with timed single-patient responses

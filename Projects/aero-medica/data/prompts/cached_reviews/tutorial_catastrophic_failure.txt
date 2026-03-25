@@ -1,24 +1,24 @@
-## Overall Assessment
-The tutorial scenario was not completed successfully. Somchai received minimal assessment and no effective treatment. Triage was either not assigned or grossly incorrect. Protocol adherence: below 20%. This is a learning scenario with no time pressure — take your time and follow each step carefully.
+Overall Assessment
+The tutorial scenario was not completed successfully. Somchai received minimal assessment and no effective treatment. Triage was either not assigned or grossly incorrect. Protocol adherence: below 20%. This is a learning scenario with no time pressure -- take your time and follow each step carefully.
 
-## Strengths
+Strengths
 - You started the scenario and approached the patient area
 
-## Areas for Improvement
-- Somchai was not given a complete assessment — most ABCDE steps were skipped entirely
+Areas for Improvement
+- Somchai was not given a complete assessment -- most ABCDE steps were skipped entirely
 - No bandage was applied despite visible bleeding on the patient
-- Triage tag was not assigned or was incorrect — Somchai is GREEN priority (conscious, alert, minor bleeding)
-- No systematic approach was evident — actions appeared random rather than following the ABCDE protocol
-- The tutorial provides guided hints — these should be followed step by step
+- Triage tag was not assigned or was incorrect -- Somchai is GREEN priority (conscious, alert, minor bleeding)
+- No systematic approach was evident -- actions appeared random rather than following the ABCDE protocol
+- The tutorial provides guided hints -- these should be followed step by step
 
-## Critical Errors
+Critical Errors
 - Failure to complete primary survey on a single, stable patient with no time pressure
-- No treatment applied — Somchai's bleeding went unmanaged
-- Triage not assigned or incorrect — fundamental classification failure
+- No treatment applied -- Somchai's bleeding went unmanaged
+- Triage not assigned or incorrect -- fundamental classification failure
 
-## Recommendations
-- This is the tutorial — there is no time limit and guided hints are available. Use them
+Recommendations
+- This is the tutorial -- there is no time limit and guided hints are available. Use them
 - Focus on one step at a time: first approach Somchai, then assess Airway, then Breathing, then Circulation, then Disability, then Exposure
-- Apply a bandage when you find bleeding — press the equipment key near the wound site
+- Apply a bandage when you find bleeding -- press the equipment key near the wound site
 - After completing all assessments, assign the GREEN triage tag
 - Repeat the tutorial until you can complete all steps before attempting any other scenario

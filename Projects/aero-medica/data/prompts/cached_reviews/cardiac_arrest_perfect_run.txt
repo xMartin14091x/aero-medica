@@ -1,23 +1,23 @@
-## Overall Assessment
-Outstanding performance on the Cardiac Arrest scenario. The patient was identified as pulseless and apnoeic within seconds. CPR initiated promptly with correct 30:2 compression-to-ventilation ratio. AED applied and shock delivered for ventricular fibrillation. RED triage correctly assigned. Protocol adherence: 100%. 0 errors detected. This is textbook BLS execution under time-critical conditions.
+Overall Assessment
+Outstanding performance on the Cardiac Arrest scenario. Wichai was identified as pulseless and apnoeic within seconds. CPR initiated promptly with correct 30:2 compression-to-ventilation ratio. AED applied and shock delivered for ventricular fibrillation. RED triage correctly assigned. Protocol adherence: 100%. 0 errors detected. This is textbook BLS execution under time-critical conditions.
 
-## Strengths
-- Rapid recognition of cardiac arrest: unresponsive, no pulse, no breathing confirmed within first assessment
-- CPR started within 15 seconds of confirming cardiac arrest — well within the critical window
+Strengths
+- Rapid recognition of cardiac arrest: Wichai unresponsive, no pulse, no breathing confirmed within first assessment
+- CPR started within 15 seconds of confirming cardiac arrest -- well within the critical window
 - AED applied correctly: pads placed, rhythm analysed, VFib identified, shock delivered
 - Correct 30:2 compression ratio maintained throughout
 - Head-tilt chin-lift performed to open obstructed airway before ventilations
-- RED triage correctly assigned — cardiac arrest is immediate priority
+- RED triage correctly assigned -- cardiac arrest is immediate priority
 - Help called early in the protocol sequence
 
-## Areas for Improvement
-- At this performance level, focus on maintaining CPR quality — adequate depth (5-6cm) and full chest recoil between compressions
+Areas for Improvement
+- At this performance level, focus on maintaining CPR quality -- adequate depth (5-6cm) and full chest recoil between compressions
 - Practice minimising interruptions between shock delivery and CPR resumption
 
-## Critical Errors
-No critical errors detected.
+Critical Errors
+None detected.
 
-## Recommendations
+Recommendations
 - Advance to multi-patient scenarios where you must balance CPR on one patient with assessments on others
 - Practice the post-ROSC (return of spontaneous circulation) protocol for scenarios where the patient responds to defibrillation
-- In real cardiac arrests, reassess rhythm every 2 minutes — practice this timing discipline
+- In real cardiac arrests, reassess rhythm every 2 minutes -- practice this timing discipline

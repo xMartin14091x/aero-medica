@@ -1,22 +1,22 @@
-## Overall Assessment
-No meaningful actions were taken during this multi-patient Building Fire scenario. Three patients — Niran, Ploy, and Arthit — received no assessment, no treatment, and no triage. The 720-second timer expired with zero interventions. Protocol adherence: 0%. Two of the three patients (Ploy and Arthit) had immediately life-threatening conditions that required urgent airway management.
+Overall Assessment
+No meaningful actions were taken during this multi-patient Building Fire scenario. Three patients -- Niran, Ploy, and Arthit -- received no assessment, no treatment, and no triage. The 720-second timer expired with zero interventions. Protocol adherence: 0%. Two of the three patients (Ploy and Arthit) had immediately life-threatening conditions that required urgent airway management.
 
-## Strengths
+Strengths
 - The scenario was started
 
-## Areas for Improvement
+Areas for Improvement
 - No patients were approached or assessed during the entire 12-minute scenario
 - No equipment was picked up or used
 - No triage tags were assigned
 - Three patients with active fire-related injuries went completely untreated
 
-## Critical Errors
+Critical Errors
 - Complete inaction: all three patients went untreated for the full scenario duration
-- Ploy and Arthit both had obstructed airways requiring immediate intervention — without treatment, both patients died
+- Ploy and Arthit both had obstructed airways requiring immediate intervention -- without treatment, both patients died
 - Without any interaction, the system cannot evaluate clinical decision-making
 
-## Recommendations
+Recommendations
 - If the multi-patient scene was overwhelming, start with the single-patient Building Fire scenario to practise fire-related assessment in a simpler environment
 - In any multi-casualty scene, your first action should be a rapid walk-through: approach each patient briefly to determine who needs help most urgently
 - Remember the controls: press E near a patient to begin assessment, use number keys for ABCDE checks
-- The goal is not perfection — even assessing one patient is better than assessing none. Start with whoever is closest and work outward
+- The goal is not perfection -- even assessing one patient is better than assessing none. Start with whoever is closest and work outward

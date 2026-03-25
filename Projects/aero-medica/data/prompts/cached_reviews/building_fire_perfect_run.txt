@@ -1,22 +1,22 @@
-## Overall Assessment
+Overall Assessment
 Excellent performance on the Building Fire scenario. Anong received a complete ABCDE assessment with correct identification of smoke inhalation injuries and compromised airway. RED triage correctly assigned. All critical interventions performed within the time limit. Protocol adherence: 100%. 0 errors detected.
 
-## Strengths
+Strengths
 - Rapid scene assessment and immediate approach to Anong despite fire hazard environment
-- Compromised airway correctly identified — head-tilt chin-lift performed promptly
+- Compromised airway correctly identified -- head-tilt chin-lift performed promptly
 - Smoke inhalation signs recognised: soot around nostrils, singed nasal hairs, hoarse voice, stridor
-- SpO2 of 88% identified as critically low — high-flow oxygen applied
-- RED triage correctly assigned — Anong's compromised airway and respiratory distress make her immediate priority
+- SpO2 of 88% identified as critically low -- high-flow oxygen applied
+- RED triage correctly assigned -- Anong's compromised airway and respiratory distress make her immediate priority
 - Complete ABCDE assessment performed in correct sequence under time pressure
 
-## Areas for Improvement
+Areas for Improvement
 - At this performance level, maintain consistency across different scenario types
 - Consider practising multi-patient fire scenarios to build on this strong single-patient foundation
 
-## Critical Errors
-No critical errors detected.
+Critical Errors
+None detected.
 
-## Recommendations
+Recommendations
 - Advance to the multi-patient building fire scenario (3 patients) to test prioritisation skills in a fire environment
 - Practice cardiac arrest scenarios to add AED/CPR protocol to your skill set
-- In real smoke inhalation cases, always suspect CO poisoning even when SpO2 reads normal — pulse oximetry cannot distinguish carboxyhaemoglobin
+- In real smoke inhalation cases, always suspect CO poisoning even when SpO2 reads normal -- pulse oximetry cannot distinguish carboxyhaemoglobin

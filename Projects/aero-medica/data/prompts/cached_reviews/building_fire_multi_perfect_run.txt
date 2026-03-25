@@ -1,23 +1,23 @@
-## Overall Assessment
-Outstanding performance on the multi-patient Building Fire scenario. All three patients — Niran, Ploy, and Arthit — received complete assessments with correct triage and treatment. RED patients (Ploy and Arthit) were correctly prioritised over YELLOW (Niran). All critical interventions performed within the 720-second time limit. Protocol adherence: 100%. 0 errors detected.
+Overall Assessment
+Outstanding performance on the multi-patient Building Fire scenario. All three patients -- Niran, Ploy, and Arthit -- received complete assessments with correct triage and treatment. RED patients (Ploy and Arthit) were correctly prioritised over YELLOW (Niran). All critical interventions performed within the 720-second time limit. Protocol adherence: 100%. 0 errors detected.
 
-## Strengths
+Strengths
 - Perfect triage accuracy: Ploy (RED), Arthit (RED), Niran (YELLOW) all tagged correctly
-- Correct prioritisation: RED patients treated before YELLOW — Ploy's obstructed airway and Arthit's unconscious state addressed first
+- Correct prioritisation: RED patients treated before YELLOW -- Ploy's obstructed airway and Arthit's unconscious state addressed first
 - Ploy's airway obstruction identified and head-tilt chin-lift performed promptly despite low breathing rate of 10/min
-- Arthit's crush injuries and obstructed airway managed — unconscious patient with bleeding severity 2 correctly escalated
+- Arthit's crush injuries and obstructed airway managed -- unconscious patient with bleeding severity 2 correctly escalated
 - Niran's minor bleeding treated appropriately after RED patients stabilised
-- Efficient movement between patients — minimal transition time in a hazardous fire environment
+- Efficient movement between patients -- minimal transition time in a hazardous fire environment
 - Complete ABCDE assessments on all three patients
 
-## Areas for Improvement
+Areas for Improvement
 - At this performance level, focus on maintaining this standard across mass casualty scenarios with 6+ patients
 - Consider practising faster scene sweep techniques for larger incidents
 
-## Critical Errors
-No critical errors detected.
+Critical Errors
+None detected.
 
-## Recommendations
+Recommendations
 - Advance to the Mass Casualty scenario (6 patients) to test your triage and prioritisation under extreme pressure
 - In real multi-patient fire scenarios, reassess RED patients periodically as smoke inhalation can cause rapid deterioration
-- Practice delegating tasks to bystanders — in real incidents, you may need to direct others to maintain CPR while you assess new patients
+- Practice delegating tasks to bystanders -- in real incidents, you may need to direct others to maintain CPR while you assess new patients

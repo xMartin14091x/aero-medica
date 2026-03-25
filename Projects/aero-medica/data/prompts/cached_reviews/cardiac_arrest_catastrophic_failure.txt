@@ -1,24 +1,24 @@
-## Overall Assessment
-This session requires urgent improvement. The patient was in cardiac arrest — pulseless, apnoeic, in ventricular fibrillation — and received no effective resuscitation. No CPR was performed, and the AED was not used. The patient had zero chance of survival without these interventions. Protocol adherence: below 15%. 4 critical errors detected. Cardiac arrest is the most time-critical emergency — without CPR and defibrillation, brain death begins within 4-6 minutes.
+Overall Assessment
+This session requires urgent improvement. Wichai was in cardiac arrest -- pulseless, apnoeic, in ventricular fibrillation -- and received no effective resuscitation. No CPR was performed, and the AED was not used. The patient had zero chance of survival without these interventions. Protocol adherence: below 15%. 4 critical errors detected. Cardiac arrest is the most time-critical emergency -- without CPR and defibrillation, brain death begins within 4-6 minutes.
 
-## Strengths
+Strengths
 - You entered the scenario and approached the patient area
 
-## Areas for Improvement
-- No CPR performed despite confirming the patient was pulseless and not breathing
-- AED was not applied — the patient was in VFib, a shockable rhythm that responds to defibrillation
-- No airway management performed — head-tilt chin-lift not attempted
+Areas for Improvement
+- No CPR performed despite confirming Wichai was pulseless and not breathing
+- AED was not applied -- Wichai was in VFib, a shockable rhythm that responds to defibrillation
+- No airway management performed -- head-tilt chin-lift not attempted
 - Assessment was either abandoned early or performed without recognising the cardiac arrest state
 - No call for help initiated
 
-## Critical Errors
-- No CPR on a pulseless patient — this is the single most critical intervention in cardiac arrest
-- No AED use — ventricular fibrillation has a high survival rate with early defibrillation, but zero survival without it
-- Failure to recognise cardiac arrest — the patient was unresponsive, not breathing, and pulseless
-- No call for help — advanced life support cannot arrive if not activated
+Critical Errors
+- No CPR on a pulseless patient -- this is the single most critical intervention in cardiac arrest
+- No AED use -- ventricular fibrillation has a high survival rate with early defibrillation, but zero survival without it
+- Failure to recognise cardiac arrest -- Wichai was unresponsive, not breathing, and pulseless
+- No call for help -- advanced life support cannot arrive if not activated
 
-## Recommendations
-- Learn the cardiac arrest recognition sequence: tap and shout, check breathing, check pulse. If no pulse and no breathing — start CPR immediately
+Recommendations
+- Learn the cardiac arrest recognition sequence: tap and shout, check breathing, check pulse. If no pulse and no breathing -- start CPR immediately
 - CPR means chest compressions: push hard (5-6cm depth), push fast (100-120/min), allow full recoil, minimise interruptions
-- The AED does the thinking for you — attach pads, press analyse, follow voice prompts
+- The AED does the thinking for you -- attach pads, press analyse, follow voice prompts
 - Start with the tutorial to rebuild basic assessment confidence, then return to this scenario

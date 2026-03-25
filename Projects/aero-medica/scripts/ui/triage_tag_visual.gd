@@ -8,7 +8,7 @@ const TAG_COLOURS := {
 	"GREEN": Color(0.0, 1.0, 0.0),
 	"YELLOW": Color(1.0, 1.0, 0.0),
 	"RED": Color(1.0, 0.0, 0.0),
-	"BLACK": Color(0.2, 0.2, 0.2),
+	"BLACK": Color(0.9, 0.9, 0.9),
 }
 
 ## Pulse speed for incorrect tags (cycles per second).

@@ -1,26 +1,26 @@
-## Overall Assessment
-This session requires urgent improvement. Of six patients in the Mass Casualty scenario, multiple RED patients died or deteriorated critically due to lack of intervention. Triage was either not performed or grossly inaccurate. Protocol adherence: below 15%. 5 critical errors detected. Mass casualty incidents demand rapid, systematic triage — without it, salvageable patients die while resources are spent on the wrong priorities.
+Overall Assessment
+This session requires urgent improvement. Of six patients in the Mass Casualty scenario, multiple RED patients died or deteriorated critically due to lack of intervention. Triage was either not performed or grossly inaccurate. Protocol adherence: below 15%. 5 critical errors detected. Mass casualty incidents demand rapid, systematic triage -- without it, salvageable patients die while resources are spent on the wrong priorities.
 
-## Strengths
+Strengths
 - You engaged with the scenario and approached the market explosion scene
 
-## Areas for Improvement
-- Malee (RED, severe bleeding) received no effective haemorrhage control — patient deteriorated
-- Tawan (RED, unconscious, obstructed airway) received no airway management — patient died
-- Chai (RED, critical bleeding severity 3) went untreated — highest-acuity survivable patient ignored
-- Boonsri (BLACK, cardiac arrest) may have received CPR — in MCI, this wastes time that should be spent on salvageable RED patients
+Areas for Improvement
+- Malee (RED, severe bleeding) received no effective haemorrhage control -- patient deteriorated
+- Tawan (RED, unconscious, obstructed airway) received no airway management -- patient died
+- Chai (RED, critical bleeding severity 3) went untreated -- highest-acuity survivable patient ignored
+- Boonsri (BLACK, cardiac arrest) may have received CPR -- in MCI, this wastes time that should be spent on salvageable RED patients
 - Lek and Kanda (GREEN, walking wounded) may have been treated before RED patients
-- No systematic triage sweep was performed — patients were encountered randomly rather than by priority
+- No systematic triage sweep was performed -- patients were encountered randomly rather than by priority
 
-## Critical Errors
-- Multiple RED patients died from treatable conditions — airway obstruction and uncontrolled bleeding are survivable with timely intervention
-- No triage system applied — patients were not classified by severity before treatment began
-- CPR on BLACK patient in MCI setting — resources diverted from salvageable patients
+Critical Errors
+- Multiple RED patients died from treatable conditions -- airway obstruction and uncontrolled bleeding are survivable with timely intervention
+- No triage system applied -- patients were not classified by severity before treatment began
+- CPR on BLACK patient in MCI setting -- resources diverted from salvageable patients
 - Highest-acuity patient (Chai, bleeding severity 3) received no treatment
-- Wrong treatment order — GREEN patients treated while RED patients died
+- Wrong treatment order -- GREEN patients treated while RED patients died
 
-## Recommendations
+Recommendations
 - Mass casualty is the hardest scenario type. If this is overwhelming, practice with the 3-patient building fire first
 - The single most important skill in MCI: rapid triage sweep. Walk past every patient, spend 10 seconds each, classify as RED/YELLOW/GREEN/BLACK
-- In MCI, you cannot save everyone — the goal is to save the most lives possible. That means treating RED first and accepting BLACK as expectant
+- In MCI, you cannot save everyone -- the goal is to save the most lives possible. That means treating RED first and accepting BLACK as expectant
 - Practice the START algorithm separately until it is automatic before attempting this scenario again

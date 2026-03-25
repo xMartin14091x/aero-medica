@@ -1,22 +1,22 @@
-## Overall Assessment
-No meaningful actions were taken during this Mass Casualty scenario. Six patients — Lek, Malee, Tawan, Kanda, Boonsri, and Chai — received no assessment, no treatment, and no triage. The 1200-second timer expired with zero interventions. Protocol adherence: 0%. Three RED patients with immediately life-threatening injuries went untreated for the full 20-minute scenario.
+Overall Assessment
+No meaningful actions were taken during this Mass Casualty scenario. Six patients -- Lek, Malee, Tawan, Kanda, Boonsri, and Chai -- received no assessment, no treatment, and no triage. The 1200-second timer expired with zero interventions. Protocol adherence: 0%. Three RED patients with immediately life-threatening injuries went untreated for the full 20-minute scenario.
 
-## Strengths
+Strengths
 - The scenario was started
 
-## Areas for Improvement
+Areas for Improvement
 - No patients were approached or assessed during the entire 20-minute scenario
 - No triage tags were assigned to any of the six patients
 - No equipment was picked up or used
 - Three patients with survivable but time-critical injuries (Malee, Tawan, Chai) received no care
 
-## Critical Errors
+Critical Errors
 - Complete inaction: all six patients went untreated for the full scenario duration
 - Three RED patients who could have survived with intervention received no care
 - Without any interaction, the system cannot evaluate clinical decision-making
 
-## Recommendations
-- The Mass Casualty scenario is the most complex in the simulation — if it felt overwhelming, start with simpler scenarios and work up
+Recommendations
+- The Mass Casualty scenario is the most complex in the simulation -- if it felt overwhelming, start with simpler scenarios and work up
 - Recommended progression: Tutorial (1 patient, no timer) then Building Fire single (1 patient, timed) then Building Fire multi (3 patients) then this scenario
 - If you do attempt this scenario again, remember: your first action should be a rapid walk-through of the entire scene. Just walk past each patient and note who looks worst
-- Even triaging one patient correctly is progress — do not let the scale of the incident prevent you from starting
+- Even triaging one patient correctly is progress -- do not let the scale of the incident prevent you from starting

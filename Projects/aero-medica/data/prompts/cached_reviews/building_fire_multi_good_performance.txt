@@ -1,24 +1,24 @@
-## Overall Assessment
+Overall Assessment
 Solid performance on the multi-patient Building Fire scenario. All three patients were assessed and triaged. Ploy and Arthit were correctly identified as RED priority. Protocol adherence: approximately 78%. Minor delays in transitioning between patients and some assessment gaps, but no critical errors. 0 critical errors detected.
 
-## Strengths
+Strengths
 - All three triage tags assigned correctly: Ploy (RED), Arthit (RED), Niran (YELLOW)
-- RED patients were treated before YELLOW — correct prioritisation
+- RED patients were treated before YELLOW -- correct prioritisation
 - Ploy's obstructed airway identified and managed with head-tilt chin-lift
 - Arthit's unconscious state recognised and airway secured
 - Scenario completed within the 720-second time limit
 
-## Areas for Improvement
-- Transition time between patients was over 15 seconds — in a fire environment with deteriorating conditions, aim for under 10 seconds
+Areas for Improvement
+- Transition time between patients was over 15 seconds -- in a fire environment with deteriorating conditions, aim for under 10 seconds
 - Arthit's bleeding (severity 2) was identified but bandage application was delayed
-- Niran's assessment started late — while YELLOW is lower priority, all patients should be assessed within the time limit
-- Consider performing a rapid initial sweep of all patients before deep assessment — this helps confirm triage order
+- Niran's assessment started late -- while YELLOW is lower priority, all patients should be assessed within the time limit
+- Consider performing a rapid initial sweep of all patients before deep assessment -- this helps confirm triage order
 
-## Critical Errors
-No critical errors detected.
+Critical Errors
+None detected.
 
-## Recommendations
+Recommendations
 - Practice the rapid triage sweep: walk past all patients in 30 seconds, identify RED vs YELLOW, then return to treat RED first
-- In multi-patient fire scenarios, always check for airway compromise first — smoke inhalation affects all patients in the environment
-- Work on faster transitions between patients — finish treatment, move immediately to next priority patient
+- In multi-patient fire scenarios, always check for airway compromise first -- smoke inhalation affects all patients in the environment
+- Work on faster transitions between patients -- finish treatment, move immediately to next priority patient
 - Advance to the Mass Casualty scenario once your multi-patient transition speed improves
