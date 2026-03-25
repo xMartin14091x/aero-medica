@@ -60,6 +60,9 @@ signal modifier_changed(modifier_name: String, old_value: Variant, new_value: Va
 ## Whether the patient is currently being treated (pauses deterioration).
 var is_being_treated: bool = false
 
+## Whether CPR has been performed on this patient (for telemetry/protocol tracking).
+var _cpr_performed: bool = false
+
 ## ── Normal Range Constants (for UI color-coding by ARC-13) ─────────────────────
 const VITAL_RANGES := {
 	"heart_rate": { "low": 60, "high": 100, "critical_low": 40, "critical_high": 150 },
@@ -81,8 +84,8 @@ const TREATMENT_MAP := {
 	"insert_opa": "airway",
 	"bag_valve_mask": "breathing",
 	"oxygen_mask": "breathing",
-	"cpr": "cardiac",
-	"aed": "cardiac",
+	"cpr": "cpr",
+	"aed": "aed",
 }
 
 const TRIAGE_COLOURS := {
@@ -189,20 +192,38 @@ func apply_treatment(treatment_type: String) -> bool:
 				set_modifier("breathing_rate", 16.0)
 				set_modifier("spo2", minf(spo2 + 6.0, 98.0))
 				was_effective = true
-		"cardiac":
+		"cpr":
 			if current_state == PatientState.CARDIAC_ARREST:
-				set_modifier("pulse_present", true)
-				set_modifier("breathing_rate", 10.0)
-				set_modifier("heart_rate", 50)
-				set_modifier("blood_pressure_systolic", 80)
-				set_modifier("spo2", 88.0)
-				set_modifier("ecg_rhythm", "SINUS_BRADYCARDIA")
-				set_state(PatientState.UNCONSCIOUS)
-				was_effective = true
-				# Slow deterioration after ROSC — patient is stabilised but fragile
+				# CPR buys time — pauses cardiac_to_dead by resetting timer in DeteriorationSystem.
+				# Does NOT trigger ROSC on its own. Patient remains in cardiac arrest.
 				var det: Node = get_parent().get_node_or_null("DeteriorationSystem")
 				if det:
-					det.deterioration_rate *= 0.3
+					det._cardiac_timer = 0.0  # Reset death countdown
+				_cpr_performed = true
+				was_effective = true
+		"aed":
+			if current_state == PatientState.CARDIAC_ARREST:
+				# AED only works on shockable rhythms (VFib, VTach)
+				var shockable := ecg_rhythm in ["VENTRICULAR_FIBRILLATION", "VENTRICULAR_TACHYCARDIA"]
+				if shockable:
+					# ROSC — return of spontaneous circulation
+					set_modifier("pulse_present", true)
+					set_modifier("breathing_rate", 10.0)
+					set_modifier("heart_rate", 50)
+					set_modifier("blood_pressure_systolic", 80)
+					set_modifier("spo2", 88.0)
+					set_modifier("ecg_rhythm", "SINUS_BRADYCARDIA")
+					set_state(PatientState.UNCONSCIOUS)
+					was_effective = true
+					# Reset budget to phase 2 and slow deterioration post-ROSC
+					var det: Node = get_parent().get_node_or_null("DeteriorationSystem")
+					if det:
+						det._budget_remaining = det.phase2_budget
+						det._in_phase2 = true
+						det.deterioration_rate *= 0.3
+				else:
+					# Non-shockable (Asystole, PEA) — AED advises "No shock". CPR is the only option.
+					was_effective = false
 	is_being_treated = false
 	return was_effective
 

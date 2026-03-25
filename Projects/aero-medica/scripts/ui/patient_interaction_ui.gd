@@ -145,6 +145,11 @@ var _bag_items_vbox: VBoxContainer = null
 var _bag_tier_manager: Node = null
 var _current_bag_data: Dictionary = {}  # loaded medical_bag_tiers.json
 
+## CPR action UI.
+var _cpr_button: Button = null
+var _cpr_status_label: Label = null
+var _cpr_active: bool = false
+
 
 func _ready() -> void:
 	visible = false
@@ -790,6 +795,25 @@ func _build_stabilize_tab() -> Control:
 	title.add_theme_font_size_override("font_size", 22)
 	container.add_child(title)
 
+	# CPR action — visible only during cardiac arrest, prominent red button
+	_cpr_button = Button.new()
+	_cpr_button.text = "Start CPR (Chest Compressions)"
+	_cpr_button.custom_minimum_size = Vector2(300, 50)
+	_cpr_button.focus_mode = Control.FOCUS_NONE
+	_cpr_button.add_theme_font_size_override("font_size", 18)
+	_cpr_button.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+	_cpr_button.pressed.connect(_on_cpr_pressed)
+	_cpr_button.visible = false  # Shown only when patient is in cardiac arrest
+	container.add_child(_cpr_button)
+
+	_cpr_status_label = Label.new()
+	_cpr_status_label.text = ""
+	_cpr_status_label.add_theme_font_size_override("font_size", 14)
+	_cpr_status_label.visible = false
+	container.add_child(_cpr_status_label)
+
+	container.add_child(HSeparator.new())
+
 	## ARC-18: Medical Bag Tier Indicator (at TOP, before equipment grid)
 	var tier_hbox := HBoxContainer.new()
 	container.add_child(tier_hbox)
@@ -1115,6 +1139,22 @@ func _populate_exam_tab() -> void:
 # ==============================================================================
 
 func _populate_stabilize_tab() -> void:
+	# Show/hide CPR button based on patient cardiac arrest state
+	_cpr_active = false
+	if _cpr_button:
+		var medical: Node = _patient.get_node_or_null("MedicalStateComponent") if _patient else null
+		if medical and medical.current_state == medical.PatientState.CARDIAC_ARREST:
+			_cpr_button.visible = true
+			_cpr_button.disabled = false
+			_cpr_button.text = "Start CPR (Chest Compressions)"
+			if _cpr_status_label:
+				_cpr_status_label.visible = false
+				_cpr_status_label.text = ""
+		else:
+			_cpr_button.visible = false
+			if _cpr_status_label:
+				_cpr_status_label.visible = false
+
 	# Reset all equipment buttons to available state
 	for key in _equipment_buttons:
 		var btn: Button = _equipment_buttons[key]
@@ -2027,6 +2067,39 @@ func _on_drug_name_changed(index: int) -> void:
 	else:
 		for dose in doses:
 			_drug_dose_btn.add_item(str(dose))
+
+
+func _on_cpr_pressed() -> void:
+	if not _patient:
+		return
+	var medical: Node = _patient.get_node_or_null("MedicalStateComponent")
+	if not medical or medical.current_state != medical.PatientState.CARDIAC_ARREST:
+		return
+
+	_cpr_active = true
+	medical.apply_treatment("cpr")
+
+	# Update button to show CPR is active
+	if _cpr_button:
+		_cpr_button.text = "CPR In Progress"
+		_cpr_button.disabled = true
+	if _cpr_status_label:
+		_cpr_status_label.visible = true
+		var rhythm: String = medical.ecg_rhythm if "ecg_rhythm" in medical else ""
+		var shockable := rhythm in ["VENTRICULAR_FIBRILLATION", "VENTRICULAR_TACHYCARDIA"]
+		if shockable:
+			_cpr_status_label.text = "Rhythm is shockable (%s) — deploy AED for defibrillation!" % rhythm.replace("_", " ").capitalize()
+			_cpr_status_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))
+		else:
+			_cpr_status_label.text = "Rhythm is non-shockable (%s) — continue CPR. AED will not help." % rhythm.replace("_", " ").capitalize()
+			_cpr_status_label.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
+
+	# Log to telemetry
+	var telemetry: Node = _player.get_node_or_null("TelemetryEmitter") if _player else null
+	if telemetry and telemetry.has_method("emit_action"):
+		telemetry.emit_action("cpr", _patient.name, {"rhythm": medical.ecg_rhythm if "ecg_rhythm" in medical else ""})
+
+	assessment_action.emit("cpr")
 
 
 func _on_administer_drug_pressed() -> void:
