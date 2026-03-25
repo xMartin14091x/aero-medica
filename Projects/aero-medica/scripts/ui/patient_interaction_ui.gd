@@ -1139,21 +1139,17 @@ func _populate_exam_tab() -> void:
 # ==============================================================================
 
 func _populate_stabilize_tab() -> void:
-	# Show/hide CPR button based on patient cardiac arrest state
+	# CPR button: hidden by default. Only revealed after player assesses pulse/HR
+	# and the patient is actually in cardiac arrest. Call _check_cpr_visibility()
+	# after each assessment action to update.
 	_cpr_active = false
 	if _cpr_button:
-		var medical: Node = _patient.get_node_or_null("MedicalStateComponent") if _patient else null
-		if medical and medical.current_state == medical.PatientState.CARDIAC_ARREST:
-			_cpr_button.visible = true
-			_cpr_button.disabled = false
-			_cpr_button.text = "Start CPR (Chest Compressions)"
-			if _cpr_status_label:
-				_cpr_status_label.visible = false
-				_cpr_status_label.text = ""
-		else:
-			_cpr_button.visible = false
-			if _cpr_status_label:
-				_cpr_status_label.visible = false
+		_cpr_button.visible = false
+		_cpr_button.disabled = false
+		_cpr_button.text = "Start CPR (Chest Compressions)"
+	if _cpr_status_label:
+		_cpr_status_label.visible = false
+		_cpr_status_label.text = ""
 
 	# Reset all equipment buttons to available state
 	for key in _equipment_buttons:
@@ -1607,12 +1603,14 @@ func _on_exam_action_pressed(action_name: String) -> void:
 
 	var result_text := _format_assessment_result(result, action_name)
 	_exam_results[action_name].text = result_text
-	_exam_buttons[action_name].disabled = true
+	# Keep button enabled for re-assessment — mark visually as completed instead
+	_exam_buttons[action_name].add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
 
 	_exam_completed += 1
 	if _exam_counter_label:
 		_exam_counter_label.text = "%d/%d" % [_exam_completed, _exam_total]
 
+	_check_cpr_visibility()
 	assessment_action.emit(action_name)
 
 
@@ -1648,9 +1646,11 @@ func _on_vital_pressed(key: String, action_id: int) -> void:
 
 	_display_vital_result(key, result, result_lbl)
 
+	# Keep button enabled for re-assessment — mark visually as completed
 	if _vital_buttons.has(key):
-		_vital_buttons[key].disabled = true
+		_vital_buttons[key].add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
 
+	_check_cpr_visibility()
 	assessment_action.emit(key)
 
 
@@ -2020,7 +2020,9 @@ func _on_secondary_region_pressed(region: String) -> void:
 		result_lbl.text = finding_text
 		result_lbl.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
 
-	region_btn.disabled = true
+	# Keep button enabled for re-assessment
+	if not region_btn.has_theme_color_override("font_color"):
+		region_btn.add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
 
 	_secondary_completed_count += 1
 	if _secondary_counter_label:
@@ -2067,6 +2069,30 @@ func _on_drug_name_changed(index: int) -> void:
 	else:
 		for dose in doses:
 			_drug_dose_btn.add_item(str(dose))
+
+
+## Check if CPR button should become visible after an assessment reveals cardiac arrest.
+## Called after each exam/vital assessment action.
+func _check_cpr_visibility() -> void:
+	if not _cpr_button or not _patient:
+		return
+	if _cpr_active:
+		return  # Already performing CPR
+	var medical: Node = _patient.get_node_or_null("MedicalStateComponent")
+	if not medical or medical.current_state != medical.PatientState.CARDIAC_ARREST:
+		_cpr_button.visible = false
+		return
+	# Only show if the player has assessed pulse or heart rate (discovered the arrest)
+	var assessed: Dictionary = {}
+	if _patient.has_meta("assessed_conditions"):
+		assessed = _patient.get_meta("assessed_conditions")
+	var pulse_checked := assessed.has("assess_pulse") or assessed.has("check_pulse")
+	var hr_checked := assessed.has("assess_heart_rate") or assessed.has("check_heart_rate")
+	var consciousness_checked := assessed.has("assess_consciousness") or assessed.has("check_consciousness")
+	if pulse_checked or hr_checked or consciousness_checked:
+		_cpr_button.visible = true
+	else:
+		_cpr_button.visible = false
 
 
 func _on_cpr_pressed() -> void:
