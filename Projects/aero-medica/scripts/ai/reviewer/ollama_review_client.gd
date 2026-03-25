@@ -269,6 +269,14 @@ func _compose_user_prompt(session_data: Dictionary, _protocol_analysis: Dictiona
 			else:
 				prompt += "- Student diagnoses: none submitted\n"
 
+			# Timing data — how much budget remained (lower = more time spent on patient)
+			var budget_left: float = ps.get("budget_remaining", -1.0)
+			var budget_phase: String = ps.get("budget_phase", "")
+			if budget_left >= 0.0:
+				var budget_max: float = 120.0 if budget_phase == "phase2" else 300.0
+				var time_spent: float = budget_max - budget_left
+				prompt += "- Time attention: %.0fs of %.0fs budget used (%.0f%% attention given)\n" % [time_spent, budget_max, (time_spent / budget_max) * 100.0 if budget_max > 0 else 0.0]
+
 	# Treatment events timeline
 	var treatments: Array[String] = []
 	var triage_events: Array[String] = []

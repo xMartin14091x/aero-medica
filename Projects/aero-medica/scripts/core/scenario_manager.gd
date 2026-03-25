@@ -435,6 +435,13 @@ func _build_patient_summaries() -> Array:
 		if entity.has_meta("diagnosis_matches"):
 			summary["diagnosis_matches"] = entity.get_meta("diagnosis_matches")
 
+		# Read deterioration budget timing for AI reviewer
+		var deterioration: Node = entity.get_node_or_null("DeteriorationSystem")
+		if deterioration:
+			summary["budget_remaining"] = deterioration._budget_remaining
+			summary["budget_phase"] = "phase2" if deterioration._in_phase2 else "phase1"
+			summary["was_focused"] = deterioration._is_player_focused
+
 		summaries.append(summary)
 
 	return summaries

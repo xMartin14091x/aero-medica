@@ -3,10 +3,10 @@
 ## Deterioration pauses while the patient is being actively treated.
 ## MON-17: Optimised — permanently disables process on DEAD state.
 ##
-## Single-budget deterioration gate:
-##   Each patient has a 5-minute (300s) critical budget. Drains at 1x when unfocused,
-##   3.33x when player is interacting with this patient. Critical state transitions
-##   (unconscious→cardiac, cardiac→dead) are BLOCKED until budget reaches 0.
+## Two-phase budget deterioration gate:
+##   Phase 1 (pre-cardiac): 300s budget, drains 1x unfocused / 3.33x focused (~5min / ~1.5min).
+##   Phase 2 (cardiac arrest→dead): budget resets to 120s, drains 1x / 2x (~2min / ~1min).
+##   Critical transitions BLOCKED until budget reaches 0. Budget resets on cardiac arrest entry.
 ##   Non-critical deterioration (bleeding, vitals) always runs normally.
 extends Node
 
@@ -29,14 +29,16 @@ signal condition_worsened(patient: Node, modifier: String, old_value: Variant, n
 ## Interval (seconds) for vital sign deterioration ticks.
 @export var vitals_interval: float = 10.0
 
-## Single-budget deterioration gate.
-## Each patient starts with a 5 min (300s) budget. The budget drains at:
-##   - 1.0x when unfocused (player not interacting with this patient)
-##   - 3.33x when focused (PatientInteractionUI open for this patient)
-## Critical transitions (unconscious→cardiac, cardiac→dead) are BLOCKED until budget hits 0.
-## At 3.33x focused rate, budget drains in ~90s (1.5 min) of continuous interaction.
-@export var critical_budget: float = 300.0           # 5 min total budget
-@export var focused_drain_rate: float = 3.33         # Multiplier when player is focused
+## Two-phase budget deterioration gate.
+## Phase 1 (pre-cardiac arrest): 300s budget, drains at 1x unfocused / 3.33x focused.
+##   → ~5 min unfocused or ~1.5 min focused before cardiac arrest can trigger.
+## Phase 2 (cardiac arrest → dead): budget resets to 120s, drains at 1x unfocused / 2x focused.
+##   → ~2 min unfocused or ~1 min focused before death can trigger.
+## Non-critical deterioration (bleeding, vitals) always runs regardless of budget.
+@export var phase1_budget: float = 300.0             # 5 min pre-cardiac budget
+@export var phase1_focused_rate: float = 3.33        # ~90s focused to drain
+@export var phase2_budget: float = 120.0             # 2 min cardiac arrest budget
+@export var phase2_focused_rate: float = 2.0         # ~60s focused to drain
 
 ## Internal timers tracking time since last worsening per condition.
 var _bleeding_timer: float = 0.0
@@ -46,8 +48,9 @@ var _cardiac_timer: float = 0.0
 var _vitals_timer: float = 0.0
 
 ## Budget state.
-var _budget_remaining: float = 300.0   # Initialized to critical_budget in _ready
+var _budget_remaining: float = 300.0   # Initialized to phase1_budget in _ready
 var _is_player_focused: bool = false   # True while PatientInteractionUI is open for THIS patient
+var _in_phase2: bool = false           # True after cardiac arrest entry (budget reset)
 
 ## Reference to sibling MedicalStateComponent.
 var _medical: Node = null
@@ -58,7 +61,13 @@ func _ready() -> void:
 	if _medical == null:
 		push_error("DeteriorationSystem: No sibling MedicalStateComponent found.")
 		set_process(false)
-	_budget_remaining = critical_budget
+		return
+	# Patients starting in cardiac arrest begin in phase 2 directly
+	if _medical.current_state == _medical.PatientState.CARDIAC_ARREST:
+		_budget_remaining = phase2_budget
+		_in_phase2 = true
+	else:
+		_budget_remaining = phase1_budget
 
 
 ## Called by PatientInteractionUI when the player opens/closes interaction with this patient.
@@ -85,9 +94,10 @@ func _process(delta: float) -> void:
 		return
 
 	# Drain critical budget: faster when player is focused on this patient, normal otherwise.
+	# Phase 1 (pre-cardiac) uses phase1_focused_rate, Phase 2 (cardiac) uses phase2_focused_rate.
 	if _budget_remaining > 0.0:
-		var drain: float = delta * (focused_drain_rate if _is_player_focused else 1.0)
-		_budget_remaining = maxf(0.0, _budget_remaining - drain)
+		var rate: float = (phase2_focused_rate if _in_phase2 else phase1_focused_rate) if _is_player_focused else 1.0
+		_budget_remaining = maxf(0.0, _budget_remaining - delta * rate)
 
 	# Apply idle time scale: when player is NOT interacting (mouse captured / walking),
 	# deterioration runs slower (0.3x). When interacting (UI open), runs at normal speed.
@@ -141,7 +151,7 @@ func _process_airway(scaled_delta: float) -> void:
 
 
 ## UNCONSCIOUS: if airway not cleared within time → CARDIAC_ARREST.
-## Gated by interaction-aware timing — blocked until both thresholds met.
+## Gated by budget — blocked until budget depleted. On transition, resets budget to phase2.
 func _process_unconscious(scaled_delta: float) -> void:
 	if _medical.current_state != _medical.PatientState.UNCONSCIOUS:
 		_unconscious_timer = 0.0
@@ -156,6 +166,9 @@ func _process_unconscious(scaled_delta: float) -> void:
 		_medical.set_modifier("breathing_rate", 0.0)
 		_medical.set_state(_medical.PatientState.CARDIAC_ARREST)
 		condition_worsened.emit(get_parent(), "state", "UNCONSCIOUS", "CARDIAC_ARREST")
+		# Reset budget to phase 2 — gives player 2 min unfocused / 1 min focused before death
+		_budget_remaining = phase2_budget
+		_in_phase2 = true
 
 
 ## CARDIAC_ARREST: if no CPR/AED within time window → DEAD.
