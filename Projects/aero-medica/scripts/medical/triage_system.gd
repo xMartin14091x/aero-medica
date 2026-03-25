@@ -55,10 +55,11 @@ func assign_tag(patient: Node, tag: TriageTag) -> Dictionary:
 
 	# Log to telemetry
 	if _telemetry and _telemetry.has_method("emit_action"):
-		_telemetry.emit_action("triage_assign", patient.name, {
+		var display_name: String = patient.persona.patient_name if ("persona" in patient and patient.persona) else patient.name
+		_telemetry.emit_action("triage_assign", display_name, {
 			"assigned_tag": TAG_LABELS[tag],
 			"correct_tag": TAG_LABELS[correct_tag],
-			"is_correct": is_correct,
+			"was_correct": is_correct,
 			"time_elapsed": Time.get_ticks_msec() / 1000.0,
 		})
 
@@ -69,15 +70,19 @@ func assign_tag(patient: Node, tag: TriageTag) -> Dictionary:
 	}
 
 
-## Calculate the correct triage tag for a patient based on their MedicalStateComponent.
-## Uses the START triage algorithm implemented in MedicalStateComponent.get_triage_priority().
+## Calculate the correct triage tag for a patient.
+## Uses the INITIAL triage priority stored at spawn time (before any deterioration).
+## Falls back to current MedicalStateComponent if no initial priority stored.
 func get_correct_tag(patient: Node) -> TriageTag:
-	var medical_state: Node = patient.get_node_or_null("MedicalStateComponent")
-	if not medical_state:
-		return TriageTag.GREEN  # Default if no medical data
-
-	# MedicalStateComponent already implements get_triage_priority() with START algorithm
-	var priority: String = medical_state.get_triage_priority()
+	# Prefer the initial priority from spawn time — reflects presenting condition
+	var priority: String = ""
+	if patient.has_meta("initial_triage_priority"):
+		priority = str(patient.get_meta("initial_triage_priority"))
+	else:
+		var medical_state: Node = patient.get_node_or_null("MedicalStateComponent")
+		if not medical_state:
+			return TriageTag.GREEN
+		priority = medical_state.get_triage_priority()
 
 	match priority:
 		"GREEN":

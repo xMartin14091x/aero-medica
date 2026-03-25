@@ -1098,12 +1098,15 @@ func _populate_exam_tab() -> void:
 	for key in _vital_buttons:
 		_vital_buttons[key].disabled = false
 
-	# Reset ECG
+	# Reset ECG — clear texture so previous patient's strip doesn't bleed through
 	if _ecg_mode_label:
 		_ecg_mode_label.text = "No monitor deployed"
 		_ecg_mode_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	if _ecg_panel:
 		_ecg_panel.visible = false
+	if _ecg_texture_rect:
+		_ecg_texture_rect.texture = null
+		_ecg_texture_rect.visible = false
 	if _ecg_rhythm_label:
 		_ecg_rhythm_label.text = ""
 

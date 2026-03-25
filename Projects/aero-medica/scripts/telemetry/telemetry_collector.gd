@@ -185,7 +185,7 @@ func _on_bag_equipment_deployed(patient: Node, equipment_key: String) -> void:
 	var display_name := equipment_key.replace("_", " ").capitalize()
 	record_event({
 		"type": "treatment_applied",
-		"target": patient.name,
+		"target": get_patient_display_name(patient),
 		"timestamp": get_session_time(),
 		"player_position": {"x": 0, "y": 0, "z": 0},
 		"details": {
@@ -216,7 +216,7 @@ func _on_drug_administered(patient: Node, drug_key: String, dose: String, route:
 
 	record_event({
 		"type": "treatment_applied",
-		"target": patient.name,
+		"target": get_patient_display_name(patient),
 		"timestamp": get_session_time(),
 		"player_position": {"x": 0, "y": 0, "z": 0},
 		"details": {
@@ -259,7 +259,7 @@ func _on_item_used_on_patient(equipment_data: Resource, target: Node) -> void:
 
 	record_event({
 		"type": "treatment_applied",
-		"target": target.name,
+		"target": get_patient_display_name(target),
 		"timestamp": get_session_time(),
 		"player_position": {"x": 0, "y": 0, "z": 0},
 		"details": {
@@ -267,6 +267,13 @@ func _on_item_used_on_patient(equipment_data: Resource, target: Node) -> void:
 			"was_correct": was_correct,
 		},
 	})
+
+
+## Get the display name for a patient node (persona name or fallback to node name).
+static func get_patient_display_name(patient: Node) -> String:
+	if "persona" in patient and patient.persona and patient.persona.patient_name != "":
+		return patient.persona.patient_name
+	return patient.name
 
 
 ## Record a triage assignment event (called externally by triage UI system).
@@ -278,7 +285,7 @@ func record_triage_assignment(patient: Node, assigned_tag: String) -> void:
 
 	record_event({
 		"type": "triage_assign",
-		"target": patient.name,
+		"target": get_patient_display_name(patient),
 		"timestamp": get_session_time(),
 		"player_position": {"x": 0, "y": 0, "z": 0},
 		"details": {
@@ -297,7 +304,7 @@ func _on_patient_state_changed(old_state: int, new_state: int, patient: Node) ->
 	var state_names := ["CONSCIOUS", "UNCONSCIOUS", "CARDIAC_ARREST", "DEAD"]
 	record_event({
 		"type": "patient_state_changed",
-		"target": patient.name,
+		"target": get_patient_display_name(patient),
 		"timestamp": get_session_time(),
 		"player_position": {"x": 0, "y": 0, "z": 0},
 		"details": {
@@ -313,7 +320,7 @@ func _on_condition_worsened(patient: Node, modifier: String, old_value: Variant,
 		return
 	record_event({
 		"type": "condition_worsened",
-		"target": patient.name,
+		"target": get_patient_display_name(patient),
 		"timestamp": get_session_time(),
 		"player_position": {"x": 0, "y": 0, "z": 0},
 		"details": {

@@ -117,9 +117,13 @@ func set_modifier(modifier_name: String, new_value: Variant) -> void:
 		"heart_rate":
 			old_value = heart_rate
 			heart_rate = clampi(new_value as int, 0, 250)
-			# Auto-update sinus rhythm based on new HR (only if already in a sinus rhythm)
+			# Auto-update rhythm based on HR — only sinus rhythms auto-update.
+			# VTach/VFib are set explicitly by state transitions, not by HR drift.
+			# Sinus rhythms can go to ~180 bpm in trauma (sinus tachy with sympathetic drive).
 			if ecg_rhythm in ["SINUS_BRADYCARDIA", "NORMAL_SINUS", "SINUS_TACHYCARDIA"]:
-				if heart_rate < 60:
+				if heart_rate == 0:
+					ecg_rhythm = "ASYSTOLE"
+				elif heart_rate < 60:
 					ecg_rhythm = "SINUS_BRADYCARDIA"
 				elif heart_rate <= 100:
 					ecg_rhythm = "NORMAL_SINUS"
@@ -238,6 +242,13 @@ func apply_treatment(treatment_type: String) -> bool:
 				else:
 					# Non-shockable (Asystole, PEA) — AED advises "No shock". CPR is the only option.
 					was_effective = false
+	# Successful treatment slows deterioration — patient stabilizes progressively.
+	# Each effective treatment reduces rate by 20%. Stacks multiplicatively.
+	# Floor at 0.1 (never fully stops — untreated conditions still worsen slowly).
+	if was_effective:
+		var det: Node = get_parent().get_node_or_null("DeteriorationSystem")
+		if det and treatment_target != "cpr":  # CPR already handled above, don't double-slow
+			det.deterioration_rate = maxf(det.deterioration_rate * 0.8, 0.1)
 	is_being_treated = false
 	return was_effective
 
@@ -279,6 +290,14 @@ func _evaluate_state_from_modifiers() -> void:
 		return
 	if breathing_rate <= 0.0 and current_state != PatientState.CARDIAC_ARREST:
 		set_modifier("pulse_present", false)
+		set_state(PatientState.CARDIAC_ARREST)
+		return
+	# Lethal heart rate → cardiac arrest. HR > 200 is incompatible with cardiac output.
+	# HR = 0 with pulse somehow still present is also arrest.
+	if heart_rate > 200 and current_state != PatientState.CARDIAC_ARREST:
+		set_modifier("pulse_present", false)
+		set_modifier("breathing_rate", 0.0)
+		ecg_rhythm = "VENTRICULAR_FIBRILLATION"
 		set_state(PatientState.CARDIAC_ARREST)
 		return
 	if breathing_rate < 6.0 and current_state == PatientState.CONSCIOUS:

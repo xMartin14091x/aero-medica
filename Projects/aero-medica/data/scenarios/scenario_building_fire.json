@@ -102,7 +102,7 @@
 	],
 	"bag_tier": "BLS",
 	"equipment": [],
-	"correct_diagnosis": ["Smoke Inhalation", "Acute Respiratory Distress"],
+	"correct_diagnosis": ["Smoke Inhalation", "Respiratory Failure"],
 	"hazards": [
 		{
 			"type": "FIRE",

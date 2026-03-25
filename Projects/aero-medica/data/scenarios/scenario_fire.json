@@ -294,7 +294,7 @@
 			"position": { "x": 0.0, "y": 0.0, "z": 5.0 }
 		}
 	],
-	"correct_diagnosis": ["Smoke Inhalation", "Second-Degree Burns", "Crush Injury"],
+	"correct_diagnosis": ["Smoke Inhalation", "Burns (Thermal)", "Crush Injury / Rhabdomyolysis"],
 	"hazards": [
 		{
 			"type": "FIRE",

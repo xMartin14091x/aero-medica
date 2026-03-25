@@ -164,6 +164,9 @@ func _process_unconscious(scaled_delta: float) -> void:
 		_unconscious_timer = 0.0
 		_medical.set_modifier("pulse_present", false)
 		_medical.set_modifier("breathing_rate", 0.0)
+		_medical.set_modifier("heart_rate", 0)
+		# Set arrest rhythm: VFib (shockable) — AED can defibrillate
+		_medical.ecg_rhythm = "VENTRICULAR_FIBRILLATION"
 		_medical.set_state(_medical.PatientState.CARDIAC_ARREST)
 		condition_worsened.emit(get_parent(), "state", "UNCONSCIOUS", "CARDIAC_ARREST")
 		# Reset budget to phase 2 — gives player 2 min unfocused / 1 min focused before death

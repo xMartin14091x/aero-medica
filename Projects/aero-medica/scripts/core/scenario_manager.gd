@@ -238,6 +238,11 @@ func _spawn_entities() -> void:
 			if det_data.has("cardiac_to_dead"):
 				deterioration_comp.cardiac_to_dead = det_data["cardiac_to_dead"]
 
+		# Store the INITIAL triage priority at spawn time — used for triage correctness
+		# evaluation. This captures the presenting condition before any deterioration.
+		if medical_comp and medical_comp.has_method("get_triage_priority"):
+			patient.set_meta("initial_triage_priority", medical_comp.get_triage_priority())
+
 		_spawned_entities.append(patient)
 
 	# Spawn equipment
@@ -294,6 +299,24 @@ func _spawn_entities() -> void:
 		_random_event_system.name = "RandomEventSystem"
 		scene_root.add_child(_random_event_system)
 		_random_event_system.setup(event_defs, scene_root)
+
+	# Scale deterioration budget by patient count.
+	# Multi-patient scenarios need more time — each additional patient adds idle time
+	# while the player is working on someone else.
+	# Formula: budget * max(1, patient_count / 2) — so 3 patients = 1.5x budget, 6 = 3x.
+	var patient_count: int = patients.size()
+	if patient_count > 1:
+		var budget_scale: float = maxf(1.0, float(patient_count) / 2.0)
+		for entity in _spawned_entities:
+			var det: Node = entity.get_node_or_null("DeteriorationSystem")
+			if det and "phase1_budget" in det:
+				det.phase1_budget *= budget_scale
+				det.phase2_budget *= budget_scale
+				# Re-initialize _budget_remaining based on current phase
+				if det._in_phase2:
+					det._budget_remaining = det.phase2_budget
+				else:
+					det._budget_remaining = det.phase1_budget
 
 
 ## Start the scenario — begins timer and telemetry.

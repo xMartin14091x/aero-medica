@@ -545,7 +545,7 @@
 			"position": { "x": 1.0, "y": 0.0, "z": 10.0 }
 		}
 	],
-	"correct_diagnosis": ["Blast Injury", "Penetrating Trauma", "Hemorrhagic Shock", "Traumatic Cardiac Arrest"],
+	"correct_diagnosis": ["Blast Injury", "Penetrating Trauma", "Haemorrhagic Shock", "Cardiac Arrest"],
 	"hazards": [],
 	"random_events": [
 		{

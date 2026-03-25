@@ -316,7 +316,7 @@
 			"position": { "x": -6.0, "y": 0.0, "z": -2.0 }
 		}
 	],
-	"correct_diagnosis": ["Blunt Thoracic Trauma", "Cervical Spine Injury", "Hemorrhagic Shock"],
+	"correct_diagnosis": ["Trauma — Multi-system", "Spinal Injury", "Haemorrhagic Shock"],
 	"hazards": [
 		{
 			"type": "FIRE",
