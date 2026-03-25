@@ -290,7 +290,15 @@ func _compose_user_prompt(session_data: Dictionary, _protocol_analysis: Dictiona
 			"treatment_applied":
 				var equip: String = details.get("equipment_name", "unknown")
 				var correct: bool = details.get("was_correct", false)
-				treatments.append("  %.0fs — %s on %s [%s]" % [t, equip, target, "CORRECT" if correct else "INCORRECT"])
+				var p_state: String = details.get("patient_state", "")
+				var p_rhythm: String = details.get("patient_rhythm", "")
+				var context_str := ""
+				if p_state != "":
+					context_str = " (patient: %s" % p_state
+					if p_rhythm != "":
+						context_str += ", rhythm: %s" % p_rhythm.replace("_", " ")
+					context_str += ")"
+				treatments.append("  %.0fs — %s on %s [%s]%s" % [t, equip, target, "CORRECT" if correct else "INCORRECT", context_str])
 			"triage_assign":
 				var atag: String = details.get("assigned_tag", "?")
 				var ctag: String = details.get("correct_tag", "?")

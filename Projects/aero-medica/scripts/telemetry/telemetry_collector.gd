@@ -203,6 +203,17 @@ func _on_drug_administered(patient: Node, drug_key: String, dose: String, route:
 		return
 	var was_correct: bool = (error == 0)  # MedError.NONE = 0
 	var display_name: String = "%s %s via %s" % [drug_key.replace("_", " ").capitalize(), dose, route]
+
+	# Capture patient state at time of drug administration for AI reviewer context
+	var patient_state := "UNKNOWN"
+	var patient_rhythm := ""
+	var medical: Node = patient.get_node_or_null("MedicalStateComponent") if is_instance_valid(patient) else null
+	if medical:
+		var state_names := ["CONSCIOUS", "UNCONSCIOUS", "CARDIAC_ARREST", "DEAD"]
+		var idx: int = medical.current_state if "current_state" in medical else 0
+		patient_state = state_names[idx] if idx < state_names.size() else "UNKNOWN"
+		patient_rhythm = medical.ecg_rhythm if "ecg_rhythm" in medical else ""
+
 	record_event({
 		"type": "treatment_applied",
 		"target": patient.name,
@@ -216,6 +227,8 @@ func _on_drug_administered(patient: Node, drug_key: String, dose: String, route:
 			"route": route,
 			"was_correct": was_correct,
 			"is_drug": true,
+			"patient_state": patient_state,
+			"patient_rhythm": patient_rhythm,
 		},
 	})
 
