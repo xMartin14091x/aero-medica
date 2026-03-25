@@ -63,6 +63,9 @@ var is_being_treated: bool = false
 ## Whether CPR has been performed on this patient (for telemetry/protocol tracking).
 var _cpr_performed: bool = false
 
+## The ECG rhythm at scenario start — never changes. Used for diagnosis reference.
+var initial_ecg_rhythm: String = ""
+
 ## ── Normal Range Constants (for UI color-coding by ARC-13) ─────────────────────
 const VITAL_RANGES := {
 	"heart_rate": { "low": 60, "high": 100, "critical_low": 40, "critical_high": 150 },
@@ -114,6 +117,14 @@ func set_modifier(modifier_name: String, new_value: Variant) -> void:
 		"heart_rate":
 			old_value = heart_rate
 			heart_rate = clampi(new_value as int, 0, 250)
+			# Auto-update sinus rhythm based on new HR (only if already in a sinus rhythm)
+			if ecg_rhythm in ["SINUS_BRADYCARDIA", "NORMAL_SINUS", "SINUS_TACHYCARDIA"]:
+				if heart_rate < 60:
+					ecg_rhythm = "SINUS_BRADYCARDIA"
+				elif heart_rate <= 100:
+					ecg_rhythm = "NORMAL_SINUS"
+				else:
+					ecg_rhythm = "SINUS_TACHYCARDIA"
 		"blood_pressure_systolic":
 			old_value = blood_pressure_systolic
 			blood_pressure_systolic = clampi(new_value as int, 0, 300)
@@ -135,6 +146,9 @@ func set_modifier(modifier_name: String, new_value: Variant) -> void:
 		"ecg_rhythm":
 			old_value = ecg_rhythm
 			ecg_rhythm = new_value
+			# Capture initial rhythm on first set (for diagnosis reference)
+			if initial_ecg_rhythm == "":
+				initial_ecg_rhythm = new_value
 		"skin_color":
 			old_value = skin_color
 			skin_color = new_value
@@ -325,6 +339,7 @@ func get_state_summary() -> Dictionary:
 		"gcs": get_gcs_total(),
 		"gcs_breakdown": "E%dV%dM%d" % [gcs_eye, gcs_verbal, gcs_motor],
 		"ecg_rhythm": ecg_rhythm,
+		"initial_ecg_rhythm": initial_ecg_rhythm,
 		"skin": "%s, %s, %s" % [skin_color, skin_temperature, skin_moisture],
 		"co_exposure": co_exposure,
 	}
