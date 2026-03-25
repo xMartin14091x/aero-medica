@@ -27,6 +27,7 @@ ECGRhythmManager="*res://scripts/medical/ecg_rhythm_manager.gd"
 GCSAssessmentManager="*res://scripts/medical/gcs_assessment_manager.gd"
 SecondarySurveyManager="*res://scripts/medical/secondary_survey_manager.gd"
 TriageSystem="*res://scripts/medical/triage_system.gd"
+ThemeMedical="*res://scripts/core/theme_medical.gd"
 
 [display]
 

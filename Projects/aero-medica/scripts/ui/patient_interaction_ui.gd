@@ -150,13 +150,30 @@ var _cpr_button: Button = null
 var _cpr_status_label: Label = null
 var _cpr_active: bool = false
 
+## Close button reference for theme re-application.
+var _close_btn: Button = null
+
 
 func _ready() -> void:
 	visible = false
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_build_ui()
+	_apply_theme()
 	_find_systems.call_deferred()
+	# Connect theme change signal for live re-styling.
+	var theme_mgr := _get_theme_medical()
+	if theme_mgr:
+		if not theme_mgr.theme_changed.is_connected(_on_theme_changed):
+			theme_mgr.theme_changed.connect(_on_theme_changed)
+
+
+func _get_theme_medical() -> Node:
+	return get_node_or_null("/root/ThemeMedical")
+
+
+func _on_theme_changed(_mode: String) -> void:
+	_apply_theme()
 
 
 func _find_systems() -> void:
@@ -285,12 +302,13 @@ func open_ui(patient: Node, player: Node) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 	if _ai_status_label:
+		var tm := _get_theme_medical()
 		if _dialogue_client and _dialogue_client.ollama_available:
 			_ai_status_label.text = "AI Dialogue Active"
-			_ai_status_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+			_ai_status_label.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.3, 0.9, 0.4))
 		else:
 			_ai_status_label.text = "Scripted Responses (Ollama Offline)"
-			_ai_status_label.add_theme_color_override("font_color", Color(0.9, 0.7, 0.3))
+			_ai_status_label.add_theme_color_override("font_color", tm.c("accent_yellow") if tm else Color(0.9, 0.7, 0.3))
 
 	# ARC-17: connect drug administered signal if available
 	if _drug_admin_manager and _drug_admin_manager.has_signal("drug_administered"):
@@ -321,30 +339,36 @@ func close_ui() -> void:
 # ==============================================================================
 
 func _build_ui() -> void:
+	var tm := _get_theme_medical()
+
 	# Dim overlay background
 	var bg := ColorRect.new()
-	bg.color = Color(0, 0, 0, 0.7)
+	bg.color = tm.c("overlay") if tm else Color(0, 0, 0, 0.7)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	bg.name = "OverlayBg"
 	add_child(bg)
 
-	# Outer margin container
+	# Outer margin container — tighter margins for more screen usage
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 60)
-	margin.add_theme_constant_override("margin_right", 60)
-	margin.add_theme_constant_override("margin_top", 40)
-	margin.add_theme_constant_override("margin_bottom", 40)
+	margin.add_theme_constant_override("margin_left", 40)
+	margin.add_theme_constant_override("margin_right", 40)
+	margin.add_theme_constant_override("margin_top", 30)
+	margin.add_theme_constant_override("margin_bottom", 30)
 	add_child(margin)
 
 	# Main horizontal container: [content panel] [tab strip]
 	var main_hbox := HBoxContainer.new()
+	main_hbox.add_theme_constant_override("separation", 8)
 	margin.add_child(main_hbox)
 
 	# Left content panel
 	_left_panel = PanelContainer.new()
 	_left_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_left_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	if tm:
+		tm.style_panel(_left_panel)
 	main_hbox.add_child(_left_panel)
 
 	_content_container = VBoxContainer.new()
@@ -381,6 +405,9 @@ func _build_ui() -> void:
 		btn.custom_minimum_size = Vector2(110, 70)
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_switch_tab.bind(tab_id))
+		if tm:
+			tm.style_button(btn)
+			btn.add_theme_stylebox_override("normal", tm.make_tab_inactive())
 		tab_strip.add_child(btn)
 		_tab_buttons[tab_id] = btn
 
@@ -389,21 +416,33 @@ func _build_ui() -> void:
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	tab_strip.add_child(spacer)
 
-	var close_btn := Button.new()
-	close_btn.text = "[Esc]\nClose"
-	close_btn.custom_minimum_size = Vector2(110, 50)
-	close_btn.focus_mode = Control.FOCUS_NONE
-	close_btn.pressed.connect(close_ui)
-	tab_strip.add_child(close_btn)
+	_close_btn = Button.new()
+	_close_btn.text = "[Esc]\nClose"
+	_close_btn.custom_minimum_size = Vector2(110, 50)
+	_close_btn.focus_mode = Control.FOCUS_NONE
+	_close_btn.pressed.connect(close_ui)
+	if tm:
+		tm.style_button(_close_btn)
+		_close_btn.add_theme_color_override("font_color", tm.c("accent_red"))
+		_close_btn.add_theme_color_override("font_hover_color", tm.c("accent_red"))
+	tab_strip.add_child(_close_btn)
 
 
 func _switch_tab(tab: Tab) -> void:
 	_current_tab = tab
+	var tm := _get_theme_medical()
 	for tab_id in _tab_contents:
 		_tab_contents[tab_id].visible = (tab_id == tab)
 	for tab_id in _tab_buttons:
 		var btn: Button = _tab_buttons[tab_id]
 		btn.disabled = (tab_id == tab)
+		if tm:
+			if tab_id == tab:
+				btn.add_theme_stylebox_override("normal", tm.make_tab_active())
+				btn.add_theme_stylebox_override("disabled", tm.make_tab_active())
+			else:
+				btn.add_theme_stylebox_override("normal", tm.make_tab_inactive())
+				btn.add_theme_stylebox_override("disabled", tm.make_tab_inactive())
 
 
 # ==============================================================================
@@ -411,13 +450,19 @@ func _switch_tab(tab: Tab) -> void:
 # ==============================================================================
 
 func _build_patient_tab() -> Control:
+	var tm := _get_theme_medical()
+
 	var root := VBoxContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_theme_constant_override("separation", 8)
 
 	var title := Label.new()
 	title.text = "Patient"
-	title.add_theme_font_size_override("font_size", 22)
+	if tm:
+		tm.style_label(title, "title", "text_primary")
+	else:
+		title.add_theme_font_size_override("font_size", 22)
 	root.add_child(title)
 
 	# Patient info
@@ -425,6 +470,8 @@ func _build_patient_tab() -> Control:
 	_patient_info_label.bbcode_enabled = true
 	_patient_info_label.custom_minimum_size = Vector2(0, 100)
 	_patient_info_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if tm:
+		tm.style_rich_label(_patient_info_label, "body")
 	root.add_child(_patient_info_label)
 
 	root.add_child(HSeparator.new())
@@ -432,11 +479,16 @@ func _build_patient_tab() -> Control:
 	# SAMPLE history categories
 	var sample_title := Label.new()
 	sample_title.text = "SAMPLE History"
-	sample_title.add_theme_font_size_override("font_size", 17)
+	if tm:
+		tm.style_label(sample_title, "subtitle", "accent_blue")
+	else:
+		sample_title.add_theme_font_size_override("font_size", 17)
 	root.add_child(sample_title)
 
 	var sample_grid := GridContainer.new()
 	sample_grid.columns = 2
+	sample_grid.add_theme_constant_override("h_separation", 8)
+	sample_grid.add_theme_constant_override("v_separation", 6)
 	root.add_child(sample_grid)
 
 	var sample_categories := [
@@ -452,26 +504,36 @@ func _build_patient_tab() -> Control:
 		var btn := Button.new()
 		btn.text = cat[0]
 		btn.custom_minimum_size = Vector2(180, 36)
-		btn.add_theme_font_size_override("font_size", 13)
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_on_sample_category_pressed.bind(cat[1]))
+		if tm:
+			tm.style_button(btn, "small")
+		else:
+			btn.add_theme_font_size_override("font_size", 13)
 		sample_grid.add_child(btn)
 
 	## ARC-12: OPQRST category button (amber colour, pain auto-suggest)
 	_opqrst_btn = Button.new()
 	_opqrst_btn.text = "O - OPQRST (Pain)"
 	_opqrst_btn.custom_minimum_size = Vector2(180, 36)
-	_opqrst_btn.add_theme_font_size_override("font_size", 13)
-	_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2))
-	_opqrst_btn.pressed.connect(_on_sample_category_pressed.bind("opqrst"))
 	_opqrst_btn.focus_mode = Control.FOCUS_NONE
+	_opqrst_btn.pressed.connect(_on_sample_category_pressed.bind("opqrst"))
+	if tm:
+		tm.style_button(_opqrst_btn, "small")
+		_opqrst_btn.add_theme_color_override("font_color", tm.c("accent_yellow"))
+	else:
+		_opqrst_btn.add_theme_font_size_override("font_size", 13)
+		_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2))
 	sample_grid.add_child(_opqrst_btn)
 
 	root.add_child(HSeparator.new())
 
 	# AI status
 	_ai_status_label = Label.new()
-	_ai_status_label.add_theme_font_size_override("font_size", 12)
+	if tm:
+		tm.style_label(_ai_status_label, "caption", "text_secondary")
+	else:
+		_ai_status_label.add_theme_font_size_override("font_size", 12)
 	root.add_child(_ai_status_label)
 
 	# Chat scroll
@@ -482,22 +544,28 @@ func _build_patient_tab() -> Control:
 
 	_chat_container = VBoxContainer.new()
 	_chat_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_chat_container.add_theme_constant_override("separation", 6)
 	_chat_scroll.add_child(_chat_container)
 
 	# Chat input row
 	var input_row := HBoxContainer.new()
+	input_row.add_theme_constant_override("separation", 8)
 	root.add_child(input_row)
 
 	_chat_input = LineEdit.new()
 	_chat_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_chat_input.placeholder_text = "Ask the patient..."
 	_chat_input.text_submitted.connect(_on_chat_submitted)
+	if tm:
+		tm.style_input(_chat_input)
 	input_row.add_child(_chat_input)
 
 	_talk_button = Button.new()
 	_talk_button.text = "Talk"
 	_talk_button.focus_mode = Control.FOCUS_NONE
 	_talk_button.pressed.connect(_on_talk_button_pressed)
+	if tm:
+		tm.style_button(_talk_button)
 	input_row.add_child(_talk_button)
 
 	return root
@@ -508,22 +576,31 @@ func _build_patient_tab() -> Control:
 # ==============================================================================
 
 func _build_exam_tab() -> Control:
+	var tm := _get_theme_medical()
+
 	var root := VBoxContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_theme_constant_override("separation", 6)
 
 	var title_row := HBoxContainer.new()
 	root.add_child(title_row)
 
 	var title := Label.new()
-	title.text = "Primary Survey — DRSABCDE"
-	title.add_theme_font_size_override("font_size", 22)
+	title.text = "Primary Survey -- DRSABCDE"
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if tm:
+		tm.style_label(title, "title", "text_primary")
+	else:
+		title.add_theme_font_size_override("font_size", 22)
 	title_row.add_child(title)
 
 	_exam_counter_label = Label.new()
 	_exam_counter_label.text = "0/8"
-	_exam_counter_label.add_theme_font_size_override("font_size", 16)
+	if tm:
+		tm.style_label(_exam_counter_label, "subtitle", "accent_blue")
+	else:
+		_exam_counter_label.add_theme_font_size_override("font_size", 16)
 	title_row.add_child(_exam_counter_label)
 
 	# Scrollable exam area
@@ -533,6 +610,7 @@ func _build_exam_tab() -> Control:
 
 	var exam_vbox := VBoxContainer.new()
 	exam_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	exam_vbox.add_theme_constant_override("separation", 8)
 	exam_scroll.add_child(exam_vbox)
 
 	# DRSABCDE steps
@@ -549,24 +627,37 @@ func _build_exam_tab() -> Control:
 
 	var steps_grid := GridContainer.new()
 	steps_grid.columns = 2
+	steps_grid.add_theme_constant_override("h_separation", 8)
+	steps_grid.add_theme_constant_override("v_separation", 6)
 	exam_vbox.add_child(steps_grid)
 
 	for step in drs_steps:
+		var step_panel := PanelContainer.new()
+		if tm:
+			tm.style_panel(step_panel)
+		steps_grid.add_child(step_panel)
+
 		var step_vbox := VBoxContainer.new()
-		steps_grid.add_child(step_vbox)
+		step_vbox.add_theme_constant_override("separation", 4)
+		step_panel.add_child(step_vbox)
 
 		var btn := Button.new()
 		btn.text = step[0]
-		btn.custom_minimum_size = Vector2(180, 36)
+		btn.custom_minimum_size = Vector2(180, 60)
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_on_exam_action_pressed.bind(step[1]))
+		if tm:
+			tm.style_button(btn)
 		step_vbox.add_child(btn)
 		_exam_buttons[step[1]] = btn
 
 		var result_lbl := Label.new()
 		result_lbl.text = ""
-		result_lbl.add_theme_font_size_override("font_size", 12)
 		result_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		if tm:
+			tm.style_label(result_lbl, "body_small", "text_secondary")
+		else:
+			result_lbl.add_theme_font_size_override("font_size", 12)
 		step_vbox.add_child(result_lbl)
 		_exam_results[step[1]] = result_lbl
 
@@ -576,12 +667,17 @@ func _build_exam_tab() -> Control:
 
 	var vitals_title := Label.new()
 	vitals_title.text = "Vital Signs Assessment"
-	vitals_title.add_theme_font_size_override("font_size", 17)
-	vitals_title.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
+	if tm:
+		tm.style_label(vitals_title, "subtitle", "accent_blue")
+	else:
+		vitals_title.add_theme_font_size_override("font_size", 17)
+		vitals_title.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
 	exam_vbox.add_child(vitals_title)
 
 	var vitals_grid := GridContainer.new()
-	vitals_grid.columns = 2
+	vitals_grid.columns = 4
+	vitals_grid.add_theme_constant_override("h_separation", 8)
+	vitals_grid.add_theme_constant_override("v_separation", 6)
 	exam_vbox.add_child(vitals_grid)
 
 	# Enum values from AssessmentManager.AssessmentAction:
@@ -600,21 +696,32 @@ func _build_exam_tab() -> Control:
 	]
 
 	for vd in vital_defs:
+		var v_panel := PanelContainer.new()
+		if tm:
+			tm.style_panel(v_panel)
+		vitals_grid.add_child(v_panel)
+
 		var v_vbox := VBoxContainer.new()
-		vitals_grid.add_child(v_vbox)
+		v_vbox.add_theme_constant_override("separation", 4)
+		v_panel.add_child(v_vbox)
 
 		var v_btn := Button.new()
 		v_btn.text = vd[0]
-		v_btn.custom_minimum_size = Vector2(180, 36)
+		v_btn.custom_minimum_size = Vector2(140, 44)
 		v_btn.focus_mode = Control.FOCUS_NONE
 		v_btn.pressed.connect(_on_vital_pressed.bind(vd[1], vd[2]))
+		if tm:
+			tm.style_button(v_btn, "small")
 		v_vbox.add_child(v_btn)
 		_vital_buttons[vd[1]] = v_btn
 
 		var v_result := Label.new()
 		v_result.text = ""
-		v_result.add_theme_font_size_override("font_size", 12)
 		v_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		if tm:
+			tm.style_label(v_result, "body_small", "text_secondary")
+		else:
+			v_result.add_theme_font_size_override("font_size", 12)
 		v_vbox.add_child(v_result)
 		_vital_results[vd[1]] = v_result
 
@@ -624,19 +731,27 @@ func _build_exam_tab() -> Control:
 
 	var ecg_title := Label.new()
 	ecg_title.text = "ECG / Cardiac Monitor"
-	ecg_title.add_theme_font_size_override("font_size", 17)
-	ecg_title.add_theme_color_override("font_color", Color(0.3, 1.0, 0.6))
+	if tm:
+		tm.style_label(ecg_title, "subtitle", "accent_green")
+	else:
+		ecg_title.add_theme_font_size_override("font_size", 17)
+		ecg_title.add_theme_color_override("font_color", Color(0.3, 1.0, 0.6))
 	exam_vbox.add_child(ecg_title)
 
 	_ecg_mode_label = Label.new()
 	_ecg_mode_label.text = "No monitor deployed"
-	_ecg_mode_label.add_theme_font_size_override("font_size", 13)
-	_ecg_mode_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	if tm:
+		tm.style_label(_ecg_mode_label, "label", "text_muted")
+	else:
+		_ecg_mode_label.add_theme_font_size_override("font_size", 13)
+		_ecg_mode_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	exam_vbox.add_child(_ecg_mode_label)
 
 	_ecg_panel = PanelContainer.new()
 	_ecg_panel.custom_minimum_size = Vector2(400, 110)
 	_ecg_panel.visible = false
+	if tm:
+		tm.style_panel(_ecg_panel, "info")
 	exam_vbox.add_child(_ecg_panel)
 
 	var ecg_inner := VBoxContainer.new()
@@ -650,8 +765,11 @@ func _build_exam_tab() -> Control:
 
 	_ecg_rhythm_label = Label.new()
 	_ecg_rhythm_label.text = ""
-	_ecg_rhythm_label.add_theme_font_size_override("font_size", 13)
 	_ecg_rhythm_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if tm:
+		tm.style_label(_ecg_rhythm_label, "label", "text_secondary")
+	else:
+		_ecg_rhythm_label.add_theme_font_size_override("font_size", 13)
 	exam_vbox.add_child(_ecg_rhythm_label)
 
 	var ecg_identify_btn := Button.new()
@@ -659,6 +777,8 @@ func _build_exam_tab() -> Control:
 	ecg_identify_btn.custom_minimum_size = Vector2(160, 36)
 	ecg_identify_btn.focus_mode = Control.FOCUS_NONE
 	ecg_identify_btn.pressed.connect(_on_ecg_identify_pressed)
+	if tm:
+		tm.style_button(ecg_identify_btn)
 	exam_vbox.add_child(ecg_identify_btn)
 
 	## ARC-15: GCS Assessment
@@ -669,20 +789,29 @@ func _build_exam_tab() -> Control:
 	exam_vbox.add_child(gcs_title_hbox)
 
 	var gcs_title := Label.new()
-	gcs_title.text = "GCS — Glasgow Coma Scale"
-	gcs_title.add_theme_font_size_override("font_size", 17)
-	gcs_title.add_theme_color_override("font_color", Color(0.9, 0.7, 0.3))
+	gcs_title.text = "GCS -- Glasgow Coma Scale"
 	gcs_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if tm:
+		tm.style_label(gcs_title, "subtitle", "accent_yellow")
+	else:
+		gcs_title.add_theme_font_size_override("font_size", 17)
+		gcs_title.add_theme_color_override("font_color", Color(0.9, 0.7, 0.3))
 	gcs_title_hbox.add_child(gcs_title)
 
 	_gcs_total_label = Label.new()
-	_gcs_total_label.text = "GCS: —"
-	_gcs_total_label.add_theme_font_size_override("font_size", 17)
+	_gcs_total_label.text = "GCS: --"
+	if tm:
+		tm.style_label(_gcs_total_label, "subtitle", "text_primary")
+	else:
+		_gcs_total_label.add_theme_font_size_override("font_size", 17)
 	gcs_title_hbox.add_child(_gcs_total_label)
 
 	_gcs_severity_label = Label.new()
 	_gcs_severity_label.text = ""
-	_gcs_severity_label.add_theme_font_size_override("font_size", 13)
+	if tm:
+		tm.style_label(_gcs_severity_label, "label", "text_secondary")
+	else:
+		_gcs_severity_label.add_theme_font_size_override("font_size", 13)
 	exam_vbox.add_child(_gcs_severity_label)
 
 	# GCS sub-sections — Eye, Verbal, Motor
@@ -706,7 +835,10 @@ func _build_exam_tab() -> Control:
 
 		var comp_title := Label.new()
 		comp_title.text = comp_name
-		comp_title.add_theme_font_size_override("font_size", 14)
+		if tm:
+			tm.style_label(comp_title, "body_small", "text_secondary")
+		else:
+			comp_title.add_theme_font_size_override("font_size", 14)
 		exam_vbox.add_child(comp_title)
 
 		var comp_hbox := HBoxContainer.new()
@@ -720,6 +852,8 @@ func _build_exam_tab() -> Control:
 			gcs_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			gcs_btn.focus_mode = Control.FOCUS_NONE
 			gcs_btn.pressed.connect(_on_gcs_value_selected.bind(comp_key, comp_values[i]))
+			if tm:
+				tm.style_button(gcs_btn, "small")
 			comp_hbox.add_child(gcs_btn)
 			_gcs_component_btns[comp_key + "_" + str(comp_values[i])] = gcs_btn
 
@@ -728,6 +862,8 @@ func _build_exam_tab() -> Control:
 	gcs_read_btn.custom_minimum_size = Vector2(160, 32)
 	gcs_read_btn.focus_mode = Control.FOCUS_NONE
 	gcs_read_btn.pressed.connect(_on_gcs_read_patient)
+	if tm:
+		tm.style_button(gcs_read_btn, "small")
 	exam_vbox.add_child(gcs_read_btn)
 
 	## ARC-16: Secondary Survey
@@ -738,39 +874,58 @@ func _build_exam_tab() -> Control:
 	exam_vbox.add_child(ss_title_hbox)
 
 	var ss_title := Label.new()
-	ss_title.text = "Secondary Survey — Head-to-Toe"
-	ss_title.add_theme_font_size_override("font_size", 17)
-	ss_title.add_theme_color_override("font_color", Color(0.7, 0.5, 1.0))
+	ss_title.text = "Secondary Survey -- Head-to-Toe"
 	ss_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if tm:
+		tm.style_label(ss_title, "subtitle", "accent_purple")
+	else:
+		ss_title.add_theme_font_size_override("font_size", 17)
+		ss_title.add_theme_color_override("font_color", Color(0.7, 0.5, 1.0))
 	ss_title_hbox.add_child(ss_title)
 
 	_secondary_counter_label = Label.new()
 	_secondary_counter_label.text = "0/7"
-	_secondary_counter_label.add_theme_font_size_override("font_size", 14)
+	if tm:
+		tm.style_label(_secondary_counter_label, "body_small", "accent_blue")
+	else:
+		_secondary_counter_label.add_theme_font_size_override("font_size", 14)
 	ss_title_hbox.add_child(_secondary_counter_label)
 
 	var ss_grid := GridContainer.new()
 	ss_grid.columns = 2
+	ss_grid.add_theme_constant_override("h_separation", 8)
+	ss_grid.add_theme_constant_override("v_separation", 6)
 	exam_vbox.add_child(ss_grid)
 
 	var ss_regions := ["head", "neck", "chest", "abdomen", "pelvis", "back", "extremities"]
 
 	for region in ss_regions:
+		var r_panel := PanelContainer.new()
+		if tm:
+			tm.style_panel(r_panel)
+		ss_grid.add_child(r_panel)
+
 		var r_vbox := VBoxContainer.new()
-		ss_grid.add_child(r_vbox)
+		r_vbox.add_theme_constant_override("separation", 4)
+		r_panel.add_child(r_vbox)
 
 		var r_btn := Button.new()
 		r_btn.text = region.capitalize()
-		r_btn.custom_minimum_size = Vector2(180, 36)
+		r_btn.custom_minimum_size = Vector2(180, 44)
 		r_btn.focus_mode = Control.FOCUS_NONE
 		r_btn.pressed.connect(_on_secondary_region_pressed.bind(region))
+		if tm:
+			tm.style_button(r_btn)
 		r_vbox.add_child(r_btn)
 		_secondary_buttons[region] = r_btn
 
 		var r_result := Label.new()
 		r_result.text = ""
-		r_result.add_theme_font_size_override("font_size", 12)
 		r_result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		if tm:
+			tm.style_label(r_result, "body_small", "text_secondary")
+		else:
+			r_result.add_theme_font_size_override("font_size", 12)
 		r_vbox.add_child(r_result)
 		_secondary_results[region] = r_result
 
@@ -782,51 +937,80 @@ func _build_exam_tab() -> Control:
 # ==============================================================================
 
 func _build_stabilize_tab() -> Control:
+	var tm := _get_theme_medical()
+
 	var root := ScrollContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	var container := VBoxContainer.new()
 	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	container.add_theme_constant_override("separation", 8)
 	root.add_child(container)
 
 	var title := Label.new()
 	title.text = "Stabilize"
-	title.add_theme_font_size_override("font_size", 22)
+	if tm:
+		tm.style_label(title, "title", "text_primary")
+	else:
+		title.add_theme_font_size_override("font_size", 22)
 	container.add_child(title)
 
 	# CPR action — visible only during cardiac arrest, prominent red button
 	_cpr_button = Button.new()
 	_cpr_button.text = "Start CPR (Chest Compressions)"
-	_cpr_button.custom_minimum_size = Vector2(300, 50)
+	_cpr_button.custom_minimum_size = Vector2(0, 56)
+	_cpr_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_cpr_button.focus_mode = Control.FOCUS_NONE
-	_cpr_button.add_theme_font_size_override("font_size", 18)
-	_cpr_button.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
 	_cpr_button.pressed.connect(_on_cpr_pressed)
 	_cpr_button.visible = false  # Shown only when patient is in cardiac arrest
+	if tm:
+		tm.style_button(_cpr_button, "large")
+		# Override with red styling for CPR urgency
+		var cpr_normal := tm.make_btn_normal()
+		cpr_normal.bg_color = tm.c("accent_red")
+		_cpr_button.add_theme_stylebox_override("normal", cpr_normal)
+		var cpr_hover := tm.make_btn_hover()
+		cpr_hover.bg_color = tm.c("accent_red").lightened(0.15)
+		_cpr_button.add_theme_stylebox_override("hover", cpr_hover)
+		_cpr_button.add_theme_color_override("font_color", Color.WHITE)
+		_cpr_button.add_theme_color_override("font_hover_color", Color.WHITE)
+	else:
+		_cpr_button.add_theme_font_size_override("font_size", 18)
+		_cpr_button.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
 	container.add_child(_cpr_button)
 
 	_cpr_status_label = Label.new()
 	_cpr_status_label.text = ""
-	_cpr_status_label.add_theme_font_size_override("font_size", 14)
 	_cpr_status_label.visible = false
+	if tm:
+		tm.style_label(_cpr_status_label, "body_small", "text_secondary")
+	else:
+		_cpr_status_label.add_theme_font_size_override("font_size", 14)
 	container.add_child(_cpr_status_label)
 
 	container.add_child(HSeparator.new())
 
 	## ARC-18: Medical Bag Tier Indicator (at TOP, before equipment grid)
 	var tier_hbox := HBoxContainer.new()
+	tier_hbox.add_theme_constant_override("separation", 8)
 	container.add_child(tier_hbox)
 
 	var tier_label_title := Label.new()
 	tier_label_title.text = "Medical Bag Tier: "
-	tier_label_title.add_theme_font_size_override("font_size", 15)
+	if tm:
+		tm.style_label(tier_label_title, "body", "text_secondary")
+	else:
+		tier_label_title.add_theme_font_size_override("font_size", 15)
 	tier_hbox.add_child(tier_label_title)
 
 	_bag_tier_label = Label.new()
 	_bag_tier_label.text = "BLS"
-	_bag_tier_label.add_theme_font_size_override("font_size", 15)
-	_bag_tier_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+	if tm:
+		tm.style_label(_bag_tier_label, "body", "accent_green")
+	else:
+		_bag_tier_label.add_theme_font_size_override("font_size", 15)
+		_bag_tier_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
 	tier_hbox.add_child(_bag_tier_label)
 
 	container.add_child(HSeparator.new())
@@ -834,11 +1018,16 @@ func _build_stabilize_tab() -> Control:
 	# Equipment grid
 	var equip_title := Label.new()
 	equip_title.text = "Equipment"
-	equip_title.add_theme_font_size_override("font_size", 17)
+	if tm:
+		tm.style_label(equip_title, "subtitle", "accent_blue")
+	else:
+		equip_title.add_theme_font_size_override("font_size", 17)
 	container.add_child(equip_title)
 
 	var equip_grid := GridContainer.new()
 	equip_grid.columns = 3
+	equip_grid.add_theme_constant_override("h_separation", 8)
+	equip_grid.add_theme_constant_override("v_separation", 6)
 	container.add_child(equip_grid)
 
 	var equipment_defs := [
@@ -861,12 +1050,19 @@ func _build_stabilize_tab() -> Control:
 	]
 
 	for eq in equipment_defs:
+		var eq_panel := PanelContainer.new()
+		if tm:
+			tm.style_panel(eq_panel)
+		equip_grid.add_child(eq_panel)
+
 		var eq_btn := Button.new()
 		eq_btn.text = eq[0]
 		eq_btn.custom_minimum_size = Vector2(110, 40)
 		eq_btn.focus_mode = Control.FOCUS_NONE
 		eq_btn.pressed.connect(_on_equipment_pressed.bind(eq[1]))
-		equip_grid.add_child(eq_btn)
+		if tm:
+			tm.style_button(eq_btn, "small")
+		eq_panel.add_child(eq_btn)
 		_equipment_buttons[eq[1]] = eq_btn
 
 	## ARC-18: Bag Contents section
@@ -874,8 +1070,11 @@ func _build_stabilize_tab() -> Control:
 
 	var bag_contents_title := Label.new()
 	bag_contents_title.text = "Bag Contents"
-	bag_contents_title.add_theme_font_size_override("font_size", 17)
-	bag_contents_title.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+	if tm:
+		tm.style_label(bag_contents_title, "subtitle", "accent_green")
+	else:
+		bag_contents_title.add_theme_font_size_override("font_size", 17)
+		bag_contents_title.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
 	container.add_child(bag_contents_title)
 
 	var bag_scroll := ScrollContainer.new()
@@ -885,6 +1084,7 @@ func _build_stabilize_tab() -> Control:
 
 	_bag_items_vbox = VBoxContainer.new()
 	_bag_items_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_bag_items_vbox.add_theme_constant_override("separation", 4)
 	bag_scroll.add_child(_bag_items_vbox)
 
 	## ARC-17: Drug Administration section
@@ -893,62 +1093,94 @@ func _build_stabilize_tab() -> Control:
 
 	var drug_title := Label.new()
 	drug_title.text = "Drug Administration"
-	drug_title.add_theme_font_size_override("font_size", 18)
 	drug_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if tm:
+		tm.style_label(drug_title, "subtitle", "accent_blue")
+	else:
+		drug_title.add_theme_font_size_override("font_size", 18)
 	container.add_child(drug_title)
+
+	# Drug form inside a card
+	var drug_card := PanelContainer.new()
+	if tm:
+		tm.style_panel(drug_card)
+	container.add_child(drug_card)
 
 	var drug_form_grid := GridContainer.new()
 	drug_form_grid.columns = 2
-	container.add_child(drug_form_grid)
+	drug_form_grid.add_theme_constant_override("h_separation", 12)
+	drug_form_grid.add_theme_constant_override("v_separation", 8)
+	drug_card.add_child(drug_form_grid)
 
 	var drug_name_label := Label.new()
 	drug_name_label.text = "Drug:"
+	if tm:
+		tm.style_label(drug_name_label, "body", "text_secondary")
 	drug_form_grid.add_child(drug_name_label)
 
 	_drug_name_btn = OptionButton.new()
 	_drug_name_btn.custom_minimum_size = Vector2(200, 32)
 	_drug_name_btn.focus_mode = Control.FOCUS_NONE
 	_drug_name_btn.item_selected.connect(_on_drug_name_changed)
+	if tm:
+		tm.style_option_button(_drug_name_btn)
 	drug_form_grid.add_child(_drug_name_btn)
 
 	var drug_route_label := Label.new()
 	drug_route_label.text = "Route:"
+	if tm:
+		tm.style_label(drug_route_label, "body", "text_secondary")
 	drug_form_grid.add_child(drug_route_label)
 
 	_drug_route_btn = OptionButton.new()
 	_drug_route_btn.custom_minimum_size = Vector2(200, 32)
 	_drug_route_btn.focus_mode = Control.FOCUS_NONE
+	if tm:
+		tm.style_option_button(_drug_route_btn)
 	drug_form_grid.add_child(_drug_route_btn)
 
 	var drug_dose_label := Label.new()
 	drug_dose_label.text = "Dose:"
+	if tm:
+		tm.style_label(drug_dose_label, "body", "text_secondary")
 	drug_form_grid.add_child(drug_dose_label)
 
 	_drug_dose_btn = OptionButton.new()
 	_drug_dose_btn.custom_minimum_size = Vector2(200, 32)
 	_drug_dose_btn.focus_mode = Control.FOCUS_NONE
+	if tm:
+		tm.style_option_button(_drug_dose_btn)
 	drug_form_grid.add_child(_drug_dose_btn)
 
 	var admin_btn := Button.new()
 	admin_btn.text = "Administer Drug"
-	admin_btn.custom_minimum_size = Vector2(200, 40)
+	admin_btn.custom_minimum_size = Vector2(200, 44)
 	admin_btn.focus_mode = Control.FOCUS_NONE
 	admin_btn.pressed.connect(_on_administer_drug_pressed)
+	if tm:
+		tm.style_button(admin_btn)
 	container.add_child(admin_btn)
 
 	_drug_feedback_label = Label.new()
 	_drug_feedback_label.text = ""
-	_drug_feedback_label.add_theme_font_size_override("font_size", 13)
 	_drug_feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if tm:
+		tm.style_label(_drug_feedback_label, "label", "text_secondary")
+	else:
+		_drug_feedback_label.add_theme_font_size_override("font_size", 13)
 	container.add_child(_drug_feedback_label)
 
 	var drug_log_title := Label.new()
 	drug_log_title.text = "Administration Log:"
-	drug_log_title.add_theme_font_size_override("font_size", 13)
+	if tm:
+		tm.style_label(drug_log_title, "label", "text_muted")
+	else:
+		drug_log_title.add_theme_font_size_override("font_size", 13)
 	container.add_child(drug_log_title)
 
 	_drug_log_vbox = VBoxContainer.new()
 	_drug_log_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_drug_log_vbox.add_theme_constant_override("separation", 2)
 	container.add_child(_drug_log_vbox)
 
 	return root
@@ -959,26 +1191,38 @@ func _build_stabilize_tab() -> Control:
 # ==============================================================================
 
 func _build_differential_tab() -> Control:
+	var tm := _get_theme_medical()
+
 	var root := VBoxContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_theme_constant_override("separation", 8)
 
 	var title := Label.new()
 	title.text = "Differential Diagnosis"
-	title.add_theme_font_size_override("font_size", 22)
+	if tm:
+		tm.style_label(title, "title", "text_primary")
+	else:
+		title.add_theme_font_size_override("font_size", 22)
 	root.add_child(title)
 
 	var instructions := Label.new()
 	instructions.text = "Select up to 3 diagnoses in order of likelihood, then submit."
 	instructions.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	instructions.add_theme_font_size_override("font_size", 13)
+	if tm:
+		tm.style_label(instructions, "body", "text_secondary")
+	else:
+		instructions.add_theme_font_size_override("font_size", 13)
 	root.add_child(instructions)
 
 	root.add_child(HSeparator.new())
 
 	_diagnosis_rank_label = Label.new()
 	_diagnosis_rank_label.text = "Selected: (none)"
-	_diagnosis_rank_label.add_theme_font_size_override("font_size", 13)
+	if tm:
+		tm.style_label(_diagnosis_rank_label, "body", "text_primary")
+	else:
+		_diagnosis_rank_label.add_theme_font_size_override("font_size", 13)
 	root.add_child(_diagnosis_rank_label)
 
 	var diag_scroll := ScrollContainer.new()
@@ -988,17 +1232,160 @@ func _build_differential_tab() -> Control:
 	var diag_vbox := VBoxContainer.new()
 	diag_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	diag_vbox.name = "DiagVBox"
+	diag_vbox.add_theme_constant_override("separation", 4)
 	diag_scroll.add_child(diag_vbox)
 
 	_submit_diagnosis_btn = Button.new()
 	_submit_diagnosis_btn.text = "Submit Diagnosis"
-	_submit_diagnosis_btn.custom_minimum_size = Vector2(200, 44)
+	_submit_diagnosis_btn.custom_minimum_size = Vector2(0, 52)
+	_submit_diagnosis_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_submit_diagnosis_btn.focus_mode = Control.FOCUS_NONE
 	_submit_diagnosis_btn.pressed.connect(_on_submit_diagnosis_pressed)
 	_submit_diagnosis_btn.disabled = true
+	if tm:
+		tm.style_button(_submit_diagnosis_btn, "large")
+		# Override with accent_blue for submit prominence
+		var submit_normal := tm.make_btn_normal()
+		submit_normal.bg_color = tm.c("accent_blue")
+		_submit_diagnosis_btn.add_theme_stylebox_override("normal", submit_normal)
+		var submit_hover := tm.make_btn_hover()
+		submit_hover.bg_color = tm.c("accent_blue").lightened(0.15)
+		_submit_diagnosis_btn.add_theme_stylebox_override("hover", submit_hover)
+		_submit_diagnosis_btn.add_theme_color_override("font_color", Color.WHITE)
+		_submit_diagnosis_btn.add_theme_color_override("font_hover_color", Color.WHITE)
 	root.add_child(_submit_diagnosis_btn)
 
 	return root
+
+
+# ==============================================================================
+# THEME APPLICATION — re-applies all styles when theme changes
+# ==============================================================================
+
+func _apply_theme() -> void:
+	var tm := _get_theme_medical()
+	if not tm:
+		return
+
+	# Overlay background
+	var bg_node := get_node_or_null("OverlayBg")
+	if bg_node and bg_node is ColorRect:
+		bg_node.color = tm.c("overlay")
+
+	# Left panel
+	if _left_panel:
+		tm.style_panel(_left_panel)
+
+	# Tab buttons
+	for tab_id in _tab_buttons:
+		var btn: Button = _tab_buttons[tab_id]
+		tm.style_button(btn)
+		if tab_id == _current_tab:
+			btn.add_theme_stylebox_override("normal", tm.make_tab_active())
+			btn.add_theme_stylebox_override("disabled", tm.make_tab_active())
+		else:
+			btn.add_theme_stylebox_override("normal", tm.make_tab_inactive())
+			btn.add_theme_stylebox_override("disabled", tm.make_tab_inactive())
+
+	# Close button
+	if _close_btn:
+		tm.style_button(_close_btn)
+		_close_btn.add_theme_color_override("font_color", tm.c("accent_red"))
+		_close_btn.add_theme_color_override("font_hover_color", tm.c("accent_red"))
+
+	# Patient tab elements
+	if _patient_info_label:
+		tm.style_rich_label(_patient_info_label, "body")
+	if _ai_status_label:
+		tm.style_label(_ai_status_label, "caption", "text_secondary")
+	if _chat_input:
+		tm.style_input(_chat_input)
+	if _talk_button:
+		tm.style_button(_talk_button)
+
+	# Exam tab — DRSABCDE buttons
+	for key in _exam_buttons:
+		tm.style_button(_exam_buttons[key])
+	for key in _exam_results:
+		tm.style_label(_exam_results[key], "body_small", "text_secondary")
+
+	# Vital buttons
+	for key in _vital_buttons:
+		tm.style_button(_vital_buttons[key], "small")
+	for key in _vital_results:
+		tm.style_label(_vital_results[key], "body_small", "text_secondary")
+
+	# ECG panel
+	if _ecg_panel:
+		tm.style_panel(_ecg_panel, "info")
+	if _ecg_rhythm_label:
+		tm.style_label(_ecg_rhythm_label, "label", "text_secondary")
+	if _ecg_mode_label:
+		tm.style_label(_ecg_mode_label, "label", "text_muted")
+
+	# GCS buttons
+	for btn_key in _gcs_component_btns:
+		tm.style_button(_gcs_component_btns[btn_key], "small")
+	if _gcs_total_label:
+		tm.style_label(_gcs_total_label, "subtitle", "text_primary")
+	if _gcs_severity_label:
+		tm.style_label(_gcs_severity_label, "label", "text_secondary")
+
+	# Secondary survey buttons
+	for region in _secondary_buttons:
+		tm.style_button(_secondary_buttons[region])
+	for region in _secondary_results:
+		tm.style_label(_secondary_results[region], "body_small", "text_secondary")
+
+	# Stabilize tab — equipment buttons
+	for key in _equipment_buttons:
+		tm.style_button(_equipment_buttons[key], "small")
+
+	# CPR button
+	if _cpr_button:
+		tm.style_button(_cpr_button, "large")
+		var cpr_normal := tm.make_btn_normal()
+		cpr_normal.bg_color = tm.c("accent_red")
+		_cpr_button.add_theme_stylebox_override("normal", cpr_normal)
+		var cpr_hover := tm.make_btn_hover()
+		cpr_hover.bg_color = tm.c("accent_red").lightened(0.15)
+		_cpr_button.add_theme_stylebox_override("hover", cpr_hover)
+		_cpr_button.add_theme_color_override("font_color", Color.WHITE)
+		_cpr_button.add_theme_color_override("font_hover_color", Color.WHITE)
+
+	# Drug admin option buttons
+	if _drug_name_btn:
+		tm.style_option_button(_drug_name_btn)
+	if _drug_route_btn:
+		tm.style_option_button(_drug_route_btn)
+	if _drug_dose_btn:
+		tm.style_option_button(_drug_dose_btn)
+	if _drug_feedback_label:
+		tm.style_label(_drug_feedback_label, "label", "text_secondary")
+
+	# Bag tier label
+	if _bag_tier_label:
+		tm.style_label(_bag_tier_label, "body", "accent_green")
+
+	# Submit diagnosis button
+	if _submit_diagnosis_btn:
+		tm.style_button(_submit_diagnosis_btn, "large")
+		var submit_normal := tm.make_btn_normal()
+		submit_normal.bg_color = tm.c("accent_blue")
+		_submit_diagnosis_btn.add_theme_stylebox_override("normal", submit_normal)
+		var submit_hover := tm.make_btn_hover()
+		submit_hover.bg_color = tm.c("accent_blue").lightened(0.15)
+		_submit_diagnosis_btn.add_theme_stylebox_override("hover", submit_hover)
+		_submit_diagnosis_btn.add_theme_color_override("font_color", Color.WHITE)
+		_submit_diagnosis_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+
+	if _diagnosis_rank_label:
+		tm.style_label(_diagnosis_rank_label, "body", "text_primary")
+
+	# Diagnosis buttons (dynamically created — may be empty at init)
+	for btn in _diagnosis_buttons:
+		if is_instance_valid(btn):
+			tm.style_button(btn, "small")
 
 
 # ==============================================================================
@@ -1113,7 +1500,7 @@ func _populate_exam_tab() -> void:
 	# Reset GCS
 	_gcs_component_selection = {}
 	if _gcs_total_label:
-		_gcs_total_label.text = "GCS: —"
+		_gcs_total_label.text = "GCS: --"
 		if _gcs_total_label.has_theme_color_override("font_color"):
 			_gcs_total_label.remove_theme_color_override("font_color")
 	if _gcs_severity_label:
@@ -1197,6 +1584,8 @@ func _populate_differential_tab() -> void:
 			b.queue_free()
 	_diagnosis_buttons.clear()
 
+	var tm := _get_theme_medical()
+
 	# If already diagnosed, show locked state
 	if _diagnosis_submitted:
 		if _diagnosis_rank_label:
@@ -1230,9 +1619,9 @@ func _populate_differential_tab() -> void:
 		"Stroke (Ischaemic)", "Stroke (Haemorrhagic)", "Seizure / Status Epilepticus",
 		"Head Injury / TBI", "Spinal Injury",
 		# Trauma
-		"Trauma — Multi-system", "Haemorrhagic Shock", "Internal Bleeding",
+		"Trauma -- Multi-system", "Haemorrhagic Shock", "Internal Bleeding",
 		"Crush Injury / Rhabdomyolysis", "Burns (Thermal)", "Blast Injury",
-		"Penetrating Trauma", "Fracture — Open", "Fracture — Closed",
+		"Penetrating Trauma", "Fracture -- Open", "Fracture -- Closed",
 		# Medical
 		"Anaphylaxis", "Hypoglycaemia", "Diabetic Ketoacidosis",
 		"Sepsis / Septic Shock", "Opioid Overdose", "Drug Overdose (Other)",
@@ -1250,6 +1639,8 @@ func _populate_differential_tab() -> void:
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_on_diagnosis_button_pressed.bind(diag))
+		if tm:
+			tm.style_button(btn, "small")
 		# If already diagnosed, lock all buttons and highlight selected ones
 		if _diagnosis_submitted:
 			btn.disabled = true
@@ -1470,10 +1861,15 @@ func _populate_bag_section() -> void:
 					"available": item.get("quantity", 1) > 0,
 				}
 
+	var tm := _get_theme_medical()
+
 	if live_items.is_empty():
 		var empty_lbl := Label.new()
 		empty_lbl.text = "No items in bag for tier: %s" % tier_name
-		empty_lbl.add_theme_font_size_override("font_size", 12)
+		if tm:
+			tm.style_label(empty_lbl, "body_small", "text_muted")
+		else:
+			empty_lbl.add_theme_font_size_override("font_size", 12)
 		_bag_items_vbox.add_child(empty_lbl)
 		return
 
@@ -1483,19 +1879,31 @@ func _populate_bag_section() -> void:
 		var qty: int = item.get("quantity", 0)
 		var available: bool = item.get("available", qty > 0)
 
+		var item_card := PanelContainer.new()
+		if tm:
+			tm.style_panel(item_card)
+		_bag_items_vbox.add_child(item_card)
+
 		var item_hbox := HBoxContainer.new()
-		_bag_items_vbox.add_child(item_hbox)
+		item_hbox.add_theme_constant_override("separation", 8)
+		item_card.add_child(item_hbox)
 
 		var item_name_lbl := Label.new()
 		item_name_lbl.text = iname
 		item_name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		item_name_lbl.add_theme_font_size_override("font_size", 13)
+		if tm:
+			tm.style_label(item_name_lbl, "label", "text_primary")
+		else:
+			item_name_lbl.add_theme_font_size_override("font_size", 13)
 		item_hbox.add_child(item_name_lbl)
 
 		var qty_lbl := Label.new()
 		qty_lbl.text = "x%d" % qty
 		qty_lbl.custom_minimum_size = Vector2(40, 0)
-		qty_lbl.add_theme_font_size_override("font_size", 13)
+		if tm:
+			tm.style_label(qty_lbl, "label", "accent_blue")
+		else:
+			qty_lbl.add_theme_font_size_override("font_size", 13)
 		item_hbox.add_child(qty_lbl)
 
 		var deploy_btn := Button.new()
@@ -1504,6 +1912,8 @@ func _populate_bag_section() -> void:
 		deploy_btn.focus_mode = Control.FOCUS_NONE
 		deploy_btn.disabled = not available
 		deploy_btn.pressed.connect(_on_bag_item_deploy.bind(itype, iname, qty_lbl, deploy_btn))
+		if tm:
+			tm.style_button(deploy_btn, "small")
 		item_hbox.add_child(deploy_btn)
 
 
@@ -1568,15 +1978,39 @@ func _add_chat_bubble(text: String, is_player: bool) -> void:
 	if not _chat_container:
 		return
 
+	var tm := _get_theme_medical()
+
+	# Create a card-style panel for each chat bubble
+	var bubble_panel := PanelContainer.new()
+	if tm:
+		if is_player:
+			# Player bubble: accent_blue tinted card
+			var player_style := tm.make_card()
+			player_style.bg_color = tm.c("accent_blue").darkened(0.7)
+			player_style.border_color = tm.c("accent_blue").darkened(0.4)
+			bubble_panel.add_theme_stylebox_override("panel", player_style)
+		else:
+			# Patient bubble: standard bg_card
+			tm.style_panel(bubble_panel)
+
 	var lbl := Label.new()
 	lbl.text = ("[Player] " if is_player else "[Patient] ") + text
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	if is_player:
-		lbl.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
+	if tm:
+		if is_player:
+			lbl.add_theme_color_override("font_color", tm.c("accent_blue").lightened(0.3))
+		else:
+			lbl.add_theme_color_override("font_color", tm.c("text_primary"))
+		lbl.add_theme_font_size_override("font_size", tm.FONT_SIZES.body)
 	else:
-		lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.7))
-	_chat_container.add_child(lbl)
+		if is_player:
+			lbl.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
+		else:
+			lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.7))
+
+	bubble_panel.add_child(lbl)
+	_chat_container.add_child(bubble_panel)
 
 	# Scroll to bottom
 	await get_tree().process_frame
@@ -1681,7 +2115,7 @@ func _display_vital_result(key: String, result: Dictionary, result_lbl: Label) -
 		"check_temperature":
 			var temp: float = result.get("value", result.get("temperature", -1.0))
 			if temp >= 0:
-				display_text = "Temp: %.1f°C" % temp
+				display_text = "Temp: %.1f C" % temp
 				severity_color = _color_for_temp(temp)
 		"check_blood_glucose":
 			# AssessmentManager returns "glucose" key
@@ -1705,7 +2139,7 @@ func _display_vital_result(key: String, result: Dictionary, result_lbl: Label) -
 				var eq: bool = result.get("equal", true)
 				var react_l := "reactive" if lr else "fixed"
 				var react_r := "reactive" if rr else "fixed"
-				display_text = "L: %dmm %s  R: %dmm %s%s" % [ls, react_l, rs, react_r, "  ⚠ Unequal" if not eq else ""]
+				display_text = "L: %dmm %s  R: %dmm %s%s" % [ls, react_l, rs, react_r, "  ! Unequal" if not eq else ""]
 				severity_color = Color(0.9, 0.3, 0.3) if (not lr or not rr or not eq or ls >= 6 or rs >= 6) else Color(0.3, 0.9, 0.4)
 			else:
 				display_text = "Pupils: assessed"
@@ -1716,7 +2150,7 @@ func _display_vital_result(key: String, result: Dictionary, result_lbl: Label) -
 				var t: String = result.get("temperature", "WARM")
 				var m: String = result.get("moisture", "DRY")
 				var shock: bool = result.get("shock_signs", false)
-				display_text = "%s / %s / %s%s" % [c, t, m, "  ⚠ SHOCK SIGNS" if shock else ""]
+				display_text = "%s / %s / %s%s" % [c, t, m, "  ! SHOCK SIGNS" if shock else ""]
 				severity_color = Color(0.9, 0.3, 0.3) if shock else Color(0.3, 0.9, 0.4)
 			else:
 				display_text = "Skin: assessed"
@@ -1847,15 +2281,15 @@ func _on_ecg_identify_pressed() -> void:
 
 	if rhythm_key in critical_shockable:
 		rhythm_color = Color(0.9, 0.2, 0.2)
-		clinical_note = "SHOCKABLE — Defibrillate immediately. CPR between shocks."
+		clinical_note = "SHOCKABLE -- Defibrillate immediately. CPR between shocks."
 	elif rhythm_key in critical_non_shockable:
 		rhythm_color = Color(0.6, 0.1, 0.1)
-		clinical_note = "NON-SHOCKABLE — Continue CPR. Identify and treat reversible causes."
+		clinical_note = "NON-SHOCKABLE -- Continue CPR. Identify and treat reversible causes."
 	elif rhythm_key in normal_rhythms:
 		rhythm_color = Color(0.3, 0.9, 0.4)
 		clinical_note = "Normal sinus rhythm identified."
 	else:
-		clinical_note = "Interpret clinically — consult guidelines."
+		clinical_note = "Interpret clinically -- consult guidelines."
 
 	# Try to get detailed data from ECGRhythmManager
 	if _ecg_rhythm_manager and _ecg_rhythm_manager.has_method("get_rhythm_data"):
@@ -1915,13 +2349,13 @@ func _on_gcs_value_selected(component: String, value: int) -> void:
 		var severity_color := Color(0.3, 0.9, 0.4)
 
 		if total >= 13:
-			severity_text = "MILD (13–15)"
+			severity_text = "MILD (13-15)"
 			severity_color = Color(0.3, 0.9, 0.4)
 		elif total >= 9:
-			severity_text = "MODERATE (9–12)"
+			severity_text = "MODERATE (9-12)"
 			severity_color = Color(0.9, 0.8, 0.2)
 		else:
-			severity_text = "SEVERE (3–8)"
+			severity_text = "SEVERE (3-8)"
 			severity_color = Color(0.9, 0.3, 0.3)
 
 		if _gcs_total_label:
@@ -1930,7 +2364,7 @@ func _on_gcs_value_selected(component: String, value: int) -> void:
 
 		var severity_display := severity_text
 		if total <= 8:
-			severity_display += "  ⚠ AIRWAY AT RISK — Consider advanced airway"
+			severity_display += "  ! AIRWAY AT RISK -- Consider advanced airway"
 		if _gcs_severity_label:
 			_gcs_severity_label.text = severity_display
 			_gcs_severity_label.add_theme_color_override("font_color", severity_color)
@@ -2016,7 +2450,7 @@ func _on_secondary_region_pressed(region: String) -> void:
 			break
 
 	if is_critical:
-		result_lbl.text = "⚠ CRITICAL: " + finding_text
+		result_lbl.text = "! CRITICAL: " + finding_text
 		result_lbl.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
 		region_btn.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
 	else:
@@ -2117,10 +2551,10 @@ func _on_cpr_pressed() -> void:
 		var rhythm: String = medical.ecg_rhythm if "ecg_rhythm" in medical else ""
 		var shockable := rhythm in ["VENTRICULAR_FIBRILLATION", "VENTRICULAR_TACHYCARDIA"]
 		if shockable:
-			_cpr_status_label.text = "Rhythm is shockable (%s) — deploy AED for defibrillation!" % rhythm.replace("_", " ").capitalize()
+			_cpr_status_label.text = "Rhythm is shockable (%s) -- deploy AED for defibrillation!" % rhythm.replace("_", " ").capitalize()
 			_cpr_status_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))
 		else:
-			_cpr_status_label.text = "Rhythm is non-shockable (%s) — continue CPR. AED will not help." % rhythm.replace("_", " ").capitalize()
+			_cpr_status_label.text = "Rhythm is non-shockable (%s) -- continue CPR. AED will not help." % rhythm.replace("_", " ").capitalize()
 			_cpr_status_label.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
 
 	# Log to telemetry
@@ -2183,12 +2617,17 @@ func _add_drug_log_entry(drug_name: String, route: String, dose: String, success
 	while _drug_log_vbox.get_child_count() >= 5:
 		_drug_log_vbox.get_child(0).queue_free()
 
+	var tm := _get_theme_medical()
+
 	var entry_lbl := Label.new()
-	var status_icon := "✓" if success else "✗"
-	entry_lbl.text = "[%s] %s %s via %s" % [status_icon, dose, drug_name, route]
-	entry_lbl.add_theme_font_size_override("font_size", 12)
-	entry_lbl.add_theme_color_override("font_color",
-		Color(0.3, 0.9, 0.4) if success else Color(0.9, 0.3, 0.3))
+	var status_icon := "[OK]" if success else "[X]"
+	entry_lbl.text = "%s %s %s via %s" % [status_icon, dose, drug_name, route]
+	if tm:
+		tm.style_label(entry_lbl, "caption", "accent_green" if success else "accent_red")
+	else:
+		entry_lbl.add_theme_font_size_override("font_size", 12)
+		entry_lbl.add_theme_color_override("font_color",
+			Color(0.3, 0.9, 0.4) if success else Color(0.9, 0.3, 0.3))
 	_drug_log_vbox.add_child(entry_lbl)
 
 
@@ -2242,17 +2681,22 @@ func _on_bag_item_deploy(item_type: String, _item_name: String, qty_label: Label
 
 ## Show a triage color picker popup when deploying triage tags from the bag.
 func _show_triage_color_picker(qty_label: Label, deploy_btn: Button) -> void:
+	var tm := _get_theme_medical()
 	var popup := PopupPanel.new()
 	popup.title = "Select Triage Tag Colour"
 	add_child(popup)
 
 	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
 	popup.add_child(vbox)
 
 	var title_lbl := Label.new()
 	title_lbl.text = "Assign Triage Tag:"
-	title_lbl.add_theme_font_size_override("font_size", 16)
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if tm:
+		tm.style_label(title_lbl, "subtitle", "text_primary")
+	else:
+		title_lbl.add_theme_font_size_override("font_size", 16)
 	vbox.add_child(title_lbl)
 
 	var colours := {
@@ -2265,11 +2709,21 @@ func _show_triage_color_picker(qty_label: Label, deploy_btn: Button) -> void:
 	for tag_name in colours:
 		var tag_info: Dictionary = colours[tag_name]
 		var btn := Button.new()
-		btn.text = "%s — %s" % [tag_name, tag_info["label"]]
-		btn.custom_minimum_size = Vector2(220, 38)
+		btn.text = "%s -- %s" % [tag_name, tag_info["label"]]
+		btn.custom_minimum_size = Vector2(220, 48)
 		btn.focus_mode = Control.FOCUS_NONE
-		btn.add_theme_color_override("font_color", tag_info["color"])
 		btn.pressed.connect(_on_triage_color_selected.bind(tag_name, qty_label, deploy_btn, popup))
+		if tm:
+			tm.style_button(btn, "large")
+			# Color-coded triage card styling
+			var triage_style := tm.make_card()
+			triage_style.bg_color = tag_info["color"].darkened(0.6)
+			triage_style.border_color = tag_info["color"]
+			triage_style.border_width_left = 4
+			btn.add_theme_stylebox_override("normal", triage_style)
+			btn.add_theme_color_override("font_color", tag_info["color"])
+		else:
+			btn.add_theme_color_override("font_color", tag_info["color"])
 		vbox.add_child(btn)
 
 	var cancel_btn := Button.new()
@@ -2277,9 +2731,11 @@ func _show_triage_color_picker(qty_label: Label, deploy_btn: Button) -> void:
 	cancel_btn.custom_minimum_size = Vector2(220, 32)
 	cancel_btn.focus_mode = Control.FOCUS_NONE
 	cancel_btn.pressed.connect(func(): popup.queue_free())
+	if tm:
+		tm.style_button(cancel_btn, "small")
 	vbox.add_child(cancel_btn)
 
-	popup.popup_centered(Vector2(240, 260))
+	popup.popup_centered(Vector2(260, 320))
 
 
 func _on_triage_color_selected(tag_name: String, qty_label: Label, deploy_btn: Button, popup: PopupPanel) -> void:
@@ -2443,7 +2899,7 @@ func _on_submit_diagnosis_pressed() -> void:
 	# Build feedback label
 	var feedback_text := ""
 	if matches == _selected_diagnoses.size() and matches == correct_list.size():
-		feedback_text = "PERFECT — All diagnoses correct!"
+		feedback_text = "PERFECT -- All diagnoses correct!"
 	elif matches > 0:
 		feedback_text = "%d/%d correct (%d%%)" % [matches, correct_list.size(), score_pct]
 	else:
@@ -2532,12 +2988,12 @@ func _setup_ollama_context() -> void:
 func _get_sample_question(category: String) -> String:
 	match category:
 		"signs_symptoms":  return "Can you tell me what symptoms you're experiencing right now?"
-		"allergies":       return "Do you have any allergies — medications, foods, or environmental?"
+		"allergies":       return "Do you have any allergies -- medications, foods, or environmental?"
 		"medications":     return "Are you currently taking any medications or supplements?"
 		"past_history":    return "Do you have any significant past medical history or conditions?"
 		"last_oral_intake": return "When did you last eat or drink anything?"
 		"events":          return "Can you walk me through what happened leading up to this?"
-		"opqrst":          return "Can you describe your pain — where is it, when did it start, does anything make it better or worse?"
+		"opqrst":          return "Can you describe your pain -- where is it, when did it start, does anything make it better or worse?"
 	return "Can you tell me more about how you're feeling?"
 
 
@@ -2571,7 +3027,7 @@ func _build_drsabcde_finding(action_name: String) -> Dictionary:
 
 	match action_name:
 		"check_danger":
-			return {"description": "Scene assessed — area safe for responder."}
+			return {"description": "Scene assessed -- area safe for responder."}
 
 		"check_response":
 			var cl := "ALERT"
@@ -2598,7 +3054,7 @@ func _build_drsabcde_finding(action_name: String) -> Dictionary:
 					status = "ABNORMAL"
 				else:
 					status = "NORMAL"
-				return {"description": "RR: %.0f /min — %s" % [rr, status]}
+				return {"description": "RR: %.0f /min -- %s" % [rr, status]}
 			return {"description": "Breathing assessed."}
 
 		"check_circulation":
@@ -2610,7 +3066,7 @@ func _build_drsabcde_finding(action_name: String) -> Dictionary:
 				if ms.get("bleeding_severity") != null:
 					bleed = int(ms.bleeding_severity)
 				var bleed_text := "none" if bleed == 0 else ("minor" if bleed == 1 else ("moderate" if bleed == 2 else "severe"))
-				return {"description": "Pulse: %s — Bleeding: %s" % [pulse, bleed_text]}
+				return {"description": "Pulse: %s -- Bleeding: %s" % [pulse, bleed_text]}
 			return {"description": "Circulation assessed."}
 
 		"check_disability":
@@ -2636,13 +3092,13 @@ func _build_drsabcde_finding(action_name: String) -> Dictionary:
 						ls, ("" if lr else " fixed"),
 						rs, ("" if rr else " fixed"),
 					]
-				return {"description": "GCS: %d/15 (E%dV%dM%d) — AVPU: %s%s" % [total, eye, verbal, motor, avpu, pupils_txt]}
+				return {"description": "GCS: %d/15 (E%dV%dM%d) -- AVPU: %s%s" % [total, eye, verbal, motor, avpu, pupils_txt]}
 			if persona and persona.get("consciousness_level") != null:
 				return {"description": "AVPU: %s" % str(persona.consciousness_level)}
 			return {"description": "Disability assessed."}
 
 		"check_exposure":
-			return {"description": "Patient exposed — proceed with secondary survey below."}
+			return {"description": "Patient exposed -- proceed with secondary survey below."}
 
 	return {}
 
@@ -2655,7 +3111,7 @@ func _format_assessment_result(result: Dictionary, action_name: String) -> Strin
 	if result.is_empty():
 		# Fallback messages if no manager
 		match action_name:
-			"check_danger":     return "Scene assessed — no immediate danger."
+			"check_danger":     return "Scene assessed -- no immediate danger."
 			"check_response":   return "Response level checked."
 			"send_help":        return "Help requested."
 			"check_airway":     return "Airway assessed."

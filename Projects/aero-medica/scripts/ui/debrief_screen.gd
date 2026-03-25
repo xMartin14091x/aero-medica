@@ -29,87 +29,111 @@ func _ready() -> void:
 
 
 func _build_ui() -> void:
-	# Dark overlay
+	var T := ThemeMedical
+
+	# Dark overlay background
 	_background = ColorRect.new()
-	_background.color = Color(0.06, 0.06, 0.1, 0.97)
+	_background.color = T.c("bg_main")
 	_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(_background)
 
+	# Main scroll for entire debrief (allows scrolling on small screens)
+	var main_scroll := ScrollContainer.new()
+	main_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(main_scroll)
+
 	# Main margin
 	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	margin.add_theme_constant_override("margin_left", 50)
 	margin.add_theme_constant_override("margin_right", 50)
 	margin.add_theme_constant_override("margin_top", 30)
 	margin.add_theme_constant_override("margin_bottom", 30)
-	add_child(margin)
+	main_scroll.add_child(margin)
 
 	var outer_vbox := VBoxContainer.new()
 	outer_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	outer_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	outer_vbox.add_theme_constant_override("separation", 16)
 	margin.add_child(outer_vbox)
 
 	# Title
 	_title_label = Label.new()
 	_title_label.text = "Scenario Complete"
-	_title_label.add_theme_font_size_override("font_size", 36)
+	T.style_label(_title_label, "title_large", "accent_blue")
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	outer_vbox.add_child(_title_label)
 
-	outer_vbox.add_child(HSeparator.new())
+	# Quick Summary card
+	var stats_card := PanelContainer.new()
+	T.style_panel(stats_card)
+	outer_vbox.add_child(stats_card)
 
-	# Top: quick stats
+	var stats_inner := VBoxContainer.new()
+	stats_inner.add_theme_constant_override("separation", 8)
+	stats_card.add_child(stats_inner)
+
 	var stats_header := Label.new()
 	stats_header.text = "Quick Summary"
-	stats_header.add_theme_font_size_override("font_size", 22)
-	outer_vbox.add_child(stats_header)
+	T.style_label(stats_header, "title", "text_primary")
+	stats_inner.add_child(stats_header)
 
 	_stats_vbox = VBoxContainer.new()
-	outer_vbox.add_child(_stats_vbox)
+	stats_inner.add_child(_stats_vbox)
 
-	outer_vbox.add_child(HSeparator.new())
+	# Patient Summary card
+	var patients_card := PanelContainer.new()
+	T.style_panel(patients_card)
+	patients_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	outer_vbox.add_child(patients_card)
 
-	# Middle: per-patient summary cards
+	var patients_inner := VBoxContainer.new()
+	patients_inner.add_theme_constant_override("separation", 8)
+	patients_card.add_child(patients_inner)
+
 	var patients_header := Label.new()
 	patients_header.text = "Patient Summary"
-	patients_header.add_theme_font_size_override("font_size", 22)
-	outer_vbox.add_child(patients_header)
+	T.style_label(patients_header, "title", "text_primary")
+	patients_inner.add_child(patients_header)
 
 	_patients_scroll = ScrollContainer.new()
 	_patients_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	outer_vbox.add_child(_patients_scroll)
+	patients_inner.add_child(_patients_scroll)
 
 	_patients_vbox = VBoxContainer.new()
 	_patients_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_patients_vbox.add_theme_constant_override("separation", 8)
 	_patients_scroll.add_child(_patients_vbox)
 
-	outer_vbox.add_child(HSeparator.new())
+	# AI Review card
+	var review_card := PanelContainer.new()
+	T.style_panel(review_card, "info")
+	review_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	outer_vbox.add_child(review_card)
 
-	outer_vbox.add_child(HSeparator.new())
+	var review_inner := VBoxContainer.new()
+	review_inner.add_theme_constant_override("separation", 8)
+	review_card.add_child(review_inner)
 
-	# AI Review section
 	_review_status_label = Label.new()
 	_review_status_label.text = "AI Review"
-	_review_status_label.add_theme_font_size_override("font_size", 22)
-	_review_status_label.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
-	outer_vbox.add_child(_review_status_label)
+	T.style_label(_review_status_label, "title", "accent_blue")
+	review_inner.add_child(_review_status_label)
 
 	# Scrollable review text area
 	_review_scroll = ScrollContainer.new()
 	_review_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_review_scroll.custom_minimum_size = Vector2(0, 150)
-	outer_vbox.add_child(_review_scroll)
+	review_inner.add_child(_review_scroll)
 
 	_review_text_label = RichTextLabel.new()
 	_review_text_label.bbcode_enabled = true
 	_review_text_label.fit_content = true
 	_review_text_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_review_text_label.add_theme_font_size_override("normal_font_size", 14)
-	_review_text_label.add_theme_color_override("default_color", Color(0.8, 0.85, 0.9))
+	T.style_rich_label(_review_text_label, "body")
 	_review_text_label.text = ""
 	_review_scroll.add_child(_review_text_label)
 
-	# Buttons row
+	# Return to Menu button
 	var btn_hbox := HBoxContainer.new()
 	btn_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	btn_hbox.add_theme_constant_override("separation", 20)
@@ -117,7 +141,8 @@ func _build_ui() -> void:
 
 	var menu_btn := Button.new()
 	menu_btn.text = "Return to Menu"
-	menu_btn.custom_minimum_size = Vector2(180, 40)
+	menu_btn.custom_minimum_size = Vector2(220, 48)
+	T.style_button(menu_btn, "large")
 	menu_btn.pressed.connect(_on_return_to_menu)
 	btn_hbox.add_child(menu_btn)
 
@@ -279,20 +304,24 @@ func _build_patient_summaries_from_events(results: Dictionary) -> Array:
 
 ## Add a patient summary card.
 func _add_patient_card(summary: Dictionary) -> void:
+	var T := ThemeMedical
+
+	# Determine card severity from final state
+	var final_state: String = summary.get("final_state", "Unknown")
+	var severity := "normal"
+	match final_state:
+		"CONSCIOUS": severity = "good"
+		"UNCONSCIOUS": severity = "warning"
+		"CARDIAC_ARREST": severity = "critical"
+		"DEAD": severity = "critical"
+
 	var card := PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 12)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_top", 8)
-	margin.add_theme_constant_override("margin_bottom", 8)
-	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.add_child(margin)
+	T.style_panel(card, severity)
 
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 4)
-	margin.add_child(vbox)
+	vbox.add_theme_constant_override("separation", 6)
+	card.add_child(vbox)
 
 	# Top row: name + state + triage
 	var top_hbox := HBoxContainer.new()
@@ -302,25 +331,20 @@ func _add_patient_card(summary: Dictionary) -> void:
 	# Patient name
 	var name_lbl := Label.new()
 	name_lbl.text = summary.get("name", "Unknown")
-	name_lbl.add_theme_font_size_override("font_size", 16)
+	T.style_label(name_lbl, "subtitle", "text_primary")
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_hbox.add_child(name_lbl)
 
 	# Final state
 	var state_lbl := Label.new()
-	var final_state: String = summary.get("final_state", "Unknown")
 	state_lbl.text = final_state
-	state_lbl.add_theme_font_size_override("font_size", 14)
-	var state_colour := Color.WHITE
+	T.style_label(state_lbl, "body")
+	var state_colour := T.c("text_secondary")
 	match final_state:
-		"CONSCIOUS":
-			state_colour = Color(0.3, 0.9, 0.3)
-		"UNCONSCIOUS":
-			state_colour = Color(1.0, 0.9, 0.2)
-		"CARDIAC_ARREST":
-			state_colour = Color(1.0, 0.3, 0.3)
-		"DEAD":
-			state_colour = Color(0.4, 0.4, 0.4)
+		"CONSCIOUS": state_colour = T.c("accent_green")
+		"UNCONSCIOUS": state_colour = T.c("accent_yellow")
+		"CARDIAC_ARREST": state_colour = T.c("accent_red")
+		"DEAD": state_colour = T.c("text_muted")
 	state_lbl.add_theme_color_override("font_color", state_colour)
 	top_hbox.add_child(state_lbl)
 
@@ -329,14 +353,8 @@ func _add_patient_card(summary: Dictionary) -> void:
 	if tag != "":
 		var tag_lbl := Label.new()
 		tag_lbl.text = "[%s]" % tag
-		tag_lbl.add_theme_font_size_override("font_size", 14)
-		var tag_colours := {
-			"GREEN": Color(0.0, 1.0, 0.0),
-			"YELLOW": Color(1.0, 1.0, 0.0),
-			"RED": Color(1.0, 0.0, 0.0),
-			"BLACK": Color(0.5, 0.5, 0.5),
-		}
-		tag_lbl.add_theme_color_override("font_color", tag_colours.get(tag, Color.WHITE))
+		T.style_label(tag_lbl, "body")
+		tag_lbl.add_theme_color_override("font_color", T.triage_color(tag))
 		top_hbox.add_child(tag_lbl)
 
 	# Bottom row: equipment + diagnoses
@@ -347,8 +365,7 @@ func _add_patient_card(summary: Dictionary) -> void:
 		for eq in deployed:
 			equip_names.append(str(eq).replace("_", " ").capitalize())
 		equip_lbl.text = "Equipment: %s" % ", ".join(equip_names)
-		equip_lbl.add_theme_font_size_override("font_size", 12)
-		equip_lbl.add_theme_color_override("font_color", Color(0.5, 0.7, 0.9))
+		T.style_label(equip_lbl, "body_small", "accent_blue")
 		equip_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vbox.add_child(equip_lbl)
 
@@ -357,8 +374,8 @@ func _add_patient_card(summary: Dictionary) -> void:
 		var diag_matches: int = summary.get("diagnosis_matches", 0)
 		var diag_lbl := Label.new()
 		diag_lbl.text = "DDx: %s (%d correct)" % [", ".join(PackedStringArray(diagnoses)), diag_matches]
-		diag_lbl.add_theme_font_size_override("font_size", 12)
-		var diag_colour := Color(0.3, 0.9, 0.3) if diag_matches > 0 else Color(1.0, 0.5, 0.3)
+		T.style_label(diag_lbl, "body_small")
+		var diag_colour := T.c("accent_green") if diag_matches > 0 else T.c("accent_yellow")
 		diag_lbl.add_theme_color_override("font_color", diag_colour)
 		diag_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vbox.add_child(diag_lbl)
@@ -368,15 +385,16 @@ func _add_patient_card(summary: Dictionary) -> void:
 
 ## Add a stat label pair to the grid.
 func _add_stat(grid: GridContainer, label_text: String, value_text: String) -> void:
+	var T := ThemeMedical
+
 	var name_lbl := Label.new()
 	name_lbl.text = label_text
-	name_lbl.add_theme_font_size_override("font_size", 14)
-	name_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	T.style_label(name_lbl, "body", "text_secondary")
 	grid.add_child(name_lbl)
 
 	var val_lbl := Label.new()
 	val_lbl.text = value_text
-	val_lbl.add_theme_font_size_override("font_size", 18)
+	T.style_label(val_lbl, "subtitle", "text_primary")
 	grid.add_child(val_lbl)
 
 
