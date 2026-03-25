@@ -106,6 +106,8 @@ func _discover_ollama() -> void:
 
 	print("OllamaDialogueClient: Probing %d candidates: %s" % [candidates.size(), str(candidates)])
 
+	_probes_remaining = candidates.size()
+
 	for candidate_url in candidates:
 		var probe := HTTPRequest.new()
 		probe.timeout = 3
@@ -115,11 +117,21 @@ func _discover_ollama() -> void:
 		var err := probe.request(candidate_url + "/api/tags")
 		if err != OK:
 			probe.queue_free()
+			_probes_remaining -= 1
+
+	# Safety: if no probes were sent, mark discovery done immediately
+	if _probes_remaining <= 0:
+		_mark_discovery_failed()
+
+
+## Total probes still pending (for detecting all-failed).
+var _probes_remaining: int = 0
 
 
 ## Handle a discovery probe response.
 func _on_probe_completed(result: int, response_code: int, _headers: PackedStringArray, _body: PackedByteArray, probe: HTTPRequest, candidate_url: String) -> void:
 	probe.queue_free()
+	_probes_remaining -= 1
 
 	if _discovery_done:
 		return
@@ -131,6 +143,21 @@ func _on_probe_completed(result: int, response_code: int, _headers: PackedString
 		print("OllamaDialogueClient: Discovered Ollama at %s" % candidate_url)
 		ollama_discovered.emit(candidate_url)
 		_flush_queued_asks()
+		return
+
+	# All probes failed — mark Ollama unavailable and flush queued requests
+	if _probes_remaining <= 0:
+		_mark_discovery_failed()
+
+
+## Mark discovery as complete with no Ollama found.
+func _mark_discovery_failed() -> void:
+	_discovery_done = true
+	ollama_available = false
+	print("OllamaDialogueClient: All probes failed — Ollama unavailable.")
+	for _q in _queued_ask_args:
+		dialogue_failed.emit("Ollama not found on any local address")
+	_queued_ask_args.clear()
 
 
 ## Process any ask_patient requests queued during discovery.
