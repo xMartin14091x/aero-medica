@@ -1025,7 +1025,7 @@ func _build_stabilize_tab() -> Control:
 
 	var container := VBoxContainer.new()
 	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	container.add_theme_constant_override("separation", 8)
+	container.add_theme_constant_override("separation", 24)
 	root.add_child(container)
 
 	var title := Label.new()
@@ -1069,8 +1069,6 @@ func _build_stabilize_tab() -> Control:
 		_cpr_status_label.add_theme_font_size_override("font_size", 14)
 	container.add_child(_cpr_status_label)
 
-	container.add_child(HSeparator.new())
-
 	## ARC-18: Medical Bag Tier Indicator (at TOP, before equipment grid)
 	var tier_hbox := HBoxContainer.new()
 	tier_hbox.add_theme_constant_override("separation", 8)
@@ -1092,8 +1090,6 @@ func _build_stabilize_tab() -> Control:
 		_bag_tier_label.add_theme_font_size_override("font_size", 15)
 		_bag_tier_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
 	tier_hbox.add_child(_bag_tier_label)
-
-	container.add_child(HSeparator.new())
 
 	# ══ Equipment Row: Diagnostic (left) | Treatment (right) ══
 	var equip_row := HBoxContainer.new()
@@ -1131,12 +1127,14 @@ func _build_stabilize_tab() -> Control:
 
 	for eq in diagnostic_defs:
 		var eq_panel := PanelContainer.new()
+		eq_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if tm:
 			tm.style_panel(eq_panel)
 		diag_grid.add_child(eq_panel)
 		var eq_btn := Button.new()
 		eq_btn.text = eq[0]
-		eq_btn.custom_minimum_size = Vector2(120, 40)
+		eq_btn.custom_minimum_size = Vector2(0, 40)
+		eq_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		eq_btn.focus_mode = Control.FOCUS_NONE
 		eq_btn.pressed.connect(_on_equipment_pressed.bind(eq[1]))
 		if tm:
@@ -1178,12 +1176,14 @@ func _build_stabilize_tab() -> Control:
 
 	for eq in treatment_defs:
 		var eq_panel := PanelContainer.new()
+		eq_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if tm:
 			tm.style_panel(eq_panel)
 		treat_grid.add_child(eq_panel)
 		var eq_btn := Button.new()
 		eq_btn.text = eq[0]
-		eq_btn.custom_minimum_size = Vector2(120, 40)
+		eq_btn.custom_minimum_size = Vector2(0, 40)
+		eq_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		eq_btn.focus_mode = Control.FOCUS_NONE
 		eq_btn.pressed.connect(_on_equipment_pressed.bind(eq[1]))
 		if tm:
@@ -1228,7 +1228,8 @@ func _build_stabilize_tab() -> Control:
 	drug_form_grid.add_child(drug_name_label)
 
 	_drug_name_btn = OptionButton.new()
-	_drug_name_btn.custom_minimum_size = Vector2(200, 32)
+	_drug_name_btn.custom_minimum_size = Vector2(0, 40)
+	_drug_name_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_drug_name_btn.focus_mode = Control.FOCUS_NONE
 	_drug_name_btn.item_selected.connect(_on_drug_name_changed)
 	if tm:
@@ -1242,7 +1243,8 @@ func _build_stabilize_tab() -> Control:
 	drug_form_grid.add_child(drug_route_label)
 
 	_drug_route_btn = OptionButton.new()
-	_drug_route_btn.custom_minimum_size = Vector2(200, 32)
+	_drug_route_btn.custom_minimum_size = Vector2(0, 40)
+	_drug_route_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_drug_route_btn.focus_mode = Control.FOCUS_NONE
 	if tm:
 		tm.style_option_button(_drug_route_btn)
@@ -1255,7 +1257,8 @@ func _build_stabilize_tab() -> Control:
 	drug_form_grid.add_child(drug_dose_label)
 
 	_drug_dose_btn = OptionButton.new()
-	_drug_dose_btn.custom_minimum_size = Vector2(200, 32)
+	_drug_dose_btn.custom_minimum_size = Vector2(0, 40)
+	_drug_dose_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_drug_dose_btn.focus_mode = Control.FOCUS_NONE
 	if tm:
 		tm.style_option_button(_drug_dose_btn)
@@ -2762,11 +2765,19 @@ func _on_cpr_pressed() -> void:
 	assessment_action.emit("cpr")
 
 
+var _drug_admin_cooldown: bool = false
+
 func _on_administer_drug_pressed() -> void:
+	if _drug_admin_cooldown:
+		return
 	if not _drug_name_btn or not _drug_route_btn or not _drug_dose_btn:
 		return
 	if not _patient:
 		return
+	# Debounce — prevent rapid fire
+	_drug_admin_cooldown = true
+	var cooldown_timer := get_tree().create_timer(1.0)
+	cooldown_timer.timeout.connect(func(): _drug_admin_cooldown = false)
 
 	var drug_display: String = _drug_name_btn.get_item_text(_drug_name_btn.selected) if _drug_name_btn.get_item_count() > 0 else ""
 	var drug_key = _drug_name_btn.get_item_metadata(_drug_name_btn.selected) if _drug_name_btn.get_item_count() > 0 else ""

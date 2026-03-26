@@ -51,8 +51,8 @@ const PALETTE := {
 		"border_hover":   Color(0.200, 0.467, 0.863),   # #3377DC
 		"border_active":  Color(0.200, 0.467, 0.863),   # #3377DC
 		"text_primary":   Color(0.129, 0.145, 0.196),   # #212532
-		"text_secondary": Color(0.400, 0.420, 0.490),   # #666B7D
-		"text_muted":     Color(0.600, 0.616, 0.680),   # #999DAD
+		"text_secondary": Color(0.330, 0.350, 0.420),   # #54596B
+		"text_muted":     Color(0.450, 0.465, 0.530),   # #737788
 		"accent_blue":    Color(0.200, 0.467, 0.863),   # #3377DC
 		"accent_green":   Color(0.173, 0.612, 0.424),   # #2C9C6C
 		"accent_yellow":  Color(0.878, 0.580, 0.000),   # #E09400
