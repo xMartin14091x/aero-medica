@@ -103,6 +103,36 @@ const SPACING := {
 
 func _ready() -> void:
 	_load_config()
+	_apply_global_theme()
+
+
+## Apply a global Theme to the project so ALL controls get readable defaults.
+func _apply_global_theme() -> void:
+	var global_theme := Theme.new()
+	# Button defaults
+	global_theme.set_color("font_color", "Button", c("text_primary"))
+	global_theme.set_color("font_hover_color", "Button", c("accent_blue"))
+	global_theme.set_color("font_pressed_color", "Button", c("accent_blue"))
+	global_theme.set_color("font_disabled_color", "Button", c("text_muted"))
+	global_theme.set_color("font_focus_color", "Button", c("text_primary"))
+	# Label defaults
+	global_theme.set_color("font_color", "Label", c("text_primary"))
+	# OptionButton defaults
+	global_theme.set_color("font_color", "OptionButton", c("text_primary"))
+	global_theme.set_color("font_hover_color", "OptionButton", c("accent_blue"))
+	global_theme.set_color("font_pressed_color", "OptionButton", c("text_primary"))
+	global_theme.set_color("font_focus_color", "OptionButton", c("text_primary"))
+	# PopupMenu defaults
+	global_theme.set_color("font_color", "PopupMenu", c("text_primary"))
+	global_theme.set_color("font_hovered_color", "PopupMenu", c("accent_blue"))
+	# Apply globally
+	ThemeDB.get_project_theme().merge_with(global_theme) if ThemeDB.get_project_theme() else ThemeDB.set_project_theme(global_theme) if ThemeDB.has_method("set_project_theme") else null
+	# Fallback: set on tree root
+	var root := get_tree().root
+	if root and not root.theme:
+		root.theme = global_theme
+	elif root and root.theme:
+		root.theme.merge_with(global_theme)
 
 
 ## ── Public API ───────────────────────────────────────────────────
@@ -119,6 +149,7 @@ func set_mode(mode: String) -> void:
 		return
 	current_mode = mode
 	_save_config()
+	_apply_global_theme()
 	theme_changed.emit(mode)
 
 
