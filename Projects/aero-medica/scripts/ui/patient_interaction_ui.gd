@@ -634,40 +634,42 @@ func _build_patient_tab() -> Control:
 func _build_exam_tab() -> Control:
 	var tm := _get_theme_medical()
 
-	var root := VBoxContainer.new()
+	var root := ScrollContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_theme_constant_override("separation", 6)
+
+	var exam_vbox := VBoxContainer.new()
+	exam_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	exam_vbox.add_theme_constant_override("separation", 10)
+	root.add_child(exam_vbox)
+	# Reference for responsive grids
+	var exam_scroll := root
+
+	# ══ ROW 1: DRSABCDE (left) | Head-to-Toe (right) ══
+	var row1 := HBoxContainer.new()
+	row1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row1.add_theme_constant_override("separation", 12)
+	exam_vbox.add_child(row1)
+
+	# ── Left: DRSABCDE ──
+	var drs_vbox := VBoxContainer.new()
+	drs_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drs_vbox.add_theme_constant_override("separation", 6)
+	row1.add_child(drs_vbox)
 
 	var title_row := HBoxContainer.new()
-	root.add_child(title_row)
-
+	drs_vbox.add_child(title_row)
 	var title := Label.new()
 	title.text = tr("EXAM_PRIMARY_SURVEY")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if tm:
-		tm.style_label(title, "title", "text_primary")
-	else:
-		title.add_theme_font_size_override("font_size", 22)
+		tm.style_label(title, "subtitle", "text_primary")
 	title_row.add_child(title)
-
 	_exam_counter_label = Label.new()
 	_exam_counter_label.text = "0/8"
 	if tm:
-		tm.style_label(_exam_counter_label, "subtitle", "accent_blue")
-	else:
-		_exam_counter_label.add_theme_font_size_override("font_size", 16)
+		tm.style_label(_exam_counter_label, "body", "accent_blue")
 	title_row.add_child(_exam_counter_label)
-
-	# Scrollable exam area
-	var exam_scroll := ScrollContainer.new()
-	exam_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_child(exam_scroll)
-
-	var exam_vbox := VBoxContainer.new()
-	exam_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	exam_vbox.add_theme_constant_override("separation", 8)
-	exam_scroll.add_child(exam_vbox)
 
 	# DRSABCDE steps
 	var drs_steps := [
@@ -682,11 +684,10 @@ func _build_exam_tab() -> Control:
 	]
 
 	var steps_grid := GridContainer.new()
-	steps_grid.columns = 4  # Responsive: 4 wide, 2 narrow
-	steps_grid.add_theme_constant_override("h_separation", 8)
-	steps_grid.add_theme_constant_override("v_separation", 6)
-	exam_vbox.add_child(steps_grid)
-	_register_responsive_grid(steps_grid, 180.0, 4, exam_scroll)
+	steps_grid.columns = 2
+	steps_grid.add_theme_constant_override("h_separation", 6)
+	steps_grid.add_theme_constant_override("v_separation", 4)
+	drs_vbox.add_child(steps_grid)
 
 	for step in drs_steps:
 		var step_panel := PanelContainer.new()
@@ -718,9 +719,17 @@ func _build_exam_tab() -> Control:
 		step_vbox.add_child(result_lbl)
 		_exam_results[step[1]] = result_lbl
 
-	## ARC-13: Vital Signs Assessment section
-	var vitals_sep := HSeparator.new()
-	exam_vbox.add_child(vitals_sep)
+	# ══ ROW 2: Vitals (left) | GCS (right) ══
+	var row2 := HBoxContainer.new()
+	row2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row2.add_theme_constant_override("separation", 12)
+	exam_vbox.add_child(row2)
+
+	# ── Left: Vital Signs ──
+	var vitals_vbox := VBoxContainer.new()
+	vitals_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vitals_vbox.add_theme_constant_override("separation", 6)
+	row2.add_child(vitals_vbox)
 
 	var vitals_title := Label.new()
 	vitals_title.text = tr("VITAL_SIGNS_TITLE") if tr("VITAL_SIGNS_TITLE") != "VITAL_SIGNS_TITLE" else "Vital Signs Assessment"
@@ -728,15 +737,13 @@ func _build_exam_tab() -> Control:
 		tm.style_label(vitals_title, "subtitle", "accent_blue")
 	else:
 		vitals_title.add_theme_font_size_override("font_size", 17)
-		vitals_title.add_theme_color_override("font_color", tm.c("accent_blue") if tm else Color(0.4, 0.8, 1.0))
-	exam_vbox.add_child(vitals_title)
+	vitals_vbox.add_child(vitals_title)
 
 	var vitals_grid := GridContainer.new()
-	vitals_grid.columns = 4  # Responsive: 4 wide, 2 narrow
-	vitals_grid.add_theme_constant_override("h_separation", 8)
-	vitals_grid.add_theme_constant_override("v_separation", 6)
-	exam_vbox.add_child(vitals_grid)
-	_register_responsive_grid(vitals_grid, 160.0, 4, exam_scroll)
+	vitals_grid.columns = 2
+	vitals_grid.add_theme_constant_override("h_separation", 6)
+	vitals_grid.add_theme_constant_override("v_separation", 4)
+	vitals_vbox.add_child(vitals_grid)
 
 	# Enum values from AssessmentManager.AssessmentAction:
 	# CHECK_HEART_RATE=5, CHECK_BLOOD_PRESSURE=6, CHECK_SPO2=7,
@@ -783,18 +790,12 @@ func _build_exam_tab() -> Control:
 		v_vbox.add_child(v_result)
 		_vital_results[vd[1]] = v_result
 
-	## ARC-14: ECG Monitor section
-	var ecg_sep := HSeparator.new()
-	exam_vbox.add_child(ecg_sep)
-
+	## ARC-14: ECG Monitor section — will be placed as Row 3 (full width) AFTER GCS
+	## Temporarily build ECG elements but DON'T add to tree yet
 	var ecg_title := Label.new()
 	ecg_title.text = "ECG / Cardiac Monitor"
 	if tm:
 		tm.style_label(ecg_title, "subtitle", "accent_green")
-	else:
-		ecg_title.add_theme_font_size_override("font_size", 17)
-		ecg_title.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.3, 1.0, 0.6))
-	exam_vbox.add_child(ecg_title)
 
 	_ecg_mode_label = Label.new()
 	_ecg_mode_label.text = "No monitor deployed"
@@ -839,12 +840,14 @@ func _build_exam_tab() -> Control:
 		tm.style_button(ecg_identify_btn)
 	exam_vbox.add_child(ecg_identify_btn)
 
-	## ARC-15: GCS Assessment
-	var gcs_sep := HSeparator.new()
-	exam_vbox.add_child(gcs_sep)
+	## ARC-15: GCS Assessment — RIGHT side of Row 2
+	var gcs_vbox := VBoxContainer.new()
+	gcs_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gcs_vbox.add_theme_constant_override("separation", 6)
+	row2.add_child(gcs_vbox)
 
 	var gcs_title_hbox := HBoxContainer.new()
-	exam_vbox.add_child(gcs_title_hbox)
+	gcs_vbox.add_child(gcs_title_hbox)
 
 	var gcs_title := Label.new()
 	gcs_title.text = "GCS -- Glasgow Coma Scale"
@@ -870,7 +873,7 @@ func _build_exam_tab() -> Control:
 		tm.style_label(_gcs_severity_label, "label", "text_secondary")
 	else:
 		_gcs_severity_label.add_theme_font_size_override("font_size", 13)
-	exam_vbox.add_child(_gcs_severity_label)
+	gcs_vbox.add_child(_gcs_severity_label)
 
 	# GCS sub-sections — Eye, Verbal, Motor
 	var gcs_defs := [
@@ -897,11 +900,11 @@ func _build_exam_tab() -> Control:
 			tm.style_label(comp_title, "body_small", "text_secondary")
 		else:
 			comp_title.add_theme_font_size_override("font_size", 14)
-		exam_vbox.add_child(comp_title)
+		gcs_vbox.add_child(comp_title)
 
 		var comp_hbox := HBoxContainer.new()
 		comp_hbox.add_theme_constant_override("separation", 4)
-		exam_vbox.add_child(comp_hbox)
+		gcs_vbox.add_child(comp_hbox)
 
 		for i in range(comp_labels.size()):
 			var gcs_btn := Button.new()
@@ -922,14 +925,19 @@ func _build_exam_tab() -> Control:
 	gcs_read_btn.pressed.connect(_on_gcs_read_patient)
 	if tm:
 		tm.style_button(gcs_read_btn, "small")
-	exam_vbox.add_child(gcs_read_btn)
+	gcs_vbox.add_child(gcs_read_btn)
 
-	## ARC-16: Secondary Survey
-	var ss_sep := HSeparator.new()
-	exam_vbox.add_child(ss_sep)
+	# ══ ROW 3: ECG (full width) ══
+	exam_vbox.add_child(ecg_title)
+
+	## ARC-16: Secondary Survey — RIGHT side of Row 1
+	var ss_vbox := VBoxContainer.new()
+	ss_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ss_vbox.add_theme_constant_override("separation", 6)
+	row1.add_child(ss_vbox)
 
 	var ss_title_hbox := HBoxContainer.new()
-	exam_vbox.add_child(ss_title_hbox)
+	ss_vbox.add_child(ss_title_hbox)
 
 	var ss_title := Label.new()
 	ss_title.text = tr("SECONDARY_SURVEY_TITLE") if tr("SECONDARY_SURVEY_TITLE") != "SECONDARY_SURVEY_TITLE" else "Secondary Survey -- Head-to-Toe"
@@ -950,11 +958,10 @@ func _build_exam_tab() -> Control:
 	ss_title_hbox.add_child(_secondary_counter_label)
 
 	var ss_grid := GridContainer.new()
-	ss_grid.columns = 4  # Responsive: 4 wide, 2 narrow
-	ss_grid.add_theme_constant_override("h_separation", 8)
-	ss_grid.add_theme_constant_override("v_separation", 6)
-	exam_vbox.add_child(ss_grid)
-	_register_responsive_grid(ss_grid, 180.0, 4, exam_scroll)
+	ss_grid.columns = 2
+	ss_grid.add_theme_constant_override("h_separation", 6)
+	ss_grid.add_theme_constant_override("v_separation", 4)
+	ss_vbox.add_child(ss_grid)
 
 	var ss_regions := ["head", "neck", "chest", "abdomen", "pelvis", "back", "extremities"]
 	var ss_tr_keys := {
@@ -1079,21 +1086,31 @@ func _build_stabilize_tab() -> Control:
 
 	container.add_child(HSeparator.new())
 
-	# ── Diagnostic Equipment (deploy to unlock vitals) ──
+	# ══ Equipment Row: Diagnostic (left) | Treatment (right) ══
+	var equip_row := HBoxContainer.new()
+	equip_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	equip_row.add_theme_constant_override("separation", 12)
+	container.add_child(equip_row)
+
+	# ── Left: Diagnostic Equipment ──
+	var diag_col := VBoxContainer.new()
+	diag_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	diag_col.add_theme_constant_override("separation", 6)
+	equip_row.add_child(diag_col)
+
 	var diag_title := Label.new()
 	diag_title.text = "Diagnostic"
 	if tm:
 		tm.style_label(diag_title, "subtitle", "accent_blue")
 	else:
 		diag_title.add_theme_font_size_override("font_size", 17)
-	container.add_child(diag_title)
+	diag_col.add_child(diag_title)
 
 	var diag_grid := GridContainer.new()
-	diag_grid.columns = 3
-	diag_grid.add_theme_constant_override("h_separation", 8)
-	diag_grid.add_theme_constant_override("v_separation", 6)
-	container.add_child(diag_grid)
-	_register_responsive_grid(diag_grid, 140.0, 3, root)
+	diag_grid.columns = 2
+	diag_grid.add_theme_constant_override("h_separation", 6)
+	diag_grid.add_theme_constant_override("v_separation", 4)
+	diag_col.add_child(diag_grid)
 
 	var diagnostic_defs := [
 		[tr("EQUIP_PULSE_OXIMETER"), "pulse_oximeter"],
@@ -1118,23 +1135,25 @@ func _build_stabilize_tab() -> Control:
 		eq_panel.add_child(eq_btn)
 		_equipment_buttons[eq[1]] = eq_btn
 
-	container.add_child(HSeparator.new())
+	# ── Right: Treatment Equipment ──
+	var treat_col := VBoxContainer.new()
+	treat_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	treat_col.add_theme_constant_override("separation", 6)
+	equip_row.add_child(treat_col)
 
-	# ── Treatment Equipment ──
 	var treat_title := Label.new()
 	treat_title.text = "Treatment"
 	if tm:
 		tm.style_label(treat_title, "subtitle", "accent_green")
 	else:
 		treat_title.add_theme_font_size_override("font_size", 17)
-	container.add_child(treat_title)
+	treat_col.add_child(treat_title)
 
 	var treat_grid := GridContainer.new()
-	treat_grid.columns = 3
-	treat_grid.add_theme_constant_override("h_separation", 8)
-	treat_grid.add_theme_constant_override("v_separation", 6)
-	container.add_child(treat_grid)
-	_register_responsive_grid(treat_grid, 140.0, 3, root)
+	treat_grid.columns = 2
+	treat_grid.add_theme_constant_override("h_separation", 6)
+	treat_grid.add_theme_constant_override("v_separation", 4)
+	treat_col.add_child(treat_grid)
 
 	var treatment_defs := [
 		[tr("EQUIP_OXYGEN_MASK"), "oxygen_mask"],
@@ -1163,27 +1182,10 @@ func _build_stabilize_tab() -> Control:
 		eq_panel.add_child(eq_btn)
 		_equipment_buttons[eq[1]] = eq_btn
 
-	## ARC-18: Bag Contents section
-	container.add_child(HSeparator.new())
-
-	var bag_contents_title := Label.new()
-	bag_contents_title.text = "Bag Contents"
-	if tm:
-		tm.style_label(bag_contents_title, "subtitle", "accent_green")
-	else:
-		bag_contents_title.add_theme_font_size_override("font_size", 17)
-		bag_contents_title.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
-	container.add_child(bag_contents_title)
-
-	var bag_scroll := ScrollContainer.new()
-	bag_scroll.custom_minimum_size = Vector2(0, 180)
-	bag_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	container.add_child(bag_scroll)
-
+	## Bag Contents — hidden container (populate functions still write to _bag_items_vbox)
 	_bag_items_vbox = VBoxContainer.new()
-	_bag_items_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_bag_items_vbox.add_theme_constant_override("separation", 4)
-	bag_scroll.add_child(_bag_items_vbox)
+	_bag_items_vbox.visible = false
+	container.add_child(_bag_items_vbox)
 
 	## ARC-17: Drug Administration section
 	var drug_sep := HSeparator.new()
@@ -2158,8 +2160,12 @@ func _add_chat_bubble(text: String, is_player: bool) -> void:
 		if is_player:
 			# Player bubble: accent_blue tinted card
 			var player_style: StyleBoxFlat = tm.make_card()
-			player_style.bg_color = tm.c("accent_blue").darkened(0.7)
-			player_style.border_color = tm.c("accent_blue").darkened(0.4)
+			if tm.current_mode == "dark":
+				player_style.bg_color = tm.c("accent_blue").darkened(0.6)
+				player_style.border_color = tm.c("accent_blue").darkened(0.3)
+			else:
+				player_style.bg_color = tm.c("accent_blue").lightened(0.8)
+				player_style.border_color = tm.c("accent_blue").lightened(0.4)
 			bubble_panel.add_theme_stylebox_override("panel", player_style)
 		else:
 			# Patient bubble: standard bg_card
