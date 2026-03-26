@@ -85,8 +85,9 @@ func _ready() -> void:
 	if _theme and _theme.has_signal("theme_changed"):
 		_theme.theme_changed.connect(_on_theme_changed)
 
-	# Refresh Ollama status periodically
+	# Refresh Ollama status every 15 seconds
 	_update_ollama_status()
+	_start_ollama_poll()
 
 
 ## ---- BUILD UI STRUCTURE ------------------------------------------------
@@ -436,8 +437,9 @@ func _apply_theme() -> void:
 	# Status bar labels
 	if _version_label:
 		_theme.style_label(_version_label, "caption", "text_muted")
+	# Ollama label color set by _update_ollama_status, not theme muted
 	if _ollama_label:
-		_theme.style_label(_ollama_label, "caption", "text_muted")
+		_ollama_label.add_theme_font_size_override("font_size", _theme.FONT_SIZES.caption)
 	if _lang_label:
 		_theme.style_label(_lang_label, "caption", "text_muted")
 	if _copyright_label:
@@ -491,14 +493,27 @@ func _update_ollama_status() -> void:
 	var is_online := false
 	if client and "ollama_available" in client:
 		is_online = client.ollama_available
+	# Also trigger a fresh check if the client supports it
+	if client and client.has_method("check_available"):
+		client.check_available()
 
 	if _ollama_dot:
-		if _theme:
-			_ollama_dot.color = _theme.c("accent_green") if is_online else _theme.c("accent_red")
-		else:
-			_ollama_dot.color = Color.GREEN if is_online else Color.RED
+		var green_c: Color = _theme.c("accent_green") if _theme else Color.GREEN
+		var red_c: Color = _theme.c("accent_red") if _theme else Color.RED
+		_ollama_dot.color = green_c if is_online else red_c
 	if _ollama_label:
 		_ollama_label.text = "AI Online" if is_online else "AI Offline"
+		if _theme:
+			var label_color: Color = _theme.c("accent_green") if is_online else _theme.c("accent_red")
+			_ollama_label.add_theme_color_override("font_color", label_color)
+
+
+func _start_ollama_poll() -> void:
+	var timer := Timer.new()
+	timer.wait_time = 15.0
+	timer.autostart = true
+	timer.timeout.connect(_update_ollama_status)
+	add_child(timer)
 
 
 ## ---- SPLASH DISMISS ---------------------------------------------------

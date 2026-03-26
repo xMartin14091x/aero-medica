@@ -92,6 +92,20 @@ var _chat_input: LineEdit = null
 var _talk_button: Button = null
 var _patient_info_label: RichTextLabel = null
 var _ai_status_label: Label = null
+var _patient_info_card: PanelContainer = null
+var _patient_name_label: Label = null
+var _patient_state_label: Label = null
+var _patient_detail_label: Label = null
+
+## Responsive grid tracking.
+var _responsive_grids: Array[Dictionary] = []
+
+## Differential tab — search + categories.
+var _ddx_search_input: LineEdit = null
+var _ddx_category_containers: Dictionary = {}
+var _ddx_category_grids: Dictionary = {}
+var _ddx_category_collapsed: Dictionary = {}
+var _selected_chips_hbox: HBoxContainer = null
 
 ## Ollama dialogue client reference.
 var _dialogue_client: Node = null
@@ -174,6 +188,28 @@ func _get_theme_medical() -> Node:
 
 func _on_theme_changed(_mode: String) -> void:
 	_apply_theme()
+
+
+## Responsive column calculator — returns optimal column count for available width.
+func _get_responsive_columns(container_width: float, item_min_width: float, max_cols: int) -> int:
+	var cols := int(container_width / item_min_width)
+	return clampi(cols, 2, max_cols)
+
+
+## Register a GridContainer for responsive column recalculation.
+func _register_responsive_grid(grid: GridContainer, min_width: float, max_cols: int, resize_source: Control) -> void:
+	_responsive_grids.append({"grid": grid, "min_width": min_width, "max_cols": max_cols, "source": resize_source})
+	if not resize_source.resized.is_connected(_on_responsive_resize):
+		resize_source.resized.connect(_on_responsive_resize)
+
+
+## Recalculate all registered responsive grids on resize.
+func _on_responsive_resize() -> void:
+	for entry in _responsive_grids:
+		var grid: GridContainer = entry["grid"]
+		var source: Control = entry["source"]
+		if is_instance_valid(grid) and is_instance_valid(source):
+			grid.columns = _get_responsive_columns(source.size.x, entry["min_width"], entry["max_cols"])
 
 
 func _find_systems() -> void:

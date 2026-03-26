@@ -98,8 +98,13 @@ func _ready() -> void:
 	if _theme and _theme.has_signal("theme_changed"):
 		_theme.theme_changed.connect(_on_theme_changed)
 
-	# Check Ollama status
+	# Check Ollama status every 15 seconds
 	_check_ollama_status()
+	var poll_timer := Timer.new()
+	poll_timer.wait_time = 15.0
+	poll_timer.autostart = true
+	poll_timer.timeout.connect(_check_ollama_status)
+	add_child(poll_timer)
 
 
 ## ── UI Construction ─────────────────────────────────────────────────
