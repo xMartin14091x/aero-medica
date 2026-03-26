@@ -1196,83 +1196,85 @@ func _build_stabilize_tab() -> Control:
 	_bag_items_vbox.visible = false
 	container.add_child(_bag_items_vbox)
 
-	## ARC-17: Drug Administration section
-	var drug_sep := HSeparator.new()
-	container.add_child(drug_sep)
-
+	## ARC-17: Drug Administration — left: controls, right: log sidebar
 	var drug_title := Label.new()
-	drug_title.text = "Drug Administration"
-	drug_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	drug_title.text = tr("STABILIZE_DRUG_ADMIN")
 	if tm:
 		tm.style_label(drug_title, "subtitle", "accent_blue")
 	else:
 		drug_title.add_theme_font_size_override("font_size", 18)
 	container.add_child(drug_title)
 
-	# Drug form inside a card
-	var drug_card := PanelContainer.new()
-	if tm:
-		tm.style_panel(drug_card)
-	container.add_child(drug_card)
+	var drug_row := HBoxContainer.new()
+	drug_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drug_row.add_theme_constant_override("separation", 16)
+	container.add_child(drug_row)
 
-	var drug_form_grid := GridContainer.new()
-	drug_form_grid.columns = 2
-	drug_form_grid.add_theme_constant_override("h_separation", 12)
-	drug_form_grid.add_theme_constant_override("v_separation", 8)
-	drug_card.add_child(drug_form_grid)
+	# ── Left: Drug selection + Administer ──
+	var drug_left := VBoxContainer.new()
+	drug_left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drug_left.size_flags_stretch_ratio = 1.0
+	drug_left.add_theme_constant_override("separation", 8)
+	drug_row.add_child(drug_left)
 
+	# Drug dropdown
 	var drug_name_label := Label.new()
-	drug_name_label.text = "Drug:"
+	drug_name_label.text = tr("STABILIZE_DRUG") + ":"
 	if tm:
-		tm.style_label(drug_name_label, "body", "text_secondary")
-	drug_form_grid.add_child(drug_name_label)
+		tm.style_label(drug_name_label, "body_small", "text_secondary")
+	drug_left.add_child(drug_name_label)
 
 	_drug_name_btn = OptionButton.new()
-	_drug_name_btn.custom_minimum_size = Vector2(0, 40)
+	_drug_name_btn.custom_minimum_size = Vector2(0, 38)
 	_drug_name_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_drug_name_btn.focus_mode = Control.FOCUS_NONE
 	_drug_name_btn.item_selected.connect(_on_drug_name_changed)
 	if tm:
 		tm.style_option_button(_drug_name_btn)
-	drug_form_grid.add_child(_drug_name_btn)
+	drug_left.add_child(_drug_name_btn)
 
+	# Route dropdown
 	var drug_route_label := Label.new()
-	drug_route_label.text = "Route:"
+	drug_route_label.text = tr("STABILIZE_ROUTE") + ":"
 	if tm:
-		tm.style_label(drug_route_label, "body", "text_secondary")
-	drug_form_grid.add_child(drug_route_label)
+		tm.style_label(drug_route_label, "body_small", "text_secondary")
+	drug_left.add_child(drug_route_label)
 
 	_drug_route_btn = OptionButton.new()
-	_drug_route_btn.custom_minimum_size = Vector2(0, 40)
+	_drug_route_btn.custom_minimum_size = Vector2(0, 38)
 	_drug_route_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_drug_route_btn.focus_mode = Control.FOCUS_NONE
 	if tm:
 		tm.style_option_button(_drug_route_btn)
-	drug_form_grid.add_child(_drug_route_btn)
+	drug_left.add_child(_drug_route_btn)
 
+	# Dose dropdown
 	var drug_dose_label := Label.new()
-	drug_dose_label.text = "Dose:"
+	drug_dose_label.text = tr("STABILIZE_DOSE") + ":"
 	if tm:
-		tm.style_label(drug_dose_label, "body", "text_secondary")
-	drug_form_grid.add_child(drug_dose_label)
+		tm.style_label(drug_dose_label, "body_small", "text_secondary")
+	drug_left.add_child(drug_dose_label)
 
 	_drug_dose_btn = OptionButton.new()
-	_drug_dose_btn.custom_minimum_size = Vector2(0, 40)
+	_drug_dose_btn.custom_minimum_size = Vector2(0, 38)
 	_drug_dose_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_drug_dose_btn.focus_mode = Control.FOCUS_NONE
 	if tm:
 		tm.style_option_button(_drug_dose_btn)
-	drug_form_grid.add_child(_drug_dose_btn)
+	drug_left.add_child(_drug_dose_btn)
 
+	# Administer button
 	var admin_btn := Button.new()
-	admin_btn.text = "Administer Drug"
-	admin_btn.custom_minimum_size = Vector2(200, 44)
+	admin_btn.text = tr("STABILIZE_ADMINISTER")
+	admin_btn.custom_minimum_size = Vector2(0, 44)
+	admin_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	admin_btn.focus_mode = Control.FOCUS_NONE
 	admin_btn.pressed.connect(_on_administer_drug_pressed)
 	if tm:
 		tm.style_button(admin_btn)
-	container.add_child(admin_btn)
+	drug_left.add_child(admin_btn)
 
+	# Feedback label
 	_drug_feedback_label = Label.new()
 	_drug_feedback_label.text = ""
 	_drug_feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1280,20 +1282,33 @@ func _build_stabilize_tab() -> Control:
 		tm.style_label(_drug_feedback_label, "label", "text_secondary")
 	else:
 		_drug_feedback_label.add_theme_font_size_override("font_size", 13)
-	container.add_child(_drug_feedback_label)
+	drug_left.add_child(_drug_feedback_label)
+
+	# ── Right: Administration Log (sidebar, 3x wider) ──
+	var drug_right := VBoxContainer.new()
+	drug_right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drug_right.size_flags_stretch_ratio = 3.0
+	drug_right.add_theme_constant_override("separation", 4)
+	drug_row.add_child(drug_right)
 
 	var drug_log_title := Label.new()
-	drug_log_title.text = "Administration Log:"
+	drug_log_title.text = "Administration Log"
 	if tm:
-		tm.style_label(drug_log_title, "label", "text_muted")
+		tm.style_label(drug_log_title, "body", "text_primary")
 	else:
-		drug_log_title.add_theme_font_size_override("font_size", 13)
-	container.add_child(drug_log_title)
+		drug_log_title.add_theme_font_size_override("font_size", 14)
+	drug_right.add_child(drug_log_title)
+
+	var log_scroll := ScrollContainer.new()
+	log_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	log_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	log_scroll.custom_minimum_size = Vector2(0, 150)
+	drug_right.add_child(log_scroll)
 
 	_drug_log_vbox = VBoxContainer.new()
 	_drug_log_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_drug_log_vbox.add_theme_constant_override("separation", 2)
-	container.add_child(_drug_log_vbox)
+	_drug_log_vbox.add_theme_constant_override("separation", 4)
+	log_scroll.add_child(_drug_log_vbox)
 
 	return root
 
