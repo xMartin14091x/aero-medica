@@ -393,10 +393,10 @@ func _build_ui() -> void:
 	main_hbox.add_child(tab_strip)
 
 	var tab_labels := {
-		Tab.PATIENT:      "[1]\nPatient",
-		Tab.EXAM:         "[2]\nExam",
-		Tab.STABILIZE:    "[3]\nStabilize",
-		Tab.DIFFERENTIAL: "[4]\nDiff Dx"
+		Tab.PATIENT:      "[1]\n" + tr("TAB_PATIENT"),
+		Tab.EXAM:         "[2]\n" + tr("TAB_EXAM"),
+		Tab.STABILIZE:    "[3]\n" + tr("TAB_STABILIZE"),
+		Tab.DIFFERENTIAL: "[4]\n" + tr("TAB_DIFFERENTIAL"),
 	}
 
 	for tab_id in [Tab.PATIENT, Tab.EXAM, Tab.STABILIZE, Tab.DIFFERENTIAL]:
@@ -440,9 +440,13 @@ func _switch_tab(tab: Tab) -> void:
 			if tab_id == tab:
 				btn.add_theme_stylebox_override("normal", tm.make_tab_active())
 				btn.add_theme_stylebox_override("disabled", tm.make_tab_active())
+				btn.add_theme_color_override("font_color", tm.c("accent_blue"))
+				btn.add_theme_color_override("font_disabled_color", tm.c("accent_blue"))
 			else:
 				btn.add_theme_stylebox_override("normal", tm.make_tab_inactive())
 				btn.add_theme_stylebox_override("disabled", tm.make_tab_inactive())
+				btn.add_theme_color_override("font_color", tm.c("text_secondary"))
+				btn.add_theme_color_override("font_disabled_color", tm.c("text_secondary"))
 
 
 # ==============================================================================
@@ -587,7 +591,7 @@ func _build_exam_tab() -> Control:
 	root.add_child(title_row)
 
 	var title := Label.new()
-	title.text = "Primary Survey -- DRSABCDE"
+	title.text = tr("EXAM_PRIMARY_SURVEY")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if tm:
 		tm.style_label(title, "title", "text_primary")
@@ -615,14 +619,14 @@ func _build_exam_tab() -> Control:
 
 	# DRSABCDE steps
 	var drs_steps := [
-		["D - Danger", "check_danger"],
-		["R - Response", "check_response"],
-		["S - Send for Help", "send_help"],
-		["A - Airway", "check_airway"],
-		["B - Breathing", "check_breathing"],
-		["C - Circulation", "check_circulation"],
-		["D - Disability", "check_disability"],
-		["E - Exposure", "check_exposure"],
+		[tr("EXAM_DANGER"), "check_danger"],
+		[tr("EXAM_RESPONSE"), "check_response"],
+		[tr("EXAM_SEND_HELP"), "send_help"],
+		[tr("EXAM_AIRWAY"), "check_airway"],
+		[tr("EXAM_BREATHING"), "check_breathing"],
+		[tr("EXAM_CIRCULATION"), "check_circulation"],
+		[tr("EXAM_DISABILITY"), "check_disability"],
+		[tr("EXAM_EXPOSURE"), "check_exposure"],
 	]
 
 	var steps_grid := GridContainer.new()
@@ -666,12 +670,12 @@ func _build_exam_tab() -> Control:
 	exam_vbox.add_child(vitals_sep)
 
 	var vitals_title := Label.new()
-	vitals_title.text = "Vital Signs Assessment"
+	vitals_title.text = tr("VITAL_SIGNS_TITLE") if tr("VITAL_SIGNS_TITLE") != "VITAL_SIGNS_TITLE" else "Vital Signs Assessment"
 	if tm:
 		tm.style_label(vitals_title, "subtitle", "accent_blue")
 	else:
 		vitals_title.add_theme_font_size_override("font_size", 17)
-		vitals_title.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
+		vitals_title.add_theme_color_override("font_color", tm.c("accent_blue") if tm else Color(0.4, 0.8, 1.0))
 	exam_vbox.add_child(vitals_title)
 
 	var vitals_grid := GridContainer.new()
@@ -685,14 +689,14 @@ func _build_exam_tab() -> Control:
 	# CHECK_PUPILS=8, CHECK_TEMPERATURE=9, CHECK_BLOOD_GLUCOSE=10,
 	# CHECK_CAPILLARY_REFILL=11, CHECK_SKIN=12
 	var vital_defs := [
-		["Heart Rate", "check_heart_rate", 5],
-		["Blood Pressure", "check_blood_pressure", 6],
-		["SpO2 / Oxygen Sat", "check_spo2", 7],
-		["Temperature", "check_temperature", 9],
-		["Blood Glucose", "check_blood_glucose", 10],
-		["Capillary Refill", "check_capillary_refill", 11],
-		["Pupils", "check_pupils", 8],
-		["Skin Assessment", "check_skin", 12],
+		[tr("VITAL_HEART_RATE"), "check_heart_rate", 5],
+		[tr("VITAL_BLOOD_PRESSURE"), "check_blood_pressure", 6],
+		[tr("VITAL_SPO2"), "check_spo2", 7],
+		[tr("VITAL_TEMPERATURE"), "check_temperature", 9],
+		[tr("VITAL_BLOOD_GLUCOSE"), "check_blood_glucose", 10],
+		[tr("VITAL_CAPILLARY_REFILL"), "check_capillary_refill", 11],
+		[tr("VITAL_PUPILS"), "check_pupils", 8],
+		[tr("VITAL_SKIN"), "check_skin", 12],
 	]
 
 	for vd in vital_defs:
@@ -735,7 +739,7 @@ func _build_exam_tab() -> Control:
 		tm.style_label(ecg_title, "subtitle", "accent_green")
 	else:
 		ecg_title.add_theme_font_size_override("font_size", 17)
-		ecg_title.add_theme_color_override("font_color", Color(0.3, 1.0, 0.6))
+		ecg_title.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.3, 1.0, 0.6))
 	exam_vbox.add_child(ecg_title)
 
 	_ecg_mode_label = Label.new()
@@ -795,7 +799,7 @@ func _build_exam_tab() -> Control:
 		tm.style_label(gcs_title, "subtitle", "accent_yellow")
 	else:
 		gcs_title.add_theme_font_size_override("font_size", 17)
-		gcs_title.add_theme_color_override("font_color", Color(0.9, 0.7, 0.3))
+		gcs_title.add_theme_color_override("font_color", tm.c("accent_yellow") if tm else Color(0.9, 0.7, 0.3))
 	gcs_title_hbox.add_child(gcs_title)
 
 	_gcs_total_label = Label.new()
@@ -874,13 +878,13 @@ func _build_exam_tab() -> Control:
 	exam_vbox.add_child(ss_title_hbox)
 
 	var ss_title := Label.new()
-	ss_title.text = "Secondary Survey -- Head-to-Toe"
+	ss_title.text = tr("SECONDARY_SURVEY_TITLE") if tr("SECONDARY_SURVEY_TITLE") != "SECONDARY_SURVEY_TITLE" else "Secondary Survey -- Head-to-Toe"
 	ss_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if tm:
 		tm.style_label(ss_title, "subtitle", "accent_purple")
 	else:
 		ss_title.add_theme_font_size_override("font_size", 17)
-		ss_title.add_theme_color_override("font_color", Color(0.7, 0.5, 1.0))
+		ss_title.add_theme_color_override("font_color", tm.c("accent_purple") if tm else Color(0.7, 0.5, 1.0))
 	ss_title_hbox.add_child(ss_title)
 
 	_secondary_counter_label = Label.new()
@@ -898,6 +902,11 @@ func _build_exam_tab() -> Control:
 	exam_vbox.add_child(ss_grid)
 
 	var ss_regions := ["head", "neck", "chest", "abdomen", "pelvis", "back", "extremities"]
+	var ss_tr_keys := {
+		"head": "SECONDARY_HEAD", "neck": "SECONDARY_NECK", "chest": "SECONDARY_CHEST",
+		"abdomen": "SECONDARY_ABDOMEN", "pelvis": "SECONDARY_PELVIS",
+		"back": "SECONDARY_BACK", "extremities": "SECONDARY_EXTREMITIES",
+	}
 
 	for region in ss_regions:
 		var r_panel := PanelContainer.new()
@@ -910,7 +919,7 @@ func _build_exam_tab() -> Control:
 		r_panel.add_child(r_vbox)
 
 		var r_btn := Button.new()
-		r_btn.text = region.capitalize()
+		r_btn.text = tr(ss_tr_keys.get(region, region.capitalize()))
 		r_btn.custom_minimum_size = Vector2(180, 44)
 		r_btn.focus_mode = Control.FOCUS_NONE
 		r_btn.pressed.connect(_on_secondary_region_pressed.bind(region))
@@ -949,7 +958,7 @@ func _build_stabilize_tab() -> Control:
 	root.add_child(container)
 
 	var title := Label.new()
-	title.text = "Stabilize"
+	title.text = tr("TAB_STABILIZE")
 	if tm:
 		tm.style_label(title, "title", "text_primary")
 	else:
@@ -967,10 +976,10 @@ func _build_stabilize_tab() -> Control:
 	if tm:
 		tm.style_button(_cpr_button, "large")
 		# Override with red styling for CPR urgency
-		var cpr_normal := tm.make_btn_normal()
+		var cpr_normal: StyleBoxFlat = tm.make_btn_normal()
 		cpr_normal.bg_color = tm.c("accent_red")
 		_cpr_button.add_theme_stylebox_override("normal", cpr_normal)
-		var cpr_hover := tm.make_btn_hover()
+		var cpr_hover: StyleBoxFlat = tm.make_btn_hover()
 		cpr_hover.bg_color = tm.c("accent_red").lightened(0.15)
 		_cpr_button.add_theme_stylebox_override("hover", cpr_hover)
 		_cpr_button.add_theme_color_override("font_color", Color.WHITE)
@@ -1245,10 +1254,10 @@ func _build_differential_tab() -> Control:
 	if tm:
 		tm.style_button(_submit_diagnosis_btn, "large")
 		# Override with accent_blue for submit prominence
-		var submit_normal := tm.make_btn_normal()
+		var submit_normal: StyleBoxFlat = tm.make_btn_normal()
 		submit_normal.bg_color = tm.c("accent_blue")
 		_submit_diagnosis_btn.add_theme_stylebox_override("normal", submit_normal)
-		var submit_hover := tm.make_btn_hover()
+		var submit_hover: StyleBoxFlat = tm.make_btn_hover()
 		submit_hover.bg_color = tm.c("accent_blue").lightened(0.15)
 		_submit_diagnosis_btn.add_theme_stylebox_override("hover", submit_hover)
 		_submit_diagnosis_btn.add_theme_color_override("font_color", Color.WHITE)
@@ -1344,10 +1353,10 @@ func _apply_theme() -> void:
 	# CPR button
 	if _cpr_button:
 		tm.style_button(_cpr_button, "large")
-		var cpr_normal := tm.make_btn_normal()
+		var cpr_normal: StyleBoxFlat = tm.make_btn_normal()
 		cpr_normal.bg_color = tm.c("accent_red")
 		_cpr_button.add_theme_stylebox_override("normal", cpr_normal)
-		var cpr_hover := tm.make_btn_hover()
+		var cpr_hover: StyleBoxFlat = tm.make_btn_hover()
 		cpr_hover.bg_color = tm.c("accent_red").lightened(0.15)
 		_cpr_button.add_theme_stylebox_override("hover", cpr_hover)
 		_cpr_button.add_theme_color_override("font_color", Color.WHITE)
@@ -1370,10 +1379,10 @@ func _apply_theme() -> void:
 	# Submit diagnosis button
 	if _submit_diagnosis_btn:
 		tm.style_button(_submit_diagnosis_btn, "large")
-		var submit_normal := tm.make_btn_normal()
+		var submit_normal: StyleBoxFlat = tm.make_btn_normal()
 		submit_normal.bg_color = tm.c("accent_blue")
 		_submit_diagnosis_btn.add_theme_stylebox_override("normal", submit_normal)
-		var submit_hover := tm.make_btn_hover()
+		var submit_hover: StyleBoxFlat = tm.make_btn_hover()
 		submit_hover.bg_color = tm.c("accent_blue").lightened(0.15)
 		_submit_diagnosis_btn.add_theme_stylebox_override("hover", submit_hover)
 		_submit_diagnosis_btn.add_theme_color_override("font_color", Color.WHITE)
@@ -1985,7 +1994,7 @@ func _add_chat_bubble(text: String, is_player: bool) -> void:
 	if tm:
 		if is_player:
 			# Player bubble: accent_blue tinted card
-			var player_style := tm.make_card()
+			var player_style: StyleBoxFlat = tm.make_card()
 			player_style.bg_color = tm.c("accent_blue").darkened(0.7)
 			player_style.border_color = tm.c("accent_blue").darkened(0.4)
 			bubble_panel.add_theme_stylebox_override("panel", player_style)
@@ -2040,8 +2049,15 @@ func _on_exam_action_pressed(action_name: String) -> void:
 
 	var result_text := _format_assessment_result(result, action_name)
 	_exam_results[action_name].text = result_text
+	# Force readable color on result text based on current theme
+	var tm := _get_theme_medical()
+	if tm:
+		_exam_results[action_name].add_theme_color_override("font_color", tm.c("text_primary"))
 	# Keep button enabled for re-assessment — mark visually as completed instead
-	_exam_buttons[action_name].add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
+	if tm:
+		_exam_buttons[action_name].add_theme_color_override("font_color", tm.c("accent_green"))
+	else:
+		_exam_buttons[action_name].add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
 
 	_exam_completed += 1
 	if _exam_counter_label:
@@ -2093,7 +2109,8 @@ func _on_vital_pressed(key: String, action_id: int) -> void:
 
 func _display_vital_result(key: String, result: Dictionary, result_lbl: Label) -> void:
 	var display_text := ""
-	var severity_color := Color(0.3, 0.9, 0.4)  # default green
+	var tm := _get_theme_medical()
+	var severity_color: Color = tm.c("accent_green") if tm else Color(0.3, 0.9, 0.4)
 
 	match key:
 		"check_heart_rate":
@@ -2208,44 +2225,56 @@ func _read_vital_from_patient(key: String) -> Dictionary:
 
 # Vital sign colour helpers (ARC-13)
 
+func _severity_green() -> Color:
+	var tm := _get_theme_medical()
+	return tm.c("accent_green") if tm else Color(0.3, 0.9, 0.4)
+
+func _severity_yellow() -> Color:
+	var tm := _get_theme_medical()
+	return tm.c("accent_yellow") if tm else Color(0.9, 0.8, 0.2)
+
+func _severity_red() -> Color:
+	var tm := _get_theme_medical()
+	return tm.c("accent_red") if tm else Color(0.9, 0.3, 0.3)
+
 func _color_for_hr(hr: float) -> Color:
 	if hr >= 60.0 and hr <= 100.0:
-		return Color(0.3, 0.9, 0.4)
+		return _severity_green()
 	elif (hr >= 50.0 and hr < 60.0) or (hr > 100.0 and hr <= 120.0):
-		return Color(0.9, 0.8, 0.2)
-	return Color(0.9, 0.3, 0.3)
+		return _severity_yellow()
+	return _severity_red()
 
 
 func _color_for_bp(sys: float) -> Color:
 	if sys >= 90.0 and sys <= 139.0:
-		return Color(0.3, 0.9, 0.4)
+		return _severity_green()
 	elif (sys >= 70.0 and sys < 90.0) or (sys >= 140.0 and sys < 180.0):
-		return Color(0.9, 0.8, 0.2)
-	return Color(0.9, 0.3, 0.3)
+		return _severity_yellow()
+	return _severity_red()
 
 
 func _color_for_spo2(spo2: float) -> Color:
 	if spo2 >= 95.0:
-		return Color(0.3, 0.9, 0.4)
+		return _severity_green()
 	elif spo2 >= 90.0:
-		return Color(0.9, 0.8, 0.2)
-	return Color(0.9, 0.3, 0.3)
+		return _severity_yellow()
+	return _severity_red()
 
 
 func _color_for_temp(temp: float) -> Color:
 	if temp >= 36.1 and temp <= 37.5:
-		return Color(0.3, 0.9, 0.4)
+		return _severity_green()
 	elif (temp >= 35.0 and temp < 36.1) or (temp > 37.5 and temp <= 38.5):
-		return Color(0.9, 0.8, 0.2)
-	return Color(0.9, 0.3, 0.3)
+		return _severity_yellow()
+	return _severity_red()
 
 
 func _color_for_bgl(bgl: float) -> Color:
 	if bgl >= 4.0 and bgl <= 8.0:
-		return Color(0.3, 0.9, 0.4)
+		return _severity_green()
 	elif (bgl >= 3.0 and bgl < 4.0) or (bgl > 8.0 and bgl <= 11.0):
-		return Color(0.9, 0.8, 0.2)
-	return Color(0.9, 0.3, 0.3)
+		return _severity_yellow()
+	return _severity_red()
 
 
 # ==============================================================================
@@ -2417,49 +2446,39 @@ func _on_secondary_region_pressed(region: String) -> void:
 	if not result_lbl or not region_btn:
 		return
 
-	# Get findings from MedicalStateComponent
+	# Get findings through SecondarySurveyManager.get_region_findings (locale-aware)
 	var finding_text := "No abnormalities found."
-	var ms: Node = _patient.get_node_or_null("MedicalStateComponent")
 
+	if _secondary_survey_manager and _secondary_survey_manager.has_method("get_region_findings"):
+		finding_text = _secondary_survey_manager.get_region_findings(_patient, region)
+
+	# Three-tier severity detection from markers in the English source:
+	#   ⚠ = RED (life-threatening, immediate action)
+	#   ⚡ = YELLOW (significant, needs attention)
+	#   No marker = GREEN (normal/negative finding)
+	var severity := "green"
+	var ms: Node = _patient.get_node_or_null("MedicalStateComponent") if _patient else null
 	if ms:
-		var findings = ms.get("examination_findings")
-		if findings and findings is Dictionary:
-			if findings.has(region):
-				finding_text = str(findings[region])
-			elif findings.has(region.to_lower()):
-				finding_text = str(findings[region.to_lower()])
+		var en_text: String = str(ms.examination_findings.get(region, ""))
+		if "⚠" in en_text:
+			severity = "red"
+		elif "⚡" in en_text:
+			severity = "yellow"
 
-	# Also try SecondarySurveyManager
-	if _secondary_survey_manager and _secondary_survey_manager.has_method("examine_region"):
-		var manager_result: Dictionary = _secondary_survey_manager.examine_region(_patient, region)
-		if manager_result.has("finding"):
-			finding_text = str(manager_result["finding"])
-
-	# Check for critical keywords
-	var critical_keywords := [
-		"fracture", "bleeding", "obstruction", "deviation",
-		"pneumothorax", "rigid", "dilated", "fixed", "unstable",
-		"tenderness", "deformity", "laceration", "haematoma", "crepitus"
-	]
-
-	var is_critical := false
-	var lower_finding := finding_text.to_lower()
-	for kw in critical_keywords:
-		if kw in lower_finding:
-			is_critical = true
-			break
-
-	if is_critical:
-		result_lbl.text = "! CRITICAL: " + finding_text
-		result_lbl.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
-		region_btn.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
-	else:
-		result_lbl.text = finding_text
-		result_lbl.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
-
-	# Keep button enabled for re-assessment
-	if not region_btn.has_theme_color_override("font_color"):
-		region_btn.add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
+	var tm := _get_theme_medical()
+	match severity:
+		"red":
+			result_lbl.text = "! CRITICAL: " + finding_text
+			result_lbl.add_theme_color_override("font_color", tm.c("accent_red") if tm else Color(0.9, 0.3, 0.3))
+			region_btn.add_theme_color_override("font_color", tm.c("accent_red") if tm else Color(0.9, 0.3, 0.3))
+		"yellow":
+			result_lbl.text = "! CAUTION: " + finding_text
+			result_lbl.add_theme_color_override("font_color", tm.c("accent_yellow") if tm else Color(0.9, 0.8, 0.2))
+			region_btn.add_theme_color_override("font_color", tm.c("accent_yellow") if tm else Color(0.9, 0.8, 0.2))
+		_:
+			result_lbl.text = finding_text
+			result_lbl.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.3, 0.9, 0.4))
+			region_btn.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.4, 0.8, 0.4))
 
 	_secondary_completed_count += 1
 	if _secondary_counter_label:
@@ -2716,7 +2735,7 @@ func _show_triage_color_picker(qty_label: Label, deploy_btn: Button) -> void:
 		if tm:
 			tm.style_button(btn, "large")
 			# Color-coded triage card styling
-			var triage_style := tm.make_card()
+			var triage_style: StyleBoxFlat = tm.make_card()
 			triage_style.bg_color = tag_info["color"].darkened(0.6)
 			triage_style.border_color = tag_info["color"]
 			triage_style.border_width_left = 4
@@ -3025,49 +3044,63 @@ func _build_drsabcde_finding(action_name: String) -> Dictionary:
 		if _patient.get("persona") != null:
 			persona = _patient.persona
 
+	# Bilingual status words — medical values stay universal, labels translate
+	var _safe := tr("RESULT_SAFE") if tr("RESULT_SAFE") != "RESULT_SAFE" else "Safe"
+	var _assessed := tr("RESULT_ASSESSED") if tr("RESULT_ASSESSED") != "RESULT_ASSESSED" else "Assessed"
+	var _alerted := tr("RESULT_ALERTED") if tr("RESULT_ALERTED") != "RESULT_ALERTED" else "Alerted"
+	var _present := tr("RESULT_PRESENT") if tr("RESULT_PRESENT") != "RESULT_PRESENT" else "PRESENT"
+	var _absent := tr("RESULT_ABSENT") if tr("RESULT_ABSENT") != "RESULT_ABSENT" else "ABSENT"
+	var _normal := tr("RESULT_NORMAL") if tr("RESULT_NORMAL") != "RESULT_NORMAL" else "NORMAL"
+	var _abnormal := tr("RESULT_ABNORMAL") if tr("RESULT_ABNORMAL") != "RESULT_ABNORMAL" else "ABNORMAL"
+	var _none := tr("RESULT_NONE") if tr("RESULT_NONE") != "RESULT_NONE" else "None"
+	var _minor := tr("RESULT_MINOR") if tr("RESULT_MINOR") != "RESULT_MINOR" else "Minor"
+	var _moderate := tr("RESULT_MODERATE") if tr("RESULT_MODERATE") != "RESULT_MODERATE" else "Moderate"
+	var _severe := tr("RESULT_SEVERE") if tr("RESULT_SEVERE") != "RESULT_SEVERE" else "Severe"
+	var _proceed_secondary := tr("RESULT_PROCEED_SECONDARY") if tr("RESULT_PROCEED_SECONDARY") != "RESULT_PROCEED_SECONDARY" else "Proceed with secondary survey"
+
 	match action_name:
 		"check_danger":
-			return {"description": "Scene assessed -- area safe for responder."}
+			return {"description": "%s: %s — %s" % [tr("EXAM_DANGER"), _safe, _assessed]}
 
 		"check_response":
 			var cl := "ALERT"
 			if persona and persona.get("consciousness_level") != null:
 				cl = str(persona.consciousness_level)
-			return {"description": "Patient response: %s" % cl}
+			return {"description": "%s: %s" % [tr("EXAM_RESPONSE"), cl]}
 
 		"send_help":
-			return {"description": "Emergency services alerted. Additional resources en route."}
+			return {"description": "%s: %s" % [tr("EXAM_SEND_HELP"), _alerted]}
 
 		"check_airway":
 			if ms and ms.get("airway_status") != null:
 				var status: String = str(ms.airway_status)
-				return {"description": "Airway: %s" % status}
-			return {"description": "Airway assessed."}
+				return {"description": "%s: %s" % [tr("EXAM_AIRWAY"), status]}
+			return {"description": "%s: %s" % [tr("EXAM_AIRWAY"), _assessed]}
 
 		"check_breathing":
 			if ms and ms.get("breathing_rate") != null:
 				var rr: float = float(ms.breathing_rate)
 				var status: String
 				if rr <= 0.0:
-					status = "ABSENT"
+					status = _absent
 				elif rr < 12.0 or rr > 20.0:
-					status = "ABNORMAL"
+					status = _abnormal
 				else:
-					status = "NORMAL"
-				return {"description": "RR: %.0f /min -- %s" % [rr, status]}
-			return {"description": "Breathing assessed."}
+					status = _normal
+				return {"description": "%s: RR %.0f/min — %s" % [tr("EXAM_BREATHING"), rr, status]}
+			return {"description": "%s: %s" % [tr("EXAM_BREATHING"), _assessed]}
 
 		"check_circulation":
 			if ms:
-				var pulse := "PRESENT"
+				var pulse := _present
 				if ms.get("pulse_present") != null and not bool(ms.pulse_present):
-					pulse = "ABSENT"
+					pulse = _absent
 				var bleed := 0
 				if ms.get("bleeding_severity") != null:
 					bleed = int(ms.bleeding_severity)
-				var bleed_text := "none" if bleed == 0 else ("minor" if bleed == 1 else ("moderate" if bleed == 2 else "severe"))
-				return {"description": "Pulse: %s -- Bleeding: %s" % [pulse, bleed_text]}
-			return {"description": "Circulation assessed."}
+				var bleed_text := _none if bleed == 0 else (_minor if bleed == 1 else (_moderate if bleed == 2 else _severe))
+				return {"description": "%s: Pulse %s — Bleeding: %s" % [tr("EXAM_CIRCULATION"), pulse, bleed_text]}
+			return {"description": "%s: %s" % [tr("EXAM_CIRCULATION"), _assessed]}
 
 		"check_disability":
 			if ms and ms.get("gcs_eye") != null:
@@ -3085,20 +3118,20 @@ func _build_drsabcde_finding(action_name: String) -> Dictionary:
 				var pupils_txt := ""
 				if ms.get("pupil_left_reactive") != null and ms.get("pupil_right_reactive") != null:
 					var lr: bool = bool(ms.pupil_left_reactive)
-					var rr: bool = bool(ms.pupil_right_reactive)
+					var rr_p: bool = bool(ms.pupil_right_reactive)
 					var ls: int = int(ms.pupil_left_size) if ms.get("pupil_left_size") != null else 4
 					var rs: int = int(ms.pupil_right_size) if ms.get("pupil_right_size") != null else 4
 					pupils_txt = " | Pupils: L%dmm%s R%dmm%s" % [
 						ls, ("" if lr else " fixed"),
-						rs, ("" if rr else " fixed"),
+						rs, ("" if rr_p else " fixed"),
 					]
-				return {"description": "GCS: %d/15 (E%dV%dM%d) -- AVPU: %s%s" % [total, eye, verbal, motor, avpu, pupils_txt]}
+				return {"description": "%s: GCS %d/15 (E%dV%dM%d) — AVPU: %s%s" % [tr("EXAM_DISABILITY"), total, eye, verbal, motor, avpu, pupils_txt]}
 			if persona and persona.get("consciousness_level") != null:
-				return {"description": "AVPU: %s" % str(persona.consciousness_level)}
-			return {"description": "Disability assessed."}
+				return {"description": "%s: AVPU %s" % [tr("EXAM_DISABILITY"), str(persona.consciousness_level)]}
+			return {"description": "%s: %s" % [tr("EXAM_DISABILITY"), _assessed]}
 
 		"check_exposure":
-			return {"description": "Patient exposed -- proceed with secondary survey below."}
+			return {"description": "%s: %s" % [tr("EXAM_EXPOSURE"), _proceed_secondary]}
 
 	return {}
 

@@ -33,10 +33,17 @@ signal survey_complete(patient: Node)
 
 
 ## Get findings for a specific region from a patient's MedicalStateComponent.
+## Uses Thai findings if locale is "th" and Thai data exists.
 func get_region_findings(patient: Node, region: String) -> String:
 	var medical: Node = patient.get_node_or_null("MedicalStateComponent")
 	if not medical:
 		return "Unable to assess."
+	# Check if Thai findings are available and locale is Thai
+	var locale := TranslationServer.get_locale()
+	if locale.begins_with("th"):
+		var findings_th: Dictionary = medical.get("examination_findings_th") if medical.get("examination_findings_th") != null else {}
+		if not findings_th.is_empty() and findings_th.has(region) and str(findings_th[region]) != "":
+			return str(findings_th[region])
 	var findings: Dictionary = medical.examination_findings
 	return findings.get(region, "No significant findings.")
 

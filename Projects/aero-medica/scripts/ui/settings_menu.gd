@@ -186,7 +186,7 @@ func _build_header(parent: VBoxContainer) -> void:
 ## ── Card 1: Appearance ──────────────────────────────────────────────
 
 func _build_appearance_card() -> void:
-	var result := _make_card_container("Appearance")
+	var result := _make_card_container(tr("SETTINGS_APPEARANCE"))
 	_appearance_card = result.card
 	_appearance_title = result.title
 	var vbox: VBoxContainer = result.content
@@ -215,7 +215,7 @@ func _build_appearance_card() -> void:
 ## ── Card 2: Language ────────────────────────────────────────────────
 
 func _build_language_card() -> void:
-	var result := _make_card_container("Language")
+	var result := _make_card_container(tr("SETTINGS_LANGUAGE"))
 	_language_card = result.card
 	_language_title = result.title
 	var vbox: VBoxContainer = result.content
@@ -235,7 +235,7 @@ func _build_language_card() -> void:
 ## ── Card 3: Audio ───────────────────────────────────────────────────
 
 func _build_audio_card() -> void:
-	var result := _make_card_container("Audio")
+	var result := _make_card_container(tr("SETTINGS_AUDIO"))
 	_audio_card = result.card
 	_audio_title = result.title
 	var vbox: VBoxContainer = result.content
@@ -263,7 +263,7 @@ func _build_audio_card() -> void:
 ## ── Card 4: AI Configuration ────────────────────────────────────────
 
 func _build_ai_card() -> void:
-	var result := _make_card_container("AI Configuration")
+	var result := _make_card_container(tr("SETTINGS_AI_CONFIG"))
 	_ai_card = result.card
 	_ai_title = result.title
 	var vbox: VBoxContainer = result.content
@@ -319,7 +319,7 @@ func _build_ai_card() -> void:
 ## ── Card 5: About ───────────────────────────────────────────────────
 
 func _build_about_card() -> void:
-	var result := _make_card_container("About")
+	var result := _make_card_container(tr("SETTINGS_ABOUT"))
 	_about_card = result.card
 	_about_title = result.title
 	var vbox: VBoxContainer = result.content
@@ -518,13 +518,14 @@ func _update_theme_toggle_display() -> void:
 		return
 
 	var is_dark: bool = _theme.current_mode == "dark"
-	_theme_toggle_btn.text = "Light Mode" if is_dark else "Dark Mode"
-	_theme_mode_label.text = "Current: Dark Mode" if is_dark else "Current: Light Mode"
+	_theme_toggle_btn.text = tr("SETTINGS_THEME_LIGHT") if is_dark else tr("SETTINGS_THEME_DARK")
+	var current_mode_text: String = tr("SETTINGS_THEME_DARK") if is_dark else tr("SETTINGS_THEME_LIGHT")
+	_theme_mode_label.text = "%s: %s" % [tr("SETTINGS_APPEARANCE"), current_mode_text]
 
 	_theme.style_label(_theme_mode_label, "body", "text_secondary")
 
 	# Style toggle button with accent
-	var btn_style := _theme.make_btn_normal()
+	var btn_style: StyleBoxFlat = _theme.make_btn_normal()
 	btn_style.border_color = _theme.c("accent_blue")
 	btn_style.border_width_left = 2
 	btn_style.border_width_right = 2
@@ -532,7 +533,7 @@ func _update_theme_toggle_display() -> void:
 	btn_style.border_width_bottom = 2
 	_theme_toggle_btn.add_theme_stylebox_override("normal", btn_style)
 
-	var btn_hover := _theme.make_btn_hover()
+	var btn_hover: StyleBoxFlat = _theme.make_btn_hover()
 	btn_hover.border_color = _theme.c("accent_blue")
 	btn_hover.border_width_left = 2
 	btn_hover.border_width_right = 2
@@ -542,8 +543,8 @@ func _update_theme_toggle_display() -> void:
 
 	_theme_toggle_btn.add_theme_stylebox_override("pressed", _theme.make_btn_pressed())
 	_theme_toggle_btn.add_theme_color_override("font_color", _theme.c("accent_blue"))
-	_theme_toggle_btn.add_theme_color_override("font_hover_color", Color.WHITE)
-	_theme_toggle_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	_theme_toggle_btn.add_theme_color_override("font_hover_color", _theme.c("accent_blue"))
+	_theme_toggle_btn.add_theme_color_override("font_pressed_color", _theme.c("text_primary"))
 	_theme_toggle_btn.add_theme_font_size_override("font_size", _theme.FONT_SIZES.body)
 
 	_theme_accent_bar.color = _theme.c("accent_blue")
@@ -566,16 +567,43 @@ func _on_locale_toggle() -> void:
 		loc_mgr.toggle_locale()
 		_settings.locale = loc_mgr.current_locale
 		_update_locale_button_text()
+		_update_all_texts()
 		_save_settings()
+
+
+func _update_all_texts() -> void:
+	# Refresh ALL translatable text in settings — called on locale change
+	if _title_label:
+		_title_label.text = tr("MENU_SETTINGS")
+	if _appearance_title:
+		_appearance_title.text = tr("SETTINGS_APPEARANCE")
+	if _language_title:
+		_language_title.text = tr("SETTINGS_LANGUAGE")
+	if _audio_title:
+		_audio_title.text = tr("SETTINGS_AUDIO")
+	if _back_btn:
+		_back_btn.text = "< " + tr("MENU_BACK")
+	# AI and About cards
+	if _ai_title:
+		_ai_title.text = tr("SETTINGS_AI_CONFIG")
+	if _about_title:
+		_about_title.text = tr("SETTINGS_ABOUT")
+	# AI detail labels
+	if _ai_model_title:
+		_ai_model_title.text = tr("SETTINGS_AI_MODEL") + ":"
+	if _ai_url_title:
+		_ai_url_title.text = "Ollama URL:"
+	# Theme mode label
+	_update_theme_toggle_display()
 
 
 func _update_locale_button_text() -> void:
 	if _locale_button:
 		if _settings.locale == "th":
-			_locale_button.text = "Thai / English  ->  Press to switch to English"
-			_locale_desc.text = "Currently displaying in Thai"
+			_locale_button.text = "ไทย / English  ->  กดเพื่อเปลี่ยนเป็น English"
+			_locale_desc.text = "กำลังแสดงเป็นภาษาไทย"
 		else:
-			_locale_button.text = "English / Thai  ->  Press to switch to Thai"
+			_locale_button.text = "English / ไทย  ->  Press to switch to ไทย"
 			_locale_desc.text = "Currently displaying in English"
 
 
@@ -595,6 +623,7 @@ func _on_back_pressed() -> void:
 
 func _on_locale_changed(_locale: String) -> void:
 	_update_locale_button_text()
+	_update_all_texts()
 
 
 ## ── Settings Persistence ────────────────────────────────────────────

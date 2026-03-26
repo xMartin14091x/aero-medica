@@ -76,6 +76,10 @@ drop={
 
 3d/physics_engine="Jolt Physics"
 
+[gui]
+
+theme/custom_font="res://assets/fonts/Kanit-Regular.ttf"
+
 [rendering]
 
 rendering_device/driver.windows="d3d12"

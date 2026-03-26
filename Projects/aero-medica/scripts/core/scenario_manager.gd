@@ -218,8 +218,10 @@ func _spawn_entities() -> void:
 					medical_comp.gcs_motor = vitals_data["gcs_motor"]
 				if vitals_data.has("co_exposure"):
 					medical_comp.co_exposure = vitals_data["co_exposure"]
-				# Load examination findings (MON-12)
+				# Load examination findings (MON-12) — both English and Thai
 				medical_comp.examination_findings = patient_def.get("examination_findings", {})
+				if patient_def.has("examination_findings_th"):
+					medical_comp.examination_findings_th = patient_def.get("examination_findings_th", {})
 
 		# Configure deterioration rates from scenario data
 		var deterioration_comp: Node = patient.get_node_or_null("DeteriorationSystem")

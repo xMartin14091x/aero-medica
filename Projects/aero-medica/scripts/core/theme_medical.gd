@@ -256,21 +256,23 @@ func make_separator() -> StyleBoxFlat:
 	return style
 
 
-## Tab button — active state (accent bottom border).
+## Tab button — active state (accent bottom border + blue bg tint).
 func make_tab_active() -> StyleBoxFlat:
 	var style := make_btn_normal()
 	style.bg_color = c("bg_card_accent")
-	style.border_color = c("border")
 	style.border_width_bottom = 3
 	style.border_color = c("accent_blue")
+	style.border_width_left = 1
+	style.border_width_right = 1
+	style.border_width_top = 1
 	return style
 
 
 ## Tab button — inactive state.
 func make_tab_inactive() -> StyleBoxFlat:
 	var style := make_btn_normal()
-	style.bg_color = Color.TRANSPARENT
-	style.border_color = Color.TRANSPARENT
+	style.bg_color = c("bg_card")
+	style.border_color = c("border")
 	return style
 
 
@@ -283,8 +285,8 @@ func style_button(btn: Button, size: String = "normal") -> void:
 	btn.add_theme_stylebox_override("pressed", make_btn_pressed())
 	btn.add_theme_stylebox_override("disabled", make_btn_disabled())
 	btn.add_theme_color_override("font_color", c("text_primary"))
-	btn.add_theme_color_override("font_hover_color", Color.WHITE)
-	btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	btn.add_theme_color_override("font_hover_color", c("accent_blue"))
+	btn.add_theme_color_override("font_pressed_color", Color.WHITE if current_mode == "dark" else c("text_primary"))
 	btn.add_theme_color_override("font_disabled_color", c("text_muted"))
 	match size:
 		"small":

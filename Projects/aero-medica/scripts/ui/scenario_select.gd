@@ -238,8 +238,8 @@ func _create_scenario_card(scenario: Dictionary) -> void:
 	stars_rtl.fit_content = true
 	stars_rtl.scroll_active = false
 	stars_rtl.custom_minimum_size = Vector2(0, 24)
-	var filled_hex := _theme.c("accent_yellow").to_html(false)
-	var empty_hex := _theme.c("text_muted").to_html(false)
+	var filled_hex: String = _theme.c("accent_yellow").to_html(false)
+	var empty_hex: String = _theme.c("text_muted").to_html(false)
 	stars_rtl.text = "[color=#%s]%s[/color][color=#%s]%s[/color]" % [
 		filled_hex, filled, empty_hex, empty
 	]

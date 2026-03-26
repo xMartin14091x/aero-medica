@@ -83,12 +83,21 @@
 			},
 			"examination_findings": {
 				"head": "⚠ Face and lips cyanotic. Pupils bilaterally fixed and dilated at 6mm — consistent with cardiac arrest and hypoxia. No head trauma. GCS 3 (E1V1M1).",
-				"neck": "No carotid pulse palpable. No JVD. Trachea midline. No neck trauma. Airway clear on chin-lift.",
+				"neck": "⚠ No carotid pulse palpable. No JVD. Trachea midline. No neck trauma. Airway clear on chin-lift.",
 				"chest": "⚠ No spontaneous chest rise. No breath sounds bilaterally. No chest trauma. AED deployed — VF rhythm confirmed on monitor. CPR site identified: lower half of sternum. Begin 30:2 compression-to-ventilation cycle.",
 				"abdomen": "Soft. No distension. No guarding. No visible trauma.",
 				"pelvis": "No pelvic injury. No incontinence noted.",
 				"back": "No visible back injuries. No trauma mechanism.",
 				"extremities": "⚠ Skin cool, cyanotic, mottled peripherally. No distal pulses. No deformity. Pill organiser found in drawer: Aspirin 81mg, Lisinopril 10mg, Metformin 500mg — note elevated BGL 180 mg/dL consistent with diabetes."
+			},
+			"examination_findings_th": {
+				"head": "⚠ ใบหน้าและริมฝีปากเขียวคล้ำ รูม่านตาทั้ง 2 ข้างไม่ตอบสนองต่อแสงและขยาย 6mm — สอดคล้องกับหัวใจหยุดเต้นและขาดออกซิเจน ไม่มีบาดเจ็บที่ศีรษะ GCS 3 (E1V1M1)",
+				"neck": "⚠ คลำชีพจร carotid ไม่ได้ ไม่มีหลอดเลือดดำที่คอโป่ง หลอดลมอยู่กึ่งกลาง ไม่มีบาดเจ็บที่คอ ทางเดินหายใจโล่งเมื่อทำ chin-lift",
+				"chest": "⚠ หน้าอกไม่ยกขึ้นเอง ไม่มีเสียงหายใจทั้ง 2 ข้าง ไม่มีบาดเจ็บที่ทรวงอก ใช้ AED — ยืนยัน VF rhythm บนจอ ระบุตำแหน่ง CPR: ครึ่งล่างของกระดูกหน้าอก เริ่มกดหน้าอกต่อการช่วยหายใจ 30:2",
+				"abdomen": "ท้องนิ่ม ไม่อืด ไม่มี guarding ไม่มีบาดเจ็บที่มองเห็น",
+				"pelvis": "ไม่มีบาดเจ็บที่เชิงกราน ไม่พบกลั้นปัสสาวะไม่อยู่",
+				"back": "ไม่มีบาดเจ็บที่หลังที่มองเห็น ไม่มีกลไกการบาดเจ็บ",
+				"extremities": "⚠ ผิวหนังเย็น เขียว ผิวลายบริเวณปลายมือปลายเท้า คลำชีพจรปลายมือปลายเท้าไม่ได้ ไม่มีความผิดรูป พบกล่องจัดยาในลิ้นชัก: Aspirin 81mg, Lisinopril 10mg, Metformin 500mg — BGL สูง 180 mg/dL สอดคล้องกับเบาหวาน"
 			},
 			"deterioration": {
 				"rate": 1.5,

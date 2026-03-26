@@ -15,6 +15,7 @@ signal quit_requested
 var _bg: ColorRect = null
 var _gradient_overlay: TextureRect = null
 var _logo_texture: TextureRect = null
+var _banner_texture: TextureRect = null
 var _title_label: Label = null
 var _subtitle_label: Label = null
 var _button_container: VBoxContainer = null
@@ -31,6 +32,10 @@ var _quit_msg: Label = null
 var _quit_confirm_btn: Button = null
 var _quit_cancel_btn: Button = null
 
+## Splash state — "Press any button to continue"
+var _splash_label: Label = null
+var _splash_active: bool = true
+
 ## Button data: [translation_key, signal_name, prefix]
 const MENU_ITEMS := [
 	["MENU_START_TUTORIAL", "tutorial_requested", "> "],
@@ -41,14 +46,35 @@ const MENU_ITEMS := [
 ]
 
 const LOGO_PATH := "res://assets/ui/logo.png"
+const BANNER_PATH := "res://assets/ui/banner.png"
 const VERSION_STRING := "INDEV v1.0.1"
 
 
 func _ready() -> void:
 	_build_ui()
 	_apply_theme()
-	_animate_entry()
 	_connect_game_manager()
+
+	# Splash only on very first launch. Any scene reload (returning from
+	# scenario select, settings, levels, etc.) skips splash.
+	# We detect first launch by checking a one-shot flag on GameManager.
+	var gm: Node = get_node_or_null("/root/GameManager")
+	var first_launch := true
+	if gm:
+		if gm.has_meta("_main_menu_visited"):
+			first_launch = false
+		else:
+			gm.set_meta("_main_menu_visited", true)
+
+	if not first_launch:
+		_splash_active = false
+		if _splash_label:
+			_splash_label.queue_free()
+			_splash_label = null
+		_button_container.visible = true
+		if _status_bar:
+			_status_bar.get_parent().visible = true
+		_animate_entry()
 
 	# Locale change listener
 	var loc_mgr: Node = get_node_or_null("/root/LocalisationManager")
@@ -66,29 +92,22 @@ func _ready() -> void:
 ## ---- BUILD UI STRUCTURE ------------------------------------------------
 
 func _build_ui() -> void:
-	# -- Full-screen background
-	_bg = ColorRect.new()
-	_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(_bg)
+	# -- Full-screen banner background (replaces solid color)
+	if ResourceLoader.exists(BANNER_PATH):
+		_banner_texture = TextureRect.new()
+		_banner_texture.texture = load(BANNER_PATH)
+		_banner_texture.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_banner_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		_banner_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_banner_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_banner_texture)
+	else:
+		# Fallback solid color if banner missing
+		_bg = ColorRect.new()
+		_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		add_child(_bg)
 
-	# -- Gradient overlay: top-dark to bottom-lighter via GradientTexture2D
-	_gradient_overlay = TextureRect.new()
-	_gradient_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_gradient_overlay.stretch_mode = TextureRect.STRETCH_SCALE
-	_gradient_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var grad := GradientTexture2D.new()
-	var g := Gradient.new()
-	g.set_color(0, Color(0.0, 0.0, 0.0, 0.35))
-	g.set_color(1, Color(0.0, 0.0, 0.0, 0.0))
-	g.set_offset(0, 0.0)
-	g.set_offset(1, 1.0)
-	grad.gradient = g
-	grad.fill_from = Vector2(0.5, 0.0)
-	grad.fill_to = Vector2(0.5, 1.0)
-	grad.width = 4
-	grad.height = 256
-	_gradient_overlay.texture = grad
-	add_child(_gradient_overlay)
+	# No overlay — banner at full brightness
 
 	# -- Main content column (centered vertically, fixed width)
 	var outer_margin := MarginContainer.new()
@@ -106,32 +125,11 @@ func _build_ui() -> void:
 	center_vbox.add_theme_constant_override("separation", 0)
 	outer_margin.add_child(center_vbox)
 
-	# Flexible top spacer
+	# Large top spacer — pushes buttons to the bottom third of the screen
 	var top_spacer := Control.new()
 	top_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	top_spacer.size_flags_stretch_ratio = 1.2
+	top_spacer.size_flags_stretch_ratio = 2.2  # Adjust this to move buttons up/down
 	center_vbox.add_child(top_spacer)
-
-	# -- Logo area
-	var logo_container := CenterContainer.new()
-	center_vbox.add_child(logo_container)
-	_build_logo(logo_container)
-
-	# -- Spacer between logo and subtitle
-	var logo_spacer := Control.new()
-	logo_spacer.custom_minimum_size = Vector2(0, 8)
-	center_vbox.add_child(logo_spacer)
-
-	# -- Subtitle
-	_subtitle_label = Label.new()
-	_subtitle_label.text = tr("GAME_SUBTITLE")
-	_subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	center_vbox.add_child(_subtitle_label)
-
-	# -- Spacer between subtitle and buttons
-	var btn_spacer := Control.new()
-	btn_spacer.custom_minimum_size = Vector2(0, 48)
-	center_vbox.add_child(btn_spacer)
 
 	# -- Button container (centered)
 	var btn_center := CenterContainer.new()
@@ -156,26 +154,50 @@ func _build_ui() -> void:
 		btn.modulate.a = 0.0
 		_button_container.add_child(btn)
 
+	# Hide button container initially (splash state)
+	_button_container.visible = false
+
 	# Flexible bottom spacer
 	var bottom_spacer := Control.new()
 	bottom_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	bottom_spacer.size_flags_stretch_ratio = 1.8
+	bottom_spacer.size_flags_stretch_ratio = 0.8
 	center_vbox.add_child(bottom_spacer)
 
-	# -- Status bar (pinned to bottom)
+	# -- "Press any button to continue" splash prompt (centered on screen)
+	_splash_label = Label.new()
+	_splash_label.text = "Press any button to continue"
+	_splash_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_splash_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_splash_label.offset_top = -80
+	_splash_label.offset_bottom = -40
+	_splash_label.offset_left = -200
+	_splash_label.offset_right = 200
+	add_child(_splash_label)
+
+	# Pulse animation on splash label (gentle fade in/out loop)
+	var pulse := create_tween()
+	pulse.set_loops()
+	pulse.tween_property(_splash_label, "modulate:a", 0.3, 1.2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	pulse.tween_property(_splash_label, "modulate:a", 1.0, 1.2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+
+	# -- Status bar (pinned to bottom) — hidden during splash
 	_build_status_bar()
+	if _status_bar:
+		_status_bar.get_parent().visible = false
 
 	# -- Quit dialog (custom themed)
 	_build_quit_dialog()
 
 
 func _build_logo(parent: Control) -> void:
-	# Try loading logo texture
+	# Try loading logo texture — constrain to reasonable size
 	if ResourceLoader.exists(LOGO_PATH):
 		_logo_texture = TextureRect.new()
 		_logo_texture.texture = load(LOGO_PATH)
 		_logo_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		_logo_texture.custom_minimum_size = Vector2(320, 80)
+		_logo_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_logo_texture.custom_minimum_size = Vector2(280, 280)
+		_logo_texture.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		parent.add_child(_logo_texture)
 		# Title label hidden when logo exists
 		_title_label = null
@@ -190,18 +212,30 @@ func _build_logo(parent: Control) -> void:
 
 
 func _build_status_bar() -> void:
-	var bar_margin := MarginContainer.new()
-	bar_margin.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	bar_margin.offset_top = -40
-	bar_margin.add_theme_constant_override("margin_left", 24)
-	bar_margin.add_theme_constant_override("margin_right", 24)
-	bar_margin.add_theme_constant_override("margin_bottom", 12)
-	add_child(bar_margin)
+	# Container panel pinned to bottom — rounded top corners, shadow, semi-transparent
+	var bar_panel := PanelContainer.new()
+	bar_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	bar_panel.offset_top = -48
+	var bar_style := StyleBoxFlat.new()
+	bar_style.bg_color = Color(0.0, 0.0, 0.0, 0.65)
+	bar_style.corner_radius_top_left = 12
+	bar_style.corner_radius_top_right = 12
+	bar_style.corner_radius_bottom_left = 0
+	bar_style.corner_radius_bottom_right = 0
+	bar_style.shadow_color = Color(0.0, 0.0, 0.0, 0.4)
+	bar_style.shadow_size = 6
+	bar_style.shadow_offset = Vector2(0, -3)
+	bar_style.content_margin_left = 32
+	bar_style.content_margin_right = 32
+	bar_style.content_margin_top = 10
+	bar_style.content_margin_bottom = 10
+	bar_panel.add_theme_stylebox_override("panel", bar_style)
+	add_child(bar_panel)
 
 	_status_bar = HBoxContainer.new()
 	_status_bar.add_theme_constant_override("separation", 24)
 	_status_bar.alignment = BoxContainer.ALIGNMENT_CENTER
-	bar_margin.add_child(_status_bar)
+	bar_panel.add_child(_status_bar)
 
 	# Version
 	_version_label = Label.new()
@@ -261,6 +295,7 @@ func _build_quit_dialog() -> void:
 	_quit_dialog.size = Vector2i(420, 220)
 	_quit_dialog.transient = true
 	_quit_dialog.exclusive = true
+	_quit_dialog.visible = false
 	add_child(_quit_dialog)
 
 	# Dark overlay background inside the Window
@@ -326,29 +361,77 @@ func _apply_theme() -> void:
 	if not _theme:
 		return
 
-	# Background
-	_bg.color = _theme.c("bg_main")
+	# Background (only exists if banner is missing)
+	if _bg:
+		_bg.color = _theme.c("bg_main")
 
-	# Title label (fallback mode)
+	# Title label (fallback mode — only used if banner missing)
 	if _title_label:
 		_theme.style_label(_title_label, "title_large", "accent_blue")
 		_title_label.add_theme_font_size_override("font_size", 48)
 
-	# Subtitle
-	if _subtitle_label:
-		_theme.style_label(_subtitle_label, "body", "text_secondary")
+	# Splash prompt
+	if _splash_label and is_instance_valid(_splash_label):
+		_theme.style_label(_splash_label, "subtitle", "text_secondary")
+		_splash_label.add_theme_font_size_override("font_size", 20)
 
-	# Menu buttons
+	# Menu buttons — ALWAYS dark style (over banner), not affected by theme
 	if _button_container:
 		for btn in _button_container.get_children():
 			if btn is Button:
-				_theme.style_button(btn, "large")
 				btn.custom_minimum_size = Vector2(360, 56)
 				btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+				# Normal: dark semi-transparent, no border
+				var btn_style := StyleBoxFlat.new()
+				btn_style.bg_color = Color(0.0, 0.0, 0.0, 0.7)
+				btn_style.corner_radius_top_left = 6
+				btn_style.corner_radius_top_right = 6
+				btn_style.corner_radius_bottom_left = 6
+				btn_style.corner_radius_bottom_right = 6
+				btn_style.shadow_color = Color(0.0, 0.0, 0.0, 0.6)
+				btn_style.shadow_size = 8
+				btn_style.shadow_offset = Vector2(0, 0)
+				btn_style.content_margin_left = 16
+				btn_style.content_margin_right = 16
+				btn_style.content_margin_top = 8
+				btn_style.content_margin_bottom = 8
+				btn.add_theme_stylebox_override("normal", btn_style)
+				# Hover: blue glow
+				var btn_hover := StyleBoxFlat.new()
+				btn_hover.bg_color = Color(0.05, 0.08, 0.15, 0.85)
+				btn_hover.corner_radius_top_left = 6
+				btn_hover.corner_radius_top_right = 6
+				btn_hover.corner_radius_bottom_left = 6
+				btn_hover.corner_radius_bottom_right = 6
+				btn_hover.shadow_color = Color(0.298, 0.604, 1.0, 0.5)
+				btn_hover.shadow_size = 12
+				btn_hover.shadow_offset = Vector2(0, 0)
+				btn_hover.content_margin_left = 16
+				btn_hover.content_margin_right = 16
+				btn_hover.content_margin_top = 8
+				btn_hover.content_margin_bottom = 8
+				btn.add_theme_stylebox_override("hover", btn_hover)
+				# Pressed
+				var btn_pressed := StyleBoxFlat.new()
+				btn_pressed.bg_color = Color(0.298, 0.604, 1.0, 0.8)
+				btn_pressed.corner_radius_top_left = 6
+				btn_pressed.corner_radius_top_right = 6
+				btn_pressed.corner_radius_bottom_left = 6
+				btn_pressed.corner_radius_bottom_right = 6
+				btn_pressed.content_margin_left = 16
+				btn_pressed.content_margin_right = 16
+				btn_pressed.content_margin_top = 8
+				btn_pressed.content_margin_bottom = 8
+				btn.add_theme_stylebox_override("pressed", btn_pressed)
+				# Force white text always
+				btn.add_theme_color_override("font_color", Color.WHITE)
+				btn.add_theme_color_override("font_hover_color", Color.WHITE)
+				btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+				btn.add_theme_font_size_override("font_size", 18)
 				# Quit button gets red text
 				if btn.has_meta("signal_name") and btn.get_meta("signal_name") == "quit_requested":
-					btn.add_theme_color_override("font_color", _theme.c("accent_red"))
-					btn.add_theme_color_override("font_hover_color", _theme.c("accent_red"))
+					btn.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+					btn.add_theme_color_override("font_hover_color", Color(1.0, 0.4, 0.4))
 
 	# Status bar labels
 	if _version_label:
@@ -416,6 +499,36 @@ func _update_ollama_status() -> void:
 			_ollama_dot.color = Color.GREEN if is_online else Color.RED
 	if _ollama_label:
 		_ollama_label.text = "AI Online" if is_online else "AI Offline"
+
+
+## ---- SPLASH DISMISS ---------------------------------------------------
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _splash_active:
+		return
+	# Any key, mouse button, or gamepad button dismisses the splash
+	if event is InputEventKey or event is InputEventMouseButton or event is InputEventJoypadButton:
+		if event.pressed:
+			_dismiss_splash()
+			get_viewport().set_input_as_handled()
+
+
+func _dismiss_splash() -> void:
+	_splash_active = false
+
+	# Fade out the splash label
+	if _splash_label:
+		var fade := create_tween()
+		fade.tween_property(_splash_label, "modulate:a", 0.0, 0.4)
+		fade.tween_callback(_splash_label.queue_free)
+
+	# Show and animate buttons
+	_button_container.visible = true
+	_animate_entry()
+
+	# Show status bar
+	if _status_bar:
+		_status_bar.get_parent().visible = true
 
 
 ## ---- SIGNAL HANDLERS --------------------------------------------------
