@@ -781,6 +781,7 @@ func _build_exam_tab() -> Control:
 		v_btn.pressed.connect(_on_vital_pressed.bind(vd[1], vd[2]))
 		if tm:
 			tm.style_button(v_btn, "small")
+		v_btn.add_theme_color_override("font_color", tm.c("text_primary") if tm else Color(0.1, 0.1, 0.2))
 		v_vbox.add_child(v_btn)
 		_vital_buttons[vd[1]] = v_btn
 
@@ -918,6 +919,7 @@ func _build_exam_tab() -> Control:
 			gcs_btn.pressed.connect(_on_gcs_value_selected.bind(comp_key, comp_values[i]))
 			if tm:
 				tm.style_button(gcs_btn, "small")
+			gcs_btn.add_theme_color_override("font_color", tm.c("text_primary") if tm else Color(0.1, 0.1, 0.2))
 			comp_hbox.add_child(gcs_btn)
 			_gcs_component_btns[comp_key + "_" + str(comp_values[i])] = gcs_btn
 
@@ -996,6 +998,7 @@ func _build_exam_tab() -> Control:
 		r_btn.pressed.connect(_on_secondary_region_pressed.bind(region))
 		if tm:
 			tm.style_button(r_btn)
+		r_btn.add_theme_color_override("font_color", tm.c("text_primary") if tm else Color(0.1, 0.1, 0.2))
 		r_vbox.add_child(r_btn)
 		_secondary_buttons[region] = r_btn
 
@@ -1139,6 +1142,7 @@ func _build_stabilize_tab() -> Control:
 		eq_btn.pressed.connect(_on_equipment_pressed.bind(eq[1]))
 		if tm:
 			tm.style_button(eq_btn, "small")
+		eq_btn.add_theme_color_override("font_color", tm.c("text_primary") if tm else Color(0.1, 0.1, 0.2))
 		eq_panel.add_child(eq_btn)
 		_equipment_buttons[eq[1]] = eq_btn
 
@@ -1188,6 +1192,7 @@ func _build_stabilize_tab() -> Control:
 		eq_btn.pressed.connect(_on_equipment_pressed.bind(eq[1]))
 		if tm:
 			tm.style_button(eq_btn, "small")
+		eq_btn.add_theme_color_override("font_color", tm.c("text_primary") if tm else Color(0.1, 0.1, 0.2))
 		eq_panel.add_child(eq_btn)
 		_equipment_buttons[eq[1]] = eq_btn
 
