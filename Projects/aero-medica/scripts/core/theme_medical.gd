@@ -310,13 +310,63 @@ func style_input(input: LineEdit) -> void:
 	input.custom_minimum_size.y = SPACING.input_height
 
 
-## Apply themed styling to an OptionButton.
+## Apply themed styling to an OptionButton + its dropdown popup.
 func style_option_button(btn: OptionButton) -> void:
 	btn.add_theme_stylebox_override("normal", make_input())
 	btn.add_theme_stylebox_override("hover", make_input_focus())
 	btn.add_theme_stylebox_override("pressed", make_input_focus())
 	btn.add_theme_color_override("font_color", c("text_primary"))
+	btn.add_theme_color_override("font_hover_color", c("accent_blue"))
 	btn.add_theme_font_size_override("font_size", FONT_SIZES.body)
+	# Style the dropdown popup to match theme
+	if btn.is_inside_tree():
+		_style_option_popup(btn)
+	else:
+		btn.ready.connect(_style_option_popup.bind(btn), CONNECT_ONE_SHOT)
+
+
+## Style the PopupMenu of an OptionButton.
+func _style_option_popup(btn: OptionButton) -> void:
+	var popup := btn.get_popup()
+	if not popup:
+		return
+	# Panel background
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = c("bg_card")
+	panel_style.border_width_left = 1
+	panel_style.border_width_right = 1
+	panel_style.border_width_top = 1
+	panel_style.border_width_bottom = 1
+	panel_style.border_color = c("border")
+	panel_style.corner_radius_top_left = SPACING.corner_radius
+	panel_style.corner_radius_top_right = SPACING.corner_radius
+	panel_style.corner_radius_bottom_left = SPACING.corner_radius
+	panel_style.corner_radius_bottom_right = SPACING.corner_radius
+	panel_style.shadow_color = c("shadow")
+	panel_style.shadow_size = 4
+	panel_style.shadow_offset = Vector2(0, 2)
+	panel_style.content_margin_left = 4
+	panel_style.content_margin_right = 4
+	panel_style.content_margin_top = 4
+	panel_style.content_margin_bottom = 4
+	popup.add_theme_stylebox_override("panel", panel_style)
+	# Item hover
+	var hover_style := StyleBoxFlat.new()
+	hover_style.bg_color = c("btn_hover")
+	hover_style.corner_radius_top_left = 4
+	hover_style.corner_radius_top_right = 4
+	hover_style.corner_radius_bottom_left = 4
+	hover_style.corner_radius_bottom_right = 4
+	hover_style.content_margin_left = 8
+	hover_style.content_margin_right = 8
+	hover_style.content_margin_top = 4
+	hover_style.content_margin_bottom = 4
+	popup.add_theme_stylebox_override("hover", hover_style)
+	# Text colors
+	popup.add_theme_color_override("font_color", c("text_primary"))
+	popup.add_theme_color_override("font_hovered_color", c("accent_blue"))
+	popup.add_theme_color_override("font_accelerator_color", c("text_muted"))
+	popup.add_theme_font_size_override("font_size", FONT_SIZES.body)
 
 
 ## Apply themed styling to a PanelContainer (card).
