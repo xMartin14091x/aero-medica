@@ -1088,7 +1088,7 @@ func _build_stabilize_tab() -> Control:
 		tm.style_label(_bag_tier_label, "body", "accent_green")
 	else:
 		_bag_tier_label.add_theme_font_size_override("font_size", 15)
-		_bag_tier_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+		_bag_tier_label.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.3, 0.9, 0.4))
 	tier_hbox.add_child(_bag_tier_label)
 
 	# ══ Equipment Row: Diagnostic (left) | Treatment (right) ══
@@ -1597,21 +1597,21 @@ func _populate_patient_tab() -> void:
 		if consciousness_level == "UNRESPONSIVE":
 			_opqrst_btn.disabled = true
 			_opqrst_btn.tooltip_text = "Patient is unresponsive — cannot describe pain"
-			_opqrst_btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+			# Disabled color handled by theme (text_muted)
 		else:
 			_opqrst_btn.disabled = false
 			_opqrst_btn.tooltip_text = ""
+			var _tmo := _get_theme_medical()
 
 			var pain_level: int = 0
 			if medical_state:
 				pain_level = medical_state.get("pain_level") if medical_state.get("pain_level") else 0
 
 			if pain_level > 0:
-				# Bright amber for pain present
-				_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
+				_opqrst_btn.add_theme_color_override("font_color", _tmo.c("accent_yellow") if _tmo else Color(1.0, 0.85, 0.0))
 				_opqrst_btn.text = "O - OPQRST (Pain %d/10)" % pain_level
 			else:
-				_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2))
+				_opqrst_btn.add_theme_color_override("font_color", _tmo.c("accent_yellow") if _tmo else Color(1.0, 0.75, 0.2))
 				_opqrst_btn.text = "O - OPQRST (Pain)"
 
 	# Clear chat on open
@@ -1627,11 +1627,15 @@ func _populate_patient_tab() -> void:
 func _populate_exam_tab() -> void:
 	# Reset DRSABCDE
 	_exam_completed = 0
+	var _tm := _get_theme_medical()
 	for key in _exam_results:
 		_exam_results[key].text = ""
-		_exam_results[key].add_theme_color_override("font_color", Color(1, 1, 1))
+		if _tm:
+			_exam_results[key].add_theme_color_override("font_color", _tm.c("text_secondary"))
 	for key in _exam_buttons:
 		_exam_buttons[key].disabled = false
+		if _tm:
+			_tm.style_button(_exam_buttons[key])
 
 	if _exam_counter_label:
 		_exam_counter_label.text = "0/%d" % _exam_total
@@ -1646,8 +1650,10 @@ func _populate_exam_tab() -> void:
 
 	# Reset ECG — clear texture so previous patient's strip doesn't bleed through
 	if _ecg_mode_label:
-		_ecg_mode_label.text = "No monitor deployed"
-		_ecg_mode_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+		_ecg_mode_label.text = ""
+		var _tm2 := _get_theme_medical()
+		if _tm2:
+			_ecg_mode_label.add_theme_color_override("font_color", _tm2.c("text_muted"))
 	if _ecg_panel:
 		_ecg_panel.visible = false
 	if _ecg_texture_rect:
@@ -1714,7 +1720,6 @@ func _populate_stabilize_tab() -> void:
 			var bag_key: String = EQUIP_TO_BAG_KEY.get(key, key.to_upper())
 			if not _bag_tier_manager.is_available(bag_key):
 				_equipment_buttons[key].disabled = true
-				_equipment_buttons[key].add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 
 	# Re-mark already applied equipment with checkmarks
 	for eq in _applied_equipment:
@@ -1752,7 +1757,8 @@ func _populate_differential_tab() -> void:
 			for d in _selected_diagnoses:
 				parts.append(d)
 			_diagnosis_rank_label.text = "Submitted: " + ", ".join(parts)
-			_diagnosis_rank_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+			var _tm_rank := _get_theme_medical()
+			_diagnosis_rank_label.add_theme_color_override("font_color", _tm_rank.c("accent_green") if _tm_rank else Color(0.3, 0.9, 0.4))
 		if _submit_diagnosis_btn:
 			_submit_diagnosis_btn.disabled = true
 			_submit_diagnosis_btn.text = "Diagnosis Submitted"
@@ -1844,7 +1850,8 @@ func _populate_differential_tab() -> void:
 			if _diagnosis_submitted:
 				btn.disabled = true
 				if diag in _selected_diagnoses:
-					btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3))
+					var _tm_diag := _get_theme_medical()
+				btn.add_theme_color_override("font_color", _tm_diag.c("accent_green") if _tm_diag else Color(0.2, 1.0, 0.3))
 			cat_grid.add_child(btn)
 			_diagnosis_buttons.append(btn)
 
@@ -3131,7 +3138,8 @@ func _on_submit_diagnosis_pressed() -> void:
 	# Color matched buttons green, missed correct ones orange
 	for btn in _diagnosis_buttons:
 		if btn.text in matched_names:
-			btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3))
+			var _tm_diag := _get_theme_medical()
+				btn.add_theme_color_override("font_color", _tm_diag.c("accent_green") if _tm_diag else Color(0.2, 1.0, 0.3))
 		elif btn.text in correct_list:
 			btn.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1))
 
