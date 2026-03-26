@@ -103,7 +103,7 @@ const SPACING := {
 
 func _ready() -> void:
 	_load_config()
-	_apply_global_theme()
+	current_mode = "dark"  # Force dark mode
 
 
 ## Apply a global Theme to the project so ALL controls get readable defaults.
@@ -140,18 +140,14 @@ func c(key: String) -> Color:
 
 ## Set the theme mode and notify all listeners.
 func set_mode(mode: String) -> void:
-	if mode not in ["dark", "light"]:
-		push_warning("ThemeMedical: Invalid mode '%s'. Use 'dark' or 'light'." % mode)
-		return
-	current_mode = mode
-	_save_config()
-	_apply_global_theme()
-	theme_changed.emit(mode)
+	# Dark mode only — light mode disabled for v1.0
+	current_mode = "dark"
 
 
 ## Toggle between dark and light.
 func toggle_mode() -> void:
-	set_mode("light" if current_mode == "dark" else "dark")
+	# Dark mode only — light mode disabled for v1.0
+	pass
 
 
 ## ── StyleBox Builders ────────────────────────────────────────────
