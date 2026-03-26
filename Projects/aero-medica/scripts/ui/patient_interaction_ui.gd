@@ -640,7 +640,7 @@ func _build_exam_tab() -> Control:
 
 	var exam_vbox := VBoxContainer.new()
 	exam_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	exam_vbox.add_theme_constant_override("separation", 20)
+	exam_vbox.add_theme_constant_override("separation", 32)
 	root.add_child(exam_vbox)
 	# Reference for responsive grids
 	var exam_scroll := root
@@ -691,6 +691,7 @@ func _build_exam_tab() -> Control:
 
 	for step in drs_steps:
 		var step_panel := PanelContainer.new()
+		step_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if tm:
 			tm.style_panel(step_panel)
 		steps_grid.add_child(step_panel)
@@ -701,7 +702,8 @@ func _build_exam_tab() -> Control:
 
 		var btn := Button.new()
 		btn.text = step[0]
-		btn.custom_minimum_size = Vector2(180, 60)
+		btn.custom_minimum_size = Vector2(0, 50)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_on_exam_action_pressed.bind(step[1]))
 		if tm:
@@ -718,9 +720,6 @@ func _build_exam_tab() -> Control:
 			result_lbl.add_theme_font_size_override("font_size", 12)
 		step_vbox.add_child(result_lbl)
 		_exam_results[step[1]] = result_lbl
-
-	# Section separator
-	exam_vbox.add_child(HSeparator.new())
 
 	# ══ ROW 2: Vitals (left) | GCS (right) ══
 	var row2 := HBoxContainer.new()
@@ -765,6 +764,7 @@ func _build_exam_tab() -> Control:
 
 	for vd in vital_defs:
 		var v_panel := PanelContainer.new()
+		v_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if tm:
 			tm.style_panel(v_panel)
 		vitals_grid.add_child(v_panel)
@@ -775,7 +775,8 @@ func _build_exam_tab() -> Control:
 
 		var v_btn := Button.new()
 		v_btn.text = vd[0]
-		v_btn.custom_minimum_size = Vector2(140, 44)
+		v_btn.custom_minimum_size = Vector2(0, 40)
+		v_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		v_btn.focus_mode = Control.FOCUS_NONE
 		v_btn.pressed.connect(_on_vital_pressed.bind(vd[1], vd[2]))
 		if tm:
@@ -929,9 +930,6 @@ func _build_exam_tab() -> Control:
 		tm.style_button(gcs_read_btn, "small")
 	gcs_vbox.add_child(gcs_read_btn)
 
-	# Section separator
-	exam_vbox.add_child(HSeparator.new())
-
 	# ══ ROW 3: ECG (full width) — title, mode label, panel, rhythm label, identify button ══
 	exam_vbox.add_child(ecg_title)
 	exam_vbox.add_child(_ecg_mode_label)
@@ -981,6 +979,7 @@ func _build_exam_tab() -> Control:
 
 	for region in ss_regions:
 		var r_panel := PanelContainer.new()
+		r_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if tm:
 			tm.style_panel(r_panel)
 		ss_grid.add_child(r_panel)
@@ -991,7 +990,8 @@ func _build_exam_tab() -> Control:
 
 		var r_btn := Button.new()
 		r_btn.text = tr(ss_tr_keys.get(region, region.capitalize()))
-		r_btn.custom_minimum_size = Vector2(180, 44)
+		r_btn.custom_minimum_size = Vector2(0, 40)
+		r_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		r_btn.focus_mode = Control.FOCUS_NONE
 		r_btn.pressed.connect(_on_secondary_region_pressed.bind(region))
 		if tm:
