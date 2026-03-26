@@ -125,14 +125,10 @@ func _apply_global_theme() -> void:
 	# PopupMenu defaults
 	global_theme.set_color("font_color", "PopupMenu", c("text_primary"))
 	global_theme.set_color("font_hovered_color", "PopupMenu", c("accent_blue"))
-	# Apply globally
-	ThemeDB.get_project_theme().merge_with(global_theme) if ThemeDB.get_project_theme() else ThemeDB.set_project_theme(global_theme) if ThemeDB.has_method("set_project_theme") else null
-	# Fallback: set on tree root
+	# Apply to tree root — all controls inherit from here
 	var root := get_tree().root
-	if root and not root.theme:
+	if root:
 		root.theme = global_theme
-	elif root and root.theme:
-		root.theme.merge_with(global_theme)
 
 
 ## ── Public API ───────────────────────────────────────────────────
