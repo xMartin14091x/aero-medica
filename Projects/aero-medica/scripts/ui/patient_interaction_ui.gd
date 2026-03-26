@@ -640,7 +640,7 @@ func _build_exam_tab() -> Control:
 
 	var exam_vbox := VBoxContainer.new()
 	exam_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	exam_vbox.add_theme_constant_override("separation", 10)
+	exam_vbox.add_theme_constant_override("separation", 20)
 	root.add_child(exam_vbox)
 	# Reference for responsive grids
 	var exam_scroll := root
@@ -718,6 +718,9 @@ func _build_exam_tab() -> Control:
 			result_lbl.add_theme_font_size_override("font_size", 12)
 		step_vbox.add_child(result_lbl)
 		_exam_results[step[1]] = result_lbl
+
+	# Section separator
+	exam_vbox.add_child(HSeparator.new())
 
 	# ══ ROW 2: Vitals (left) | GCS (right) ══
 	var row2 := HBoxContainer.new()
@@ -797,21 +800,19 @@ func _build_exam_tab() -> Control:
 	if tm:
 		tm.style_label(ecg_title, "subtitle", "accent_green")
 
+	# ECG elements built here but NOT added to tree — will be added as Row 3 after GCS
 	_ecg_mode_label = Label.new()
-	_ecg_mode_label.text = "No monitor deployed"
+	_ecg_mode_label.text = ""
+	_ecg_mode_label.visible = false  # Hidden — no "No monitor deployed" text
 	if tm:
 		tm.style_label(_ecg_mode_label, "label", "text_muted")
-	else:
-		_ecg_mode_label.add_theme_font_size_override("font_size", 13)
-		_ecg_mode_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-	exam_vbox.add_child(_ecg_mode_label)
 
 	_ecg_panel = PanelContainer.new()
-	_ecg_panel.custom_minimum_size = Vector2(400, 110)
+	_ecg_panel.custom_minimum_size = Vector2(0, 110)
+	_ecg_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_ecg_panel.visible = false
 	if tm:
 		tm.style_panel(_ecg_panel, "info")
-	exam_vbox.add_child(_ecg_panel)
 
 	var ecg_inner := VBoxContainer.new()
 	_ecg_panel.add_child(ecg_inner)
@@ -829,16 +830,17 @@ func _build_exam_tab() -> Control:
 		tm.style_label(_ecg_rhythm_label, "label", "text_secondary")
 	else:
 		_ecg_rhythm_label.add_theme_font_size_override("font_size", 13)
-	exam_vbox.add_child(_ecg_rhythm_label)
+	# NOT added to tree yet — deferred to Row 3
 
 	var ecg_identify_btn := Button.new()
 	ecg_identify_btn.text = "Identify Rhythm"
-	ecg_identify_btn.custom_minimum_size = Vector2(160, 36)
+	ecg_identify_btn.custom_minimum_size = Vector2(0, 36)
+	ecg_identify_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ecg_identify_btn.focus_mode = Control.FOCUS_NONE
 	ecg_identify_btn.pressed.connect(_on_ecg_identify_pressed)
 	if tm:
 		tm.style_button(ecg_identify_btn)
-	exam_vbox.add_child(ecg_identify_btn)
+	# NOT added to tree yet — deferred to Row 3
 
 	## ARC-15: GCS Assessment — RIGHT side of Row 2
 	var gcs_vbox := VBoxContainer.new()
@@ -927,8 +929,15 @@ func _build_exam_tab() -> Control:
 		tm.style_button(gcs_read_btn, "small")
 	gcs_vbox.add_child(gcs_read_btn)
 
-	# ══ ROW 3: ECG (full width) ══
+	# Section separator
+	exam_vbox.add_child(HSeparator.new())
+
+	# ══ ROW 3: ECG (full width) — title, mode label, panel, rhythm label, identify button ══
 	exam_vbox.add_child(ecg_title)
+	exam_vbox.add_child(_ecg_mode_label)
+	exam_vbox.add_child(_ecg_panel)
+	exam_vbox.add_child(_ecg_rhythm_label)
+	exam_vbox.add_child(ecg_identify_btn)
 
 	## ARC-16: Secondary Survey — RIGHT side of Row 1
 	var ss_vbox := VBoxContainer.new()
