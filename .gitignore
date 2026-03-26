@@ -22,4 +22,7 @@ export/
 
 # Heavy assets (transfer via AnyDesk, not git)
 # 3D models, textures, audio — 5.8GB total
-Projects/aero-medica/assets/
+# Ignore all asset subdirs EXCEPT ui/ and fonts/
+Projects/aero-medica/assets/*
+!Projects/aero-medica/assets/ui/
+!Projects/aero-medica/assets/fonts/
