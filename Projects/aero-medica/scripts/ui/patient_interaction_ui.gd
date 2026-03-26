@@ -3136,16 +3136,17 @@ func _on_submit_diagnosis_pressed() -> void:
 		feedback_text = "No correct diagnoses. Correct: %s" % ", ".join(PackedStringArray(correct_list))
 
 	# Color matched buttons green, missed correct ones orange
+	var _tm_diag2 := _get_theme_medical()
 	for btn in _diagnosis_buttons:
 		if btn.text in matched_names:
-			var _tm_diag := _get_theme_medical()
-				btn.add_theme_color_override("font_color", _tm_diag.c("accent_green") if _tm_diag else Color(0.2, 1.0, 0.3))
+			btn.add_theme_color_override("font_color", _tm_diag2.c("accent_green") if _tm_diag2 else Color(0.2, 1.0, 0.3))
 		elif btn.text in correct_list:
-			btn.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1))
+			btn.add_theme_color_override("font_color", _tm_diag2.c("accent_yellow") if _tm_diag2 else Color(1.0, 0.6, 0.1))
 
 	if _diagnosis_rank_label:
 		_diagnosis_rank_label.text = feedback_text
-		var feedback_color := Color(0.2, 1.0, 0.3) if score_pct >= 80 else (Color(1.0, 0.85, 0.2) if score_pct >= 40 else Color(1.0, 0.3, 0.3))
+		var _tm_fb := _get_theme_medical()
+		var feedback_color: Color = (_tm_fb.c("accent_green") if _tm_fb else Color(0.2, 1.0, 0.3)) if score_pct >= 80 else ((_tm_fb.c("accent_yellow") if _tm_fb else Color(1.0, 0.85, 0.2)) if score_pct >= 40 else (_tm_fb.c("accent_red") if _tm_fb else Color(1.0, 0.3, 0.3)))
 		_diagnosis_rank_label.add_theme_color_override("font_color", feedback_color)
 
 	# Auto-close UI and end scenario after a short delay
