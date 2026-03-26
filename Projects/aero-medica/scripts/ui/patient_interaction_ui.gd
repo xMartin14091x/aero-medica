@@ -497,65 +497,82 @@ func _build_patient_tab() -> Control:
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_theme_constant_override("separation", 8)
 
-	var title := Label.new()
-	title.text = "Patient"
+	# ── Patient Info Card (compact 2-line card at top) ──
+	_patient_info_card = PanelContainer.new()
+	_patient_info_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if tm:
-		tm.style_label(title, "title", "text_primary")
-	else:
-		title.add_theme_font_size_override("font_size", 22)
-	root.add_child(title)
+		tm.style_panel(_patient_info_card)
+	root.add_child(_patient_info_card)
 
-	# Patient info
+	var info_vbox := VBoxContainer.new()
+	info_vbox.add_theme_constant_override("separation", 4)
+	_patient_info_card.add_child(info_vbox)
+
+	# Top row: Name + State badge
+	var info_top := HBoxContainer.new()
+	info_vbox.add_child(info_top)
+
+	_patient_name_label = Label.new()
+	_patient_name_label.text = "Patient"
+	_patient_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if tm:
+		tm.style_label(_patient_name_label, "subtitle", "text_primary")
+	else:
+		_patient_name_label.add_theme_font_size_override("font_size", 18)
+	info_top.add_child(_patient_name_label)
+
+	_patient_state_label = Label.new()
+	_patient_state_label.text = ""
+	if tm:
+		tm.style_label(_patient_state_label, "body", "accent_green")
+	info_top.add_child(_patient_state_label)
+
+	# Detail row: Pain | Panic | Clarity
+	_patient_detail_label = Label.new()
+	_patient_detail_label.text = ""
+	if tm:
+		tm.style_label(_patient_detail_label, "body_small", "text_secondary")
+	else:
+		_patient_detail_label.add_theme_font_size_override("font_size", 13)
+	info_vbox.add_child(_patient_detail_label)
+
+	# Keep RichTextLabel for backward compat (populate functions write to it)
 	_patient_info_label = RichTextLabel.new()
 	_patient_info_label.bbcode_enabled = true
-	_patient_info_label.custom_minimum_size = Vector2(0, 100)
-	_patient_info_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	if tm:
-		tm.style_rich_label(_patient_info_label, "body")
+	_patient_info_label.visible = false  # Hidden — using card labels instead
 	root.add_child(_patient_info_label)
 
-	root.add_child(HSeparator.new())
-
-	# SAMPLE history categories
-	var sample_title := Label.new()
-	sample_title.text = "SAMPLE History"
-	if tm:
-		tm.style_label(sample_title, "subtitle", "accent_blue")
-	else:
-		sample_title.add_theme_font_size_override("font_size", 17)
-	root.add_child(sample_title)
-
-	var sample_grid := GridContainer.new()
-	sample_grid.columns = 2
-	sample_grid.add_theme_constant_override("h_separation", 8)
-	sample_grid.add_theme_constant_override("v_separation", 6)
-	root.add_child(sample_grid)
+	# ── SAMPLE History (horizontal pill buttons) ──
+	var sample_flow := HFlowContainer.new()
+	sample_flow.add_theme_constant_override("h_separation", 6)
+	sample_flow.add_theme_constant_override("v_separation", 6)
+	root.add_child(sample_flow)
 
 	var sample_categories := [
-		["S - Signs & Symptoms", "signs_symptoms"],
-		["A - Allergies", "allergies"],
-		["M - Medications", "medications"],
-		["P - Past History", "past_history"],
-		["L - Last Oral Intake", "last_oral_intake"],
-		["E - Events Leading To", "events"],
+		["S", "signs_symptoms"],
+		["A", "allergies"],
+		["M", "medications"],
+		["P", "past_history"],
+		["L", "last_oral_intake"],
+		["E", "events"],
 	]
 
 	for cat in sample_categories:
 		var btn := Button.new()
 		btn.text = cat[0]
-		btn.custom_minimum_size = Vector2(180, 36)
+		btn.custom_minimum_size = Vector2(48, 32)
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_on_sample_category_pressed.bind(cat[1]))
 		if tm:
 			tm.style_button(btn, "small")
 		else:
 			btn.add_theme_font_size_override("font_size", 13)
-		sample_grid.add_child(btn)
+		sample_flow.add_child(btn)
 
-	## ARC-12: OPQRST category button (amber colour, pain auto-suggest)
+	## OPQRST button (accent yellow)
 	_opqrst_btn = Button.new()
-	_opqrst_btn.text = "O - OPQRST (Pain)"
-	_opqrst_btn.custom_minimum_size = Vector2(180, 36)
+	_opqrst_btn.text = "OPQRST"
+	_opqrst_btn.custom_minimum_size = Vector2(72, 32)
 	_opqrst_btn.focus_mode = Control.FOCUS_NONE
 	_opqrst_btn.pressed.connect(_on_sample_category_pressed.bind("opqrst"))
 	if tm:
@@ -564,30 +581,20 @@ func _build_patient_tab() -> Control:
 	else:
 		_opqrst_btn.add_theme_font_size_override("font_size", 13)
 		_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2))
-	sample_grid.add_child(_opqrst_btn)
+	sample_flow.add_child(_opqrst_btn)
 
-	root.add_child(HSeparator.new())
-
-	# AI status
-	_ai_status_label = Label.new()
-	if tm:
-		tm.style_label(_ai_status_label, "caption", "text_secondary")
-	else:
-		_ai_status_label.add_theme_font_size_override("font_size", 12)
-	root.add_child(_ai_status_label)
-
-	# Chat scroll
+	# ── Chat Area (primary focus — takes remaining space) ──
 	_chat_scroll = ScrollContainer.new()
 	_chat_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_chat_scroll.custom_minimum_size = Vector2(0, 200)
+	_chat_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.add_child(_chat_scroll)
 
 	_chat_container = VBoxContainer.new()
 	_chat_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_chat_container.add_theme_constant_override("separation", 6)
+	_chat_container.add_theme_constant_override("separation", 8)
 	_chat_scroll.add_child(_chat_container)
 
-	# Chat input row
+	# ── Chat Input Row ──
 	var input_row := HBoxContainer.new()
 	input_row.add_theme_constant_override("separation", 8)
 	root.add_child(input_row)
@@ -607,6 +614,15 @@ func _build_patient_tab() -> Control:
 	if tm:
 		tm.style_button(_talk_button)
 	input_row.add_child(_talk_button)
+
+	# ── AI Status (subtle, bottom-right) ──
+	_ai_status_label = Label.new()
+	_ai_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	if tm:
+		tm.style_label(_ai_status_label, "caption", "text_muted")
+	else:
+		_ai_status_label.add_theme_font_size_override("font_size", 11)
+	root.add_child(_ai_status_label)
 
 	return root
 
@@ -666,10 +682,11 @@ func _build_exam_tab() -> Control:
 	]
 
 	var steps_grid := GridContainer.new()
-	steps_grid.columns = 2
+	steps_grid.columns = 4  # Responsive: 4 wide, 2 narrow
 	steps_grid.add_theme_constant_override("h_separation", 8)
 	steps_grid.add_theme_constant_override("v_separation", 6)
 	exam_vbox.add_child(steps_grid)
+	_register_responsive_grid(steps_grid, 180.0, 4, exam_scroll)
 
 	for step in drs_steps:
 		var step_panel := PanelContainer.new()
@@ -715,10 +732,11 @@ func _build_exam_tab() -> Control:
 	exam_vbox.add_child(vitals_title)
 
 	var vitals_grid := GridContainer.new()
-	vitals_grid.columns = 4
+	vitals_grid.columns = 4  # Responsive: 4 wide, 2 narrow
 	vitals_grid.add_theme_constant_override("h_separation", 8)
 	vitals_grid.add_theme_constant_override("v_separation", 6)
 	exam_vbox.add_child(vitals_grid)
+	_register_responsive_grid(vitals_grid, 160.0, 4, exam_scroll)
 
 	# Enum values from AssessmentManager.AssessmentAction:
 	# CHECK_HEART_RATE=5, CHECK_BLOOD_PRESSURE=6, CHECK_SPO2=7,
@@ -932,10 +950,11 @@ func _build_exam_tab() -> Control:
 	ss_title_hbox.add_child(_secondary_counter_label)
 
 	var ss_grid := GridContainer.new()
-	ss_grid.columns = 2
+	ss_grid.columns = 4  # Responsive: 4 wide, 2 narrow
 	ss_grid.add_theme_constant_override("h_separation", 8)
 	ss_grid.add_theme_constant_override("v_separation", 6)
 	exam_vbox.add_child(ss_grid)
+	_register_responsive_grid(ss_grid, 180.0, 4, exam_scroll)
 
 	var ss_regions := ["head", "neck", "chest", "abdomen", "pelvis", "back", "extremities"]
 	var ss_tr_keys := {
@@ -1060,49 +1079,83 @@ func _build_stabilize_tab() -> Control:
 
 	container.add_child(HSeparator.new())
 
-	# Equipment grid
-	var equip_title := Label.new()
-	equip_title.text = "Equipment"
+	# ── Diagnostic Equipment (deploy to unlock vitals) ──
+	var diag_title := Label.new()
+	diag_title.text = "Diagnostic"
 	if tm:
-		tm.style_label(equip_title, "subtitle", "accent_blue")
+		tm.style_label(diag_title, "subtitle", "accent_blue")
 	else:
-		equip_title.add_theme_font_size_override("font_size", 17)
-	container.add_child(equip_title)
+		diag_title.add_theme_font_size_override("font_size", 17)
+	container.add_child(diag_title)
 
-	var equip_grid := GridContainer.new()
-	equip_grid.columns = 3
-	equip_grid.add_theme_constant_override("h_separation", 8)
-	equip_grid.add_theme_constant_override("v_separation", 6)
-	container.add_child(equip_grid)
+	var diag_grid := GridContainer.new()
+	diag_grid.columns = 3
+	diag_grid.add_theme_constant_override("h_separation", 8)
+	diag_grid.add_theme_constant_override("v_separation", 6)
+	container.add_child(diag_grid)
+	_register_responsive_grid(diag_grid, 140.0, 3, root)
 
-	var equipment_defs := [
-		# Treatment equipment
-		["O2 Mask", "oxygen_mask"],
-		["BVM", "bvm"],
-		["AED", "aed"],
-		["IV Access", "iv_access"],
-		["C-Collar", "c_collar"],
-		["Tourniquet", "tourniquet"],
-		["Bandage", "bandage"],
-		["Splint", "splint"],
-		["Stretcher", "stretcher"],
-		# Diagnostic equipment (required for vital sign gating)
-		["Pulse Oximeter", "pulse_oximeter"],
-		["BP Cuff", "bp_cuff"],
-		["Penlight", "penlight"],
-		["Thermometer", "thermometer"],
-		["Glucometer", "glucometer"],
+	var diagnostic_defs := [
+		[tr("EQUIP_PULSE_OXIMETER"), "pulse_oximeter"],
+		[tr("EQUIP_BP_CUFF"), "bp_cuff"],
+		[tr("EQUIP_PENLIGHT"), "penlight"],
+		[tr("EQUIP_THERMOMETER"), "thermometer"],
+		[tr("EQUIP_GLUCOMETER"), "glucometer"],
 	]
 
-	for eq in equipment_defs:
+	for eq in diagnostic_defs:
 		var eq_panel := PanelContainer.new()
 		if tm:
 			tm.style_panel(eq_panel)
-		equip_grid.add_child(eq_panel)
-
+		diag_grid.add_child(eq_panel)
 		var eq_btn := Button.new()
 		eq_btn.text = eq[0]
-		eq_btn.custom_minimum_size = Vector2(110, 40)
+		eq_btn.custom_minimum_size = Vector2(120, 40)
+		eq_btn.focus_mode = Control.FOCUS_NONE
+		eq_btn.pressed.connect(_on_equipment_pressed.bind(eq[1]))
+		if tm:
+			tm.style_button(eq_btn, "small")
+		eq_panel.add_child(eq_btn)
+		_equipment_buttons[eq[1]] = eq_btn
+
+	container.add_child(HSeparator.new())
+
+	# ── Treatment Equipment ──
+	var treat_title := Label.new()
+	treat_title.text = "Treatment"
+	if tm:
+		tm.style_label(treat_title, "subtitle", "accent_green")
+	else:
+		treat_title.add_theme_font_size_override("font_size", 17)
+	container.add_child(treat_title)
+
+	var treat_grid := GridContainer.new()
+	treat_grid.columns = 3
+	treat_grid.add_theme_constant_override("h_separation", 8)
+	treat_grid.add_theme_constant_override("v_separation", 6)
+	container.add_child(treat_grid)
+	_register_responsive_grid(treat_grid, 140.0, 3, root)
+
+	var treatment_defs := [
+		[tr("EQUIP_OXYGEN_MASK"), "oxygen_mask"],
+		[tr("EQUIP_BVM"), "bvm"],
+		[tr("EQUIP_AED"), "aed"],
+		[tr("EQUIP_IV_ACCESS"), "iv_access"],
+		[tr("EQUIP_C_COLLAR"), "c_collar"],
+		[tr("EQUIP_TOURNIQUET"), "tourniquet"],
+		[tr("EQUIP_BANDAGE"), "bandage"],
+		[tr("EQUIP_SPLINT"), "splint"],
+		[tr("EQUIP_STRETCHER"), "stretcher"],
+	]
+
+	for eq in treatment_defs:
+		var eq_panel := PanelContainer.new()
+		if tm:
+			tm.style_panel(eq_panel)
+		treat_grid.add_child(eq_panel)
+		var eq_btn := Button.new()
+		eq_btn.text = eq[0]
+		eq_btn.custom_minimum_size = Vector2(120, 40)
 		eq_btn.focus_mode = Control.FOCUS_NONE
 		eq_btn.pressed.connect(_on_equipment_pressed.bind(eq[1]))
 		if tm:
@@ -1243,25 +1296,36 @@ func _build_differential_tab() -> Control:
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_theme_constant_override("separation", 8)
 
+	# Title
 	var title := Label.new()
-	title.text = "Differential Diagnosis"
+	title.text = tr("TAB_DIFFERENTIAL")
 	if tm:
 		tm.style_label(title, "title", "text_primary")
 	else:
 		title.add_theme_font_size_override("font_size", 22)
 	root.add_child(title)
 
-	var instructions := Label.new()
-	instructions.text = "Select up to 3 diagnoses in order of likelihood, then submit."
-	instructions.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# Search bar
+	_ddx_search_input = LineEdit.new()
+	_ddx_search_input.placeholder_text = "Search diagnoses..."
+	_ddx_search_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_ddx_search_input.text_changed.connect(_on_ddx_search_changed)
 	if tm:
-		tm.style_label(instructions, "body", "text_secondary")
-	else:
-		instructions.add_theme_font_size_override("font_size", 13)
-	root.add_child(instructions)
+		tm.style_input(_ddx_search_input)
+	root.add_child(_ddx_search_input)
 
-	root.add_child(HSeparator.new())
+	# Scrollable area for categories
+	var diag_scroll := ScrollContainer.new()
+	diag_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(diag_scroll)
 
+	var diag_vbox := VBoxContainer.new()
+	diag_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	diag_vbox.name = "DiagVBox"
+	diag_vbox.add_theme_constant_override("separation", 6)
+	diag_scroll.add_child(diag_vbox)
+
+	# Selected diagnoses display
 	_diagnosis_rank_label = Label.new()
 	_diagnosis_rank_label.text = "Selected: (none)"
 	if tm:
@@ -1270,18 +1334,9 @@ func _build_differential_tab() -> Control:
 		_diagnosis_rank_label.add_theme_font_size_override("font_size", 13)
 	root.add_child(_diagnosis_rank_label)
 
-	var diag_scroll := ScrollContainer.new()
-	diag_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_child(diag_scroll)
-
-	var diag_vbox := VBoxContainer.new()
-	diag_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	diag_vbox.name = "DiagVBox"
-	diag_vbox.add_theme_constant_override("separation", 4)
-	diag_scroll.add_child(diag_vbox)
-
+	# Submit button — full width, accent blue
 	_submit_diagnosis_btn = Button.new()
-	_submit_diagnosis_btn.text = "Submit Diagnosis"
+	_submit_diagnosis_btn.text = tr("DDX_SUBMIT")
 	_submit_diagnosis_btn.custom_minimum_size = Vector2(0, 52)
 	_submit_diagnosis_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_submit_diagnosis_btn.focus_mode = Control.FOCUS_NONE
@@ -1289,7 +1344,6 @@ func _build_differential_tab() -> Control:
 	_submit_diagnosis_btn.disabled = true
 	if tm:
 		tm.style_button(_submit_diagnosis_btn, "large")
-		# Override with accent_blue for submit prominence
 		var submit_normal: StyleBoxFlat = tm.make_btn_normal()
 		submit_normal.bg_color = tm.c("accent_blue")
 		_submit_diagnosis_btn.add_theme_stylebox_override("normal", submit_normal)
@@ -1301,6 +1355,37 @@ func _build_differential_tab() -> Control:
 	root.add_child(_submit_diagnosis_btn)
 
 	return root
+
+
+## Toggle a DDx category open/closed.
+func _on_ddx_category_toggle(cat_name: String, header_btn: Button) -> void:
+	var is_collapsed: bool = _ddx_category_collapsed.get(cat_name, false)
+	_ddx_category_collapsed[cat_name] = not is_collapsed
+	var grid: GridContainer = _ddx_category_grids.get(cat_name)
+	if grid:
+		grid.visible = is_collapsed  # Was collapsed → now open
+	header_btn.text = ("▼ " if is_collapsed else "▶ ") + cat_name
+
+
+## Search filter for differential diagnoses.
+func _on_ddx_search_changed(text: String) -> void:
+	var query := text.strip_edges().to_lower()
+	for btn in _diagnosis_buttons:
+		if is_instance_valid(btn):
+			btn.visible = query == "" or query in btn.text.to_lower()
+	# Show/hide category headers based on whether they have visible buttons
+	for cat_name in _ddx_category_containers:
+		var cat_wrapper: Control = _ddx_category_containers[cat_name]
+		if not is_instance_valid(cat_wrapper):
+			continue
+		var has_visible := false
+		var grid: GridContainer = _ddx_category_grids.get(cat_name)
+		if grid:
+			for child in grid.get_children():
+				if child is Button and child.visible:
+					has_visible = true
+					break
+		cat_wrapper.visible = has_visible or query == ""
 
 
 # ==============================================================================
@@ -1649,50 +1734,92 @@ func _populate_differential_tab() -> void:
 			_submit_diagnosis_btn.disabled = true
 			_submit_diagnosis_btn.text = "Submit Diagnosis"
 
-	# Comprehensive differential diagnosis list for EMS assessment
-	var diagnoses := [
-		# Cardiac
-		"Cardiac Arrest", "Myocardial Infarction (STEMI)", "Myocardial Infarction (NSTEMI)",
-		"Unstable Angina", "Ventricular Fibrillation", "Ventricular Tachycardia",
-		"Bradycardia", "SVT / Tachyarrhythmia", "Heart Failure / Pulmonary Oedema",
-		"Cardiac Tamponade", "Aortic Dissection",
-		# Respiratory
-		"Pneumothorax", "Tension Pneumothorax", "Asthma (Acute)",
-		"COPD Exacerbation", "Pulmonary Embolism", "Respiratory Failure",
-		"Smoke Inhalation", "Upper Airway Obstruction",
-		# Neurological
-		"Stroke (Ischaemic)", "Stroke (Haemorrhagic)", "Seizure / Status Epilepticus",
-		"Head Injury / TBI", "Spinal Injury",
-		# Trauma
-		"Trauma -- Multi-system", "Haemorrhagic Shock", "Internal Bleeding",
-		"Crush Injury / Rhabdomyolysis", "Burns (Thermal)", "Blast Injury",
-		"Penetrating Trauma", "Fracture -- Open", "Fracture -- Closed",
-		# Medical
-		"Anaphylaxis", "Hypoglycaemia", "Diabetic Ketoacidosis",
-		"Sepsis / Septic Shock", "Opioid Overdose", "Drug Overdose (Other)",
-		"Poisoning / Toxic Exposure", "CO Poisoning",
-		"Hypothermia", "Hyperthermia / Heat Stroke",
-		# Other
-		"Minor Bleeding / Laceration", "Soft Tissue Injury",
-		"Acute Abdomen", "Ectopic Pregnancy",
-	]
+	# Categorized differential diagnosis list
+	var ddx_categories := {
+		"Cardiac": [
+			"Cardiac Arrest", "Myocardial Infarction (STEMI)", "Myocardial Infarction (NSTEMI)",
+			"Unstable Angina", "Ventricular Fibrillation", "Ventricular Tachycardia",
+			"Bradycardia", "SVT / Tachyarrhythmia", "Heart Failure / Pulmonary Oedema",
+			"Cardiac Tamponade", "Aortic Dissection",
+		],
+		"Respiratory": [
+			"Pneumothorax", "Tension Pneumothorax", "Asthma (Acute)",
+			"COPD Exacerbation", "Pulmonary Embolism", "Respiratory Failure",
+			"Smoke Inhalation", "Upper Airway Obstruction",
+		],
+		"Trauma": [
+			"Trauma -- Multi-system", "Haemorrhagic Shock", "Internal Bleeding",
+			"Crush Injury / Rhabdomyolysis", "Burns (Thermal)", "Blast Injury",
+			"Penetrating Trauma", "Fracture -- Open", "Fracture -- Closed",
+		],
+		"Neurological": [
+			"Stroke (Ischaemic)", "Stroke (Haemorrhagic)", "Seizure / Status Epilepticus",
+			"Head Injury / TBI", "Spinal Injury",
+		],
+		"Medical": [
+			"Anaphylaxis", "Hypoglycaemia", "Diabetic Ketoacidosis",
+			"Sepsis / Septic Shock", "Opioid Overdose", "Drug Overdose (Other)",
+			"Poisoning / Toxic Exposure", "CO Poisoning",
+			"Hypothermia", "Hyperthermia / Heat Stroke",
+		],
+		"Other": [
+			"Minor Bleeding / Laceration", "Soft Tissue Injury",
+			"Acute Abdomen", "Ectopic Pregnancy",
+		],
+	}
 
-	for diag in diagnoses:
-		var btn := Button.new()
-		btn.text = diag
-		btn.custom_minimum_size = Vector2(0, 36)
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.focus_mode = Control.FOCUS_NONE
-		btn.pressed.connect(_on_diagnosis_button_pressed.bind(diag))
+	_ddx_category_containers.clear()
+	_ddx_category_grids.clear()
+	_ddx_category_collapsed.clear()
+
+	var cat_index := 0
+	for cat_name in ddx_categories:
+		var cat_wrapper := VBoxContainer.new()
+		cat_wrapper.add_theme_constant_override("separation", 4)
+		diag_vbox.add_child(cat_wrapper)
+		_ddx_category_containers[cat_name] = cat_wrapper
+
+		# Category header — collapsible toggle
+		var header_btn := Button.new()
+		var is_open: bool = cat_index < 2  # First 2 categories open by default
+		header_btn.text = ("▼ " if is_open else "▶ ") + cat_name
+		header_btn.custom_minimum_size = Vector2(0, 32)
+		header_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		header_btn.focus_mode = Control.FOCUS_NONE
+		header_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		if tm:
-			tm.style_button(btn, "small")
-		# If already diagnosed, lock all buttons and highlight selected ones
-		if _diagnosis_submitted:
-			btn.disabled = true
-			if diag in _selected_diagnoses:
-				btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3))
-		diag_vbox.add_child(btn)
-		_diagnosis_buttons.append(btn)
+			tm.style_button(header_btn, "small")
+			header_btn.add_theme_color_override("font_color", tm.c("accent_blue"))
+		header_btn.pressed.connect(_on_ddx_category_toggle.bind(cat_name, header_btn))
+		cat_wrapper.add_child(header_btn)
+
+		# Category grid
+		var cat_grid := GridContainer.new()
+		cat_grid.columns = 3
+		cat_grid.add_theme_constant_override("h_separation", 6)
+		cat_grid.add_theme_constant_override("v_separation", 4)
+		cat_grid.visible = is_open
+		cat_wrapper.add_child(cat_grid)
+		_ddx_category_grids[cat_name] = cat_grid
+		_ddx_category_collapsed[cat_name] = not is_open
+
+		for diag in ddx_categories[cat_name]:
+			var btn := Button.new()
+			btn.text = diag
+			btn.custom_minimum_size = Vector2(0, 36)
+			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			btn.focus_mode = Control.FOCUS_NONE
+			btn.pressed.connect(_on_diagnosis_button_pressed.bind(diag))
+			if tm:
+				tm.style_button(btn, "small")
+			if _diagnosis_submitted:
+				btn.disabled = true
+				if diag in _selected_diagnoses:
+					btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3))
+			cat_grid.add_child(btn)
+			_diagnosis_buttons.append(btn)
+
+		cat_index += 1
 
 
 # ==============================================================================
