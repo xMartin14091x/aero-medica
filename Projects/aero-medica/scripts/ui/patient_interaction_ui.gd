@@ -1850,8 +1850,8 @@ func _populate_differential_tab() -> void:
 			if _diagnosis_submitted:
 				btn.disabled = true
 				if diag in _selected_diagnoses:
-					var _tm_diag := _get_theme_medical()
-				btn.add_theme_color_override("font_color", _tm_diag.c("accent_green") if _tm_diag else Color(0.2, 1.0, 0.3))
+					var _tm_d := _get_theme_medical()
+					btn.add_theme_color_override("font_color", _tm_d.c("accent_green") if _tm_d else Color(0.2, 1.0, 0.3))
 			cat_grid.add_child(btn)
 			_diagnosis_buttons.append(btn)
 
