@@ -286,7 +286,8 @@ func style_button(btn: Button, size: String = "normal") -> void:
 	btn.add_theme_stylebox_override("disabled", make_btn_disabled())
 	btn.add_theme_color_override("font_color", c("text_primary"))
 	btn.add_theme_color_override("font_hover_color", c("accent_blue"))
-	btn.add_theme_color_override("font_pressed_color", Color.WHITE if current_mode == "dark" else c("text_primary"))
+	btn.add_theme_color_override("font_pressed_color", c("accent_blue"))
+	btn.add_theme_color_override("font_focus_color", c("text_primary"))
 	btn.add_theme_color_override("font_disabled_color", c("text_muted"))
 	match size:
 		"small":
@@ -315,8 +316,12 @@ func style_option_button(btn: OptionButton) -> void:
 	btn.add_theme_stylebox_override("normal", make_input())
 	btn.add_theme_stylebox_override("hover", make_input_focus())
 	btn.add_theme_stylebox_override("pressed", make_input_focus())
+	btn.add_theme_stylebox_override("disabled", make_btn_disabled())
 	btn.add_theme_color_override("font_color", c("text_primary"))
 	btn.add_theme_color_override("font_hover_color", c("accent_blue"))
+	btn.add_theme_color_override("font_pressed_color", c("text_primary"))
+	btn.add_theme_color_override("font_focus_color", c("text_primary"))
+	btn.add_theme_color_override("font_disabled_color", c("text_muted"))
 	btn.add_theme_font_size_override("font_size", FONT_SIZES.body)
 	# Style the dropdown popup to match theme
 	if btn.is_inside_tree():
