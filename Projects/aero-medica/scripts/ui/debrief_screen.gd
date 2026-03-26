@@ -17,6 +17,12 @@ var _review_text_label: RichTextLabel = null
 var _review_scroll: ScrollContainer = null
 var _review_panel: Control = null
 
+## Timeline references.
+var _timeline_tabs: HBoxContainer = null
+var _timeline_vbox: VBoxContainer = null
+var _timeline_events: Array = []  # All events from session
+var _selected_patient_tab: String = ""  # Currently selected patient filter
+
 ## Stored session data for metrics.
 var _session_results: Dictionary = {}
 var _review_requested: bool = false
@@ -31,29 +37,25 @@ func _ready() -> void:
 func _build_ui() -> void:
 	var T := ThemeMedical
 
-	# Dark overlay background
+	# Background
 	_background = ColorRect.new()
 	_background.color = T.c("bg_main")
 	_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(_background)
 
-	# Main scroll for entire debrief (allows scrolling on small screens)
-	var main_scroll := ScrollContainer.new()
-	main_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(main_scroll)
-
 	# Main margin
 	var margin := MarginContainer.new()
-	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	margin.add_theme_constant_override("margin_left", 50)
-	margin.add_theme_constant_override("margin_right", 50)
-	margin.add_theme_constant_override("margin_top", 30)
-	margin.add_theme_constant_override("margin_bottom", 30)
-	main_scroll.add_child(margin)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 40)
+	margin.add_theme_constant_override("margin_right", 40)
+	margin.add_theme_constant_override("margin_top", 24)
+	margin.add_theme_constant_override("margin_bottom", 24)
+	add_child(margin)
 
 	var outer_vbox := VBoxContainer.new()
 	outer_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	outer_vbox.add_theme_constant_override("separation", 16)
+	outer_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	outer_vbox.add_theme_constant_override("separation", 12)
 	margin.add_child(outer_vbox)
 
 	# Title
@@ -63,52 +65,98 @@ func _build_ui() -> void:
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	outer_vbox.add_child(_title_label)
 
-	# Quick Summary card
+	# ══ Main 2-column layout: Left (1/4) | Right (3/4) ══
+	var main_row := HBoxContainer.new()
+	main_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	main_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	main_row.add_theme_constant_override("separation", 16)
+	outer_vbox.add_child(main_row)
+
+	# ── LEFT COLUMN (1/4 width) ──
+	var left_col := VBoxContainer.new()
+	left_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left_col.size_flags_stretch_ratio = 1.0
+	left_col.add_theme_constant_override("separation", 12)
+	main_row.add_child(left_col)
+
+	# Quick Summary card (40% of left column)
 	var stats_card := PanelContainer.new()
 	T.style_panel(stats_card)
-	outer_vbox.add_child(stats_card)
+	stats_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	stats_card.size_flags_stretch_ratio = 0.4
+	left_col.add_child(stats_card)
 
 	var stats_inner := VBoxContainer.new()
-	stats_inner.add_theme_constant_override("separation", 8)
+	stats_inner.add_theme_constant_override("separation", 6)
 	stats_card.add_child(stats_inner)
 
 	var stats_header := Label.new()
 	stats_header.text = "Quick Summary"
-	T.style_label(stats_header, "title", "text_primary")
+	T.style_label(stats_header, "subtitle", "text_primary")
 	stats_inner.add_child(stats_header)
 
 	_stats_vbox = VBoxContainer.new()
 	stats_inner.add_child(_stats_vbox)
 
-	# Patient Summary card
-	var patients_card := PanelContainer.new()
-	T.style_panel(patients_card)
-	patients_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	outer_vbox.add_child(patients_card)
+	# Timeline card (60% of left column)
+	var timeline_card := PanelContainer.new()
+	T.style_panel(timeline_card)
+	timeline_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	timeline_card.size_flags_stretch_ratio = 0.6
+	left_col.add_child(timeline_card)
 
-	var patients_inner := VBoxContainer.new()
-	patients_inner.add_theme_constant_override("separation", 8)
-	patients_card.add_child(patients_inner)
+	var timeline_inner := VBoxContainer.new()
+	timeline_inner.add_theme_constant_override("separation", 6)
+	timeline_card.add_child(timeline_inner)
 
+	var timeline_header := Label.new()
+	timeline_header.text = "Timeline"
+	T.style_label(timeline_header, "subtitle", "text_primary")
+	timeline_inner.add_child(timeline_header)
+
+	# Patient tabs (horizontal buttons to filter timeline)
+	_timeline_tabs = HBoxContainer.new()
+	_timeline_tabs.add_theme_constant_override("separation", 4)
+	timeline_inner.add_child(_timeline_tabs)
+
+	# Scrollable timeline events
+	var timeline_scroll := ScrollContainer.new()
+	timeline_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	timeline_inner.add_child(timeline_scroll)
+
+	_timeline_vbox = VBoxContainer.new()
+	_timeline_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_timeline_vbox.add_theme_constant_override("separation", 2)
+	timeline_scroll.add_child(_timeline_vbox)
+
+	# Patient Summary cards (below timeline in left column)
 	var patients_header := Label.new()
 	patients_header.text = "Patient Summary"
-	T.style_label(patients_header, "title", "text_primary")
-	patients_inner.add_child(patients_header)
+	T.style_label(patients_header, "subtitle", "text_primary")
+	left_col.add_child(patients_header)
 
 	_patients_scroll = ScrollContainer.new()
-	_patients_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	patients_inner.add_child(_patients_scroll)
+	_patients_scroll.custom_minimum_size = Vector2(0, 100)
+	left_col.add_child(_patients_scroll)
 
 	_patients_vbox = VBoxContainer.new()
 	_patients_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_patients_vbox.add_theme_constant_override("separation", 8)
+	_patients_vbox.add_theme_constant_override("separation", 6)
 	_patients_scroll.add_child(_patients_vbox)
 
-	# AI Review card
+	# ── RIGHT COLUMN (3/4 width) — AI Review ──
+	var right_col := VBoxContainer.new()
+	right_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right_col.size_flags_stretch_ratio = 3.0
+	right_col.add_theme_constant_override("separation", 8)
+	main_row.add_child(right_col)
+
 	var review_card := PanelContainer.new()
 	T.style_panel(review_card, "info")
 	review_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	outer_vbox.add_child(review_card)
+	right_col.add_child(review_card)
 
 	var review_inner := VBoxContainer.new()
 	review_inner.add_theme_constant_override("separation", 8)
@@ -116,13 +164,11 @@ func _build_ui() -> void:
 
 	_review_status_label = Label.new()
 	_review_status_label.text = "AI Review"
-	T.style_label(_review_status_label, "title", "accent_blue")
+	T.style_label(_review_status_label, "subtitle", "accent_blue")
 	review_inner.add_child(_review_status_label)
 
-	# Scrollable review text area
 	_review_scroll = ScrollContainer.new()
 	_review_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_review_scroll.custom_minimum_size = Vector2(0, 150)
 	review_inner.add_child(_review_scroll)
 
 	_review_text_label = RichTextLabel.new()
@@ -133,10 +179,9 @@ func _build_ui() -> void:
 	_review_text_label.text = ""
 	_review_scroll.add_child(_review_text_label)
 
-	# Return to Menu button
+	# Return to Menu button (centered below both columns)
 	var btn_hbox := HBoxContainer.new()
 	btn_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	btn_hbox.add_theme_constant_override("separation", 20)
 	outer_vbox.add_child(btn_hbox)
 
 	var menu_btn := Button.new()
@@ -185,6 +230,7 @@ func show_debrief(results: Dictionary) -> void:
 
 	_populate_stats(results)
 	_populate_patient_cards(results)
+	_populate_timeline(results)
 
 	# Try to request AI review, show fallback if unavailable
 	_request_ai_review(results)
@@ -548,6 +594,97 @@ func _find_sibling_review_panel() -> Control:
 		if child != self and child.has_method("show_review"):
 			return child
 	return null
+
+
+## Populate timeline with patient tabs and event entries.
+func _populate_timeline(results: Dictionary) -> void:
+	var T := ThemeMedical
+	_timeline_events = results.get("events", [])
+
+	# Clear existing tabs and entries
+	for child in _timeline_tabs.get_children():
+		child.queue_free()
+	for child in _timeline_vbox.get_children():
+		child.queue_free()
+
+	# Build patient tabs from unique targets in events
+	var patient_names: Array[String] = []
+	for event: Dictionary in _timeline_events:
+		var target: String = event.get("target", "")
+		if target != "" and target not in patient_names:
+			# Skip system events
+			var etype: String = event.get("type", "")
+			if etype != "scenario_started" and etype != "scenario_ended" and etype != "scenario_time_expired":
+				patient_names.append(target)
+
+	# "All" tab
+	var all_btn := Button.new()
+	all_btn.text = "All"
+	all_btn.custom_minimum_size = Vector2(60, 28)
+	all_btn.focus_mode = Control.FOCUS_NONE
+	all_btn.pressed.connect(_on_timeline_tab_pressed.bind(""))
+	T.style_button(all_btn, "small")
+	_timeline_tabs.add_child(all_btn)
+
+	# Per-patient tabs
+	for pname in patient_names:
+		var tab_btn := Button.new()
+		tab_btn.text = pname
+		tab_btn.custom_minimum_size = Vector2(60, 28)
+		tab_btn.focus_mode = Control.FOCUS_NONE
+		tab_btn.pressed.connect(_on_timeline_tab_pressed.bind(pname))
+		T.style_button(tab_btn, "small")
+		_timeline_tabs.add_child(tab_btn)
+
+	# Show all events initially
+	_selected_patient_tab = ""
+	_refresh_timeline_entries()
+
+
+## Refresh timeline entries based on selected patient filter.
+func _refresh_timeline_entries() -> void:
+	var T := ThemeMedical
+	for child in _timeline_vbox.get_children():
+		child.queue_free()
+
+	for event: Dictionary in _timeline_events:
+		var etype: String = event.get("type", "")
+		if etype == "scenario_started" or etype == "scenario_ended" or etype == "scenario_time_expired":
+			continue
+
+		var target: String = event.get("target", "")
+		if _selected_patient_tab != "" and target != _selected_patient_tab:
+			continue
+
+		var timestamp: float = event.get("timestamp", 0.0)
+		var minutes := int(timestamp) / 60
+		var seconds := int(timestamp) % 60
+		var details: Dictionary = event.get("details", {})
+
+		var display := "%02d:%02d  %s" % [minutes, seconds, etype.replace("_", " ").capitalize()]
+		if target != "":
+			display += " — %s" % target
+
+		var entry := Label.new()
+		entry.text = display
+		T.style_label(entry, "caption", "text_secondary")
+		entry.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_timeline_vbox.add_child(entry)
+
+
+## Handle timeline tab press — filter by patient.
+func _on_timeline_tab_pressed(patient_name: String) -> void:
+	_selected_patient_tab = patient_name
+	_refresh_timeline_entries()
+
+	# Highlight active tab
+	var T := ThemeMedical
+	for child in _timeline_tabs.get_children():
+		if child is Button:
+			if child.text == patient_name or (patient_name == "" and child.text == "All"):
+				child.add_theme_color_override("font_color", T.c("accent_blue"))
+			else:
+				child.add_theme_color_override("font_color", T.c("text_secondary"))
 
 
 func _on_return_to_menu() -> void:
