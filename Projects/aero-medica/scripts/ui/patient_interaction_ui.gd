@@ -107,6 +107,18 @@ var _ddx_category_grids: Dictionary = {}
 var _ddx_category_collapsed: Dictionary = {}
 var _selected_chips_hbox: HBoxContainer = null
 
+## Action cooldown system — tracks active cooldowns per group.
+## Key = group name, Value = number of actions currently cooling down.
+var _cooldown_active: Dictionary = {}  # group → int (active count)
+const COOLDOWN_CONFIG := {
+	"drs":       {"delay": 0.5, "max_concurrent": 1},
+	"abcde":     {"delay": 2.0, "max_concurrent": 1},
+	"vitals":    {"delay": 1.5, "max_concurrent": 2},
+	"secondary": {"delay": 2.0, "max_concurrent": 1},
+	"equipment": {"delay": 3.0, "max_concurrent": 2},
+	"drug":      {"delay": 5.0, "max_concurrent": 1},
+}
+
 ## Ollama dialogue client reference.
 var _dialogue_client: Node = null
 
@@ -182,6 +194,33 @@ func _ready() -> void:
 			theme_mgr.theme_changed.connect(_on_theme_changed)
 	# Disconnect autoload signals on scene exit
 	tree_exiting.connect(_disconnect_autoload_signals_piu)
+
+
+## Start a cooldown on a button. Returns false if group is at max concurrent.
+func _start_cooldown(btn: Button, group: String) -> bool:
+	var config: Dictionary = COOLDOWN_CONFIG.get(group, {"delay": 1.0, "max_concurrent": 1})
+	var active: int = _cooldown_active.get(group, 0)
+	if active >= config["max_concurrent"]:
+		return false  # At capacity — reject action
+	_cooldown_active[group] = active + 1
+	btn.disabled = true
+	# Store original text for restore
+	var original_text: String = btn.text
+	# Timer to re-enable after delay
+	var timer := get_tree().create_timer(config["delay"])
+	timer.timeout.connect(func():
+		_cooldown_active[group] = maxi(0, _cooldown_active.get(group, 1) - 1)
+		if is_instance_valid(btn):
+			btn.disabled = false
+			btn.text = original_text
+	)
+	return true  # Action allowed
+
+
+## Check if a cooldown group can accept another action.
+func _can_start_cooldown(group: String) -> bool:
+	var config: Dictionary = COOLDOWN_CONFIG.get(group, {"delay": 1.0, "max_concurrent": 1})
+	return _cooldown_active.get(group, 0) < config["max_concurrent"]
 
 
 func _disconnect_autoload_signals_piu() -> void:
@@ -2302,6 +2341,12 @@ func _on_exam_action_pressed(action_name: String) -> void:
 	if not _assessment_manager:
 		_exam_results[action_name].text = "No assessment manager."
 		return
+	# Cooldown: DRS (danger, response, send_help) = 0.5s, ABCDE = 2s
+	var drs_actions := ["check_danger", "check_response", "send_help"]
+	var group := "drs" if action_name in drs_actions else "abcde"
+	var btn: Button = _exam_buttons.get(action_name)
+	if btn and not _start_cooldown(btn, group):
+		return
 
 	var result: Dictionary = {}
 	if _assessment_manager.has_method("perform_assessment_by_name"):
@@ -2341,6 +2386,10 @@ func _on_exam_action_pressed(action_name: String) -> void:
 func _on_vital_pressed(key: String, action_id: int) -> void:
 	var result_lbl: Label = _vital_results.get(key)
 	if not result_lbl:
+		return
+	# Cooldown: 1.5s, 2 concurrent
+	var v_btn: Button = _vital_buttons.get(key)
+	if v_btn and not _start_cooldown(v_btn, "vitals"):
 		return
 
 	if not _assessment_manager:
@@ -2712,6 +2761,9 @@ func _on_secondary_region_pressed(region: String) -> void:
 	var region_btn: Button = _secondary_buttons.get(region)
 	if not result_lbl or not region_btn:
 		return
+	# Cooldown: 2s, 1 at a time
+	if not _start_cooldown(region_btn, "secondary"):
+		return
 
 	# Get findings through SecondarySurveyManager.get_region_findings (locale-aware)
 	var finding_text := "No abnormalities found."
@@ -2851,19 +2903,17 @@ func _on_cpr_pressed() -> void:
 	assessment_action.emit("cpr")
 
 
-var _drug_admin_cooldown: bool = false
-
 func _on_administer_drug_pressed() -> void:
-	if _drug_admin_cooldown:
-		return
 	if not _drug_name_btn or not _drug_route_btn or not _drug_dose_btn:
 		return
 	if not _patient:
 		return
-	# Debounce — prevent rapid fire
-	_drug_admin_cooldown = true
-	var cooldown_timer := get_tree().create_timer(1.0)
-	cooldown_timer.timeout.connect(func(): _drug_admin_cooldown = false)
+	# Cooldown: 5s, 1 at a time — uses the unified cooldown system
+	if not _can_start_cooldown("drug"):
+		return
+	_cooldown_active["drug"] = _cooldown_active.get("drug", 0) + 1
+	var drug_cd_timer := get_tree().create_timer(5.0)
+	drug_cd_timer.timeout.connect(func(): _cooldown_active["drug"] = maxi(0, _cooldown_active.get("drug", 1) - 1))
 
 	var drug_display: String = _drug_name_btn.get_item_text(_drug_name_btn.selected) if _drug_name_btn.get_item_count() > 0 else ""
 	var drug_key = _drug_name_btn.get_item_metadata(_drug_name_btn.selected) if _drug_name_btn.get_item_count() > 0 else ""
@@ -3085,6 +3135,10 @@ func _on_triage_direct_pressed(tag_name: String) -> void:
 
 func _on_equipment_pressed(equip_type: String) -> void:
 	if equip_type in _applied_equipment:
+		return
+	# Cooldown: 3s, 2 concurrent
+	var eq_btn: Button = _equipment_buttons.get(equip_type)
+	if eq_btn and not _start_cooldown(eq_btn, "equipment"):
 		return
 
 	# Deplete from bag manager via key mapping
