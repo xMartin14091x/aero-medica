@@ -196,56 +196,36 @@ func _ready() -> void:
 	tree_exiting.connect(_disconnect_autoload_signals_piu)
 
 
-## Start a cooldown on a button. Callback fires AFTER delay with result.
+## Start a cooldown on a button with circular progress overlay.
+## Callback fires AFTER delay with result.
 ## Returns false if group is at max concurrent (shows warning).
 func _start_cooldown(btn: Button, group: String, on_complete: Callable = Callable()) -> bool:
 	var config: Dictionary = COOLDOWN_CONFIG.get(group, {"delay": 1.0, "max_concurrent": 1})
 	var active: int = _cooldown_active.get(group, 0)
 	if active >= config["max_concurrent"]:
-		# Flash button red briefly to indicate rejection
 		_flash_button_rejected(btn)
 		if _drug_feedback_label:
-			_drug_feedback_label.text = "Maximum concurrent actions reached for this section."
+			_drug_feedback_label.text = "Maximum concurrent actions reached."
 			var tm := _get_theme_medical()
 			if tm:
 				_drug_feedback_label.add_theme_color_override("font_color", tm.c("accent_red"))
 		return false
 	_cooldown_active[group] = active + 1
 	btn.disabled = true
-	var original_text: String = btn.text
 	var delay: float = config["delay"]
 
-	# Show processing state
-	btn.modulate.a = 0.6
-
-	# Countdown tween — update button text every 0.25s
-	var elapsed := 0.0
-	var countdown_timer := Timer.new()
-	countdown_timer.wait_time = 0.25
-	countdown_timer.autostart = true
-	add_child(countdown_timer)
-	countdown_timer.timeout.connect(func():
-		elapsed += 0.25
-		var remaining := delay - elapsed
-		if remaining > 0 and is_instance_valid(btn):
-			btn.text = "%s (%.1fs)" % [original_text, remaining]
-	)
-
-	# Completion timer — run the actual action
-	var complete_timer := get_tree().create_timer(delay)
-	complete_timer.timeout.connect(func():
-		# Clean up countdown
-		if is_instance_valid(countdown_timer):
-			countdown_timer.queue_free()
+	# Create circular progress overlay on the button
+	var progress := _CooldownCircle.new()
+	progress.duration = delay
+	progress.on_complete = func():
 		_cooldown_active[group] = maxi(0, _cooldown_active.get(group, 1) - 1)
 		if is_instance_valid(btn):
 			btn.disabled = false
-			btn.text = original_text
 			btn.modulate.a = 1.0
-		# Fire the actual action callback
 		if on_complete.is_valid():
 			on_complete.call()
-	)
+	btn.add_child(progress)
+	btn.modulate.a = 0.7
 	return true
 
 
@@ -260,6 +240,54 @@ func _flash_button_rejected(btn: Button) -> void:
 		if is_instance_valid(btn):
 			btn.modulate = original_modulate
 	)
+
+
+## Inner class: circular progress overlay drawn on top of a button.
+class _CooldownCircle extends Control:
+	var duration: float = 1.0
+	var elapsed: float = 0.0
+	var on_complete: Callable = Callable()
+	var _ring_color: Color = Color(0.298, 0.604, 1.0, 0.8)  # accent_blue
+	var _bg_color: Color = Color(0.0, 0.0, 0.0, 0.3)
+	var _done: bool = false
+
+	func _ready() -> void:
+		# Cover the entire button
+		set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		z_index = 10
+
+	func _process(delta: float) -> void:
+		if _done:
+			return
+		elapsed += delta
+		queue_redraw()
+		if elapsed >= duration:
+			_done = true
+			if on_complete.is_valid():
+				on_complete.call()
+			queue_free()
+
+	func _draw() -> void:
+		var center := size / 2.0
+		var radius := minf(size.x, size.y) * 0.3
+		var progress := clampf(elapsed / duration, 0.0, 1.0)
+
+		# Background dim
+		draw_rect(Rect2(Vector2.ZERO, size), _bg_color)
+
+		# Background circle (track)
+		draw_arc(center, radius, 0, TAU, 32, Color(0.3, 0.3, 0.4, 0.4), 3.0)
+
+		# Progress arc — clockwise from top
+		if progress > 0.0:
+			var start_angle := -PI / 2.0  # 12 o'clock
+			var end_angle := start_angle + TAU * progress
+			draw_arc(center, radius, start_angle, end_angle, 32, _ring_color, 4.0)
+
+		# Center percentage text
+		var pct := int(progress * 100.0)
+		draw_string(ThemeDB.fallback_font, center + Vector2(-10, 5), "%d%%" % pct, HORIZONTAL_ALIGNMENT_CENTER, -1, 12, Color.WHITE)
 
 
 ## Check if a cooldown group can accept another action.
