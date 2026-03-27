@@ -226,6 +226,12 @@ func _start_cooldown(btn: Button, group: String, on_complete: Callable = Callabl
 			on_complete.call()
 	btn.add_child(progress)
 	btn.modulate.a = 0.7
+	# Hide button text during cooldown — circle is the visual
+	var original_text: String = btn.text
+	btn.text = ""
+	progress.on_text_restore = func():
+		if is_instance_valid(btn):
+			btn.text = original_text
 	return true
 
 
@@ -247,7 +253,8 @@ class _CooldownCircle extends Control:
 	var duration: float = 1.0
 	var elapsed: float = 0.0
 	var on_complete: Callable = Callable()
-	var _ring_color: Color = Color(0.298, 0.604, 1.0, 0.8)  # accent_blue
+	var on_text_restore: Callable = Callable()
+	var _ring_color: Color = Color(0.298, 0.604, 1.0, 0.8)
 	var _bg_color: Color = Color(0.0, 0.0, 0.0, 0.3)
 	var _done: bool = false
 
@@ -264,6 +271,8 @@ class _CooldownCircle extends Control:
 		queue_redraw()
 		if elapsed >= duration:
 			_done = true
+			if on_text_restore.is_valid():
+				on_text_restore.call()
 			if on_complete.is_valid():
 				on_complete.call()
 			queue_free()
