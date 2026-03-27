@@ -199,7 +199,8 @@ func _wire_signals() -> void:
 	# Wire ScenarioManager.scenario_ended
 	var scenario_mgr := get_node_or_null("/root/ScenarioManager")
 	if scenario_mgr and scenario_mgr.has_signal("scenario_ended"):
-		scenario_mgr.scenario_ended.connect(_on_scenario_ended)
+		if not scenario_mgr.scenario_ended.is_connected(_on_scenario_ended):
+			scenario_mgr.scenario_ended.connect(_on_scenario_ended)
 
 	# Find ReviewPanel sibling (added to same parent)
 	_review_panel = _find_sibling_review_panel()
@@ -211,6 +212,22 @@ func _wire_signals() -> void:
 	var root := get_tree().current_scene
 	if root:
 		_wire_ai_signals(root)
+
+	# Disconnect on scene exit
+	tree_exiting.connect(_disconnect_debrief_signals)
+
+
+func _disconnect_debrief_signals() -> void:
+	var scenario_mgr := get_node_or_null("/root/ScenarioManager")
+	if scenario_mgr and scenario_mgr.has_signal("scenario_ended"):
+		if scenario_mgr.scenario_ended.is_connected(_on_scenario_ended):
+			scenario_mgr.scenario_ended.disconnect(_on_scenario_ended)
+	var review_client := get_node_or_null("/root/OllamaReviewClient")
+	if review_client:
+		if review_client.has_signal("review_received") and review_client.review_received.is_connected(_on_review_text_received):
+			review_client.review_received.disconnect(_on_review_text_received)
+		if review_client.has_signal("review_failed") and review_client.review_failed.is_connected(_on_review_failed):
+			review_client.review_failed.disconnect(_on_review_failed)
 
 
 ## Show debrief with immediate results from session data.

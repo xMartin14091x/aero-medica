@@ -98,9 +98,20 @@ func _wire_signals() -> void:
 	var scenario_mgr: Node = get_node_or_null("/root/ScenarioManager")
 	if scenario_mgr:
 		if scenario_mgr.has_signal("scenario_started"):
-			scenario_mgr.scenario_started.connect(_on_scenario_started)
+			if not scenario_mgr.scenario_started.is_connected(_on_scenario_started):
+				scenario_mgr.scenario_started.connect(_on_scenario_started)
 		if scenario_mgr.has_signal("scenario_ended"):
-			scenario_mgr.scenario_ended.connect(_on_scenario_ended)
+			if not scenario_mgr.scenario_ended.is_connected(_on_scenario_ended):
+				scenario_mgr.scenario_ended.connect(_on_scenario_ended)
+	# Disconnect on scene exit
+	tree_exiting.connect(func():
+		var sm: Node = get_node_or_null("/root/ScenarioManager")
+		if sm:
+			if sm.has_signal("scenario_started") and sm.scenario_started.is_connected(_on_scenario_started):
+				sm.scenario_started.disconnect(_on_scenario_started)
+			if sm.has_signal("scenario_ended") and sm.scenario_ended.is_connected(_on_scenario_ended):
+				sm.scenario_ended.disconnect(_on_scenario_ended)
+	)
 
 	# Wire AssessmentManager for UI sounds
 	var player_node: Node = _find_node_in_group(root, "player")
