@@ -3129,14 +3129,25 @@ func _on_submit_diagnosis_pressed() -> void:
 		_patient.set_meta("correct_diagnoses", correct_list)
 		_patient.set_meta("diagnosis_matches", matches)
 
-	# Log to telemetry
+	# Log to telemetry with proper timestamp and patient target
 	var telemetry: Node = get_node_or_null("/root/TelemetryCollector")
 	if telemetry and telemetry.has_method("record_event"):
+		var ts: float = 0.0
+		if telemetry.get("_session_start_msec") != null and telemetry._session_start_msec > 0:
+			ts = (Time.get_ticks_msec() - telemetry._session_start_msec) / 1000.0
+		var patient_name: String = ""
+		if _patient and "persona" in _patient and _patient.persona:
+			patient_name = _patient.persona.patient_name
 		telemetry.record_event({
 			"type": "diagnosis_submitted",
-			"selected": _selected_diagnoses,
-			"correct": correct_list,
-			"matches": matches,
+			"target": patient_name,
+			"timestamp": ts,
+			"player_position": {"x": 0, "y": 0, "z": 0},
+			"details": {
+				"diagnoses": _selected_diagnoses.duplicate(),
+				"correct": correct_list,
+				"matches": matches,
+			},
 		})
 
 	# Show scoring feedback
