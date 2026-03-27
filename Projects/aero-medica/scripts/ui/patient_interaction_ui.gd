@@ -196,25 +196,70 @@ func _ready() -> void:
 	tree_exiting.connect(_disconnect_autoload_signals_piu)
 
 
-## Start a cooldown on a button. Returns false if group is at max concurrent.
-func _start_cooldown(btn: Button, group: String) -> bool:
+## Start a cooldown on a button. Callback fires AFTER delay with result.
+## Returns false if group is at max concurrent (shows warning).
+func _start_cooldown(btn: Button, group: String, on_complete: Callable = Callable()) -> bool:
 	var config: Dictionary = COOLDOWN_CONFIG.get(group, {"delay": 1.0, "max_concurrent": 1})
 	var active: int = _cooldown_active.get(group, 0)
 	if active >= config["max_concurrent"]:
-		return false  # At capacity — reject action
+		# Flash button red briefly to indicate rejection
+		_flash_button_rejected(btn)
+		if _drug_feedback_label:
+			_drug_feedback_label.text = "Maximum concurrent actions reached for this section."
+			var tm := _get_theme_medical()
+			if tm:
+				_drug_feedback_label.add_theme_color_override("font_color", tm.c("accent_red"))
+		return false
 	_cooldown_active[group] = active + 1
 	btn.disabled = true
-	# Store original text for restore
 	var original_text: String = btn.text
-	# Timer to re-enable after delay
-	var timer := get_tree().create_timer(config["delay"])
-	timer.timeout.connect(func():
+	var delay: float = config["delay"]
+
+	# Show processing state
+	btn.modulate.a = 0.6
+
+	# Countdown tween — update button text every 0.25s
+	var elapsed := 0.0
+	var countdown_timer := Timer.new()
+	countdown_timer.wait_time = 0.25
+	countdown_timer.autostart = true
+	add_child(countdown_timer)
+	countdown_timer.timeout.connect(func():
+		elapsed += 0.25
+		var remaining := delay - elapsed
+		if remaining > 0 and is_instance_valid(btn):
+			btn.text = "%s (%.1fs)" % [original_text, remaining]
+	)
+
+	# Completion timer — run the actual action
+	var complete_timer := get_tree().create_timer(delay)
+	complete_timer.timeout.connect(func():
+		# Clean up countdown
+		if is_instance_valid(countdown_timer):
+			countdown_timer.queue_free()
 		_cooldown_active[group] = maxi(0, _cooldown_active.get(group, 1) - 1)
 		if is_instance_valid(btn):
 			btn.disabled = false
 			btn.text = original_text
+			btn.modulate.a = 1.0
+		# Fire the actual action callback
+		if on_complete.is_valid():
+			on_complete.call()
 	)
-	return true  # Action allowed
+	return true
+
+
+## Flash a button red briefly when rejected (max concurrent reached).
+func _flash_button_rejected(btn: Button) -> void:
+	if not is_instance_valid(btn):
+		return
+	var original_modulate: Color = btn.modulate
+	btn.modulate = Color(1.0, 0.3, 0.3, 1.0)
+	var flash_timer := get_tree().create_timer(0.3)
+	flash_timer.timeout.connect(func():
+		if is_instance_valid(btn):
+			btn.modulate = original_modulate
+	)
 
 
 ## Check if a cooldown group can accept another action.
@@ -2341,35 +2386,39 @@ func _on_exam_action_pressed(action_name: String) -> void:
 	if not _assessment_manager:
 		_exam_results[action_name].text = "No assessment manager."
 		return
-	# Cooldown: DRS (danger, response, send_help) = 0.5s, ABCDE = 2s
+	# Cooldown: DRS = 0.5s, ABCDE = 2s. Result appears AFTER delay.
 	var drs_actions := ["check_danger", "check_response", "send_help"]
 	var group := "drs" if action_name in drs_actions else "abcde"
 	var btn: Button = _exam_buttons.get(action_name)
-	if btn and not _start_cooldown(btn, group):
+	if not btn:
+		return
+	if not _start_cooldown(btn, group, _do_exam_action.bind(action_name)):
 		return
 
+
+## Deferred exam action — runs after cooldown completes.
+func _do_exam_action(action_name: String) -> void:
+	if not _assessment_manager:
+		return
 	var result: Dictionary = {}
 	if _assessment_manager.has_method("perform_assessment_by_name"):
 		result = _assessment_manager.perform_assessment_by_name(action_name)
 	elif _assessment_manager.has_method("perform_assessment"):
 		result = _assessment_manager.perform_assessment(action_name)
 
-	# AssessmentManager handles vital signs but not DRSABCDE steps —
-	# build patient-specific findings from MedicalStateComponent directly.
 	if result.is_empty():
 		result = _build_drsabcde_finding(action_name)
 
 	var result_text := _format_assessment_result(result, action_name)
-	_exam_results[action_name].text = result_text
-	# Force readable color on result text based on current theme
-	var tm := _get_theme_medical()
-	if tm:
-		_exam_results[action_name].add_theme_color_override("font_color", tm.c("text_primary"))
-	# Keep button enabled for re-assessment — mark visually as completed instead
-	if tm:
-		_exam_buttons[action_name].add_theme_color_override("font_color", tm.c("accent_green"))
-	else:
-		_exam_buttons[action_name].add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
+	if _exam_results.has(action_name):
+		_exam_results[action_name].text = result_text
+		var tm := _get_theme_medical()
+		if tm:
+			_exam_results[action_name].add_theme_color_override("font_color", tm.c("text_primary"))
+	if _exam_buttons.has(action_name):
+		var tm2 := _get_theme_medical()
+		if tm2:
+			_exam_buttons[action_name].add_theme_color_override("font_color", tm2.c("accent_green"))
 
 	_exam_completed += 1
 	if _exam_counter_label:
@@ -2387,15 +2436,22 @@ func _on_vital_pressed(key: String, action_id: int) -> void:
 	var result_lbl: Label = _vital_results.get(key)
 	if not result_lbl:
 		return
-	# Cooldown: 1.5s, 2 concurrent
 	var v_btn: Button = _vital_buttons.get(key)
-	if v_btn and not _start_cooldown(v_btn, "vitals"):
+	if not v_btn:
+		return
+	# Cooldown: 1.5s, 2 concurrent. Result appears AFTER delay.
+	if not _start_cooldown(v_btn, "vitals", _do_vital_action.bind(key, action_id)):
+		return
+
+
+## Deferred vital action — runs after cooldown completes.
+func _do_vital_action(key: String, action_id: int) -> void:
+	var result_lbl: Label = _vital_results.get(key)
+	if not result_lbl:
 		return
 
 	if not _assessment_manager:
 		result_lbl.text = "No assessment manager."
-		result_lbl.add_theme_color_override("font_color", Color(0.8, 0.5, 0.2))
-		# Still attempt a direct read
 		var fallback := _read_vital_from_patient(key)
 		if not fallback.is_empty():
 			_display_vital_result(key, fallback, result_lbl)
@@ -2407,7 +2463,9 @@ func _on_vital_pressed(key: String, action_id: int) -> void:
 
 	if result.has("error"):
 		result_lbl.text = result["error"]
-		result_lbl.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1))
+		var tm := _get_theme_medical()
+		if tm:
+			result_lbl.add_theme_color_override("font_color", tm.c("accent_yellow"))
 		return
 
 	if result.is_empty():
@@ -2415,9 +2473,10 @@ func _on_vital_pressed(key: String, action_id: int) -> void:
 
 	_display_vital_result(key, result, result_lbl)
 
-	# Keep button enabled for re-assessment — mark visually as completed
 	if _vital_buttons.has(key):
-		_vital_buttons[key].add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
+		var tm := _get_theme_medical()
+		if tm:
+			_vital_buttons[key].add_theme_color_override("font_color", tm.c("accent_green"))
 
 	_check_cpr_visibility()
 	assessment_action.emit(key)
@@ -2761,8 +2820,19 @@ func _on_secondary_region_pressed(region: String) -> void:
 	var region_btn: Button = _secondary_buttons.get(region)
 	if not result_lbl or not region_btn:
 		return
-	# Cooldown: 2s, 1 at a time
-	if not _start_cooldown(region_btn, "secondary"):
+	# Cooldown: 2s, 1 at a time. Result appears AFTER delay.
+	if not _start_cooldown(region_btn, "secondary", _do_secondary_action.bind(region)):
+		return
+	return  # Action deferred to callback
+
+
+## Deferred secondary survey action — runs after cooldown completes.
+func _do_secondary_action(region: String) -> void:
+	if not _patient:
+		return
+	var result_lbl: Label = _secondary_results.get(region)
+	var region_btn: Button = _secondary_buttons.get(region)
+	if not result_lbl or not region_btn:
 		return
 
 	# Get findings through SecondarySurveyManager.get_region_findings (locale-aware)
@@ -3136,9 +3206,18 @@ func _on_triage_direct_pressed(tag_name: String) -> void:
 func _on_equipment_pressed(equip_type: String) -> void:
 	if equip_type in _applied_equipment:
 		return
-	# Cooldown: 3s, 2 concurrent
+	# Cooldown: 3s, 2 concurrent. Deploy happens AFTER delay.
 	var eq_btn: Button = _equipment_buttons.get(equip_type)
-	if eq_btn and not _start_cooldown(eq_btn, "equipment"):
+	if not eq_btn:
+		return
+	if not _start_cooldown(eq_btn, "equipment", _do_equipment_deploy.bind(equip_type)):
+		return
+	return  # Deferred to callback
+
+
+## Deferred equipment deploy — runs after cooldown completes.
+func _do_equipment_deploy(equip_type: String) -> void:
+	if equip_type in _applied_equipment:
 		return
 
 	# Deplete from bag manager via key mapping
