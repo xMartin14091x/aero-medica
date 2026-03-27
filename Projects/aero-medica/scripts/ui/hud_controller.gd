@@ -115,7 +115,14 @@ func _wire_triage_system() -> void:
 	# Search for TriageSystem in the scene tree
 	var triage: Node = _find_node_with_signal(root, "triage_assigned")
 	if triage:
-		triage.triage_assigned.connect(_on_triage_assigned)
+		if not triage.triage_assigned.is_connected(_on_triage_assigned):
+			triage.triage_assigned.connect(_on_triage_assigned)
+		# Disconnect on scene exit
+		var _triage_ref := triage
+		tree_exiting.connect(func():
+			if is_instance_valid(_triage_ref) and _triage_ref.triage_assigned.is_connected(_on_triage_assigned):
+				_triage_ref.triage_assigned.disconnect(_on_triage_assigned)
+		)
 
 
 ## TriageSystem.triage_assigned(patient, assigned_tag, correct_tag, is_correct) → update visual.

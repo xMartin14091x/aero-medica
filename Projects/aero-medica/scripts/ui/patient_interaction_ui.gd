@@ -180,6 +180,19 @@ func _ready() -> void:
 	if theme_mgr:
 		if not theme_mgr.theme_changed.is_connected(_on_theme_changed):
 			theme_mgr.theme_changed.connect(_on_theme_changed)
+	# Disconnect autoload signals on scene exit
+	tree_exiting.connect(_disconnect_autoload_signals_piu)
+
+
+func _disconnect_autoload_signals_piu() -> void:
+	var tm := _get_theme_medical()
+	if tm and tm.has_signal("theme_changed") and tm.theme_changed.is_connected(_on_theme_changed):
+		tm.theme_changed.disconnect(_on_theme_changed)
+	if _dialogue_client:
+		if _dialogue_client.has_signal("dialogue_response_received") and _dialogue_client.dialogue_response_received.is_connected(_on_ai_response):
+			_dialogue_client.dialogue_response_received.disconnect(_on_ai_response)
+		if _dialogue_client.has_signal("dialogue_failed") and _dialogue_client.dialogue_failed.is_connected(_on_ai_failed):
+			_dialogue_client.dialogue_failed.disconnect(_on_ai_failed)
 
 
 func _get_theme_medical() -> Node:
