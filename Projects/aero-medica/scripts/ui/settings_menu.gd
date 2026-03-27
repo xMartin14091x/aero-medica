@@ -94,11 +94,11 @@ func _ready() -> void:
 	if loc_mgr and loc_mgr.has_signal("locale_changed"):
 		loc_mgr.locale_changed.connect(_on_locale_changed)
 
-	# Connect to ThemeMedical for live theme switching
 	if _theme and _theme.has_signal("theme_changed"):
 		_theme.theme_changed.connect(_on_theme_changed)
 
-	# Check Ollama status every 15 seconds
+	tree_exiting.connect(_disconnect_signals)
+
 	_check_ollama_status()
 	var poll_timer := Timer.new()
 	poll_timer.wait_time = 15.0
@@ -618,6 +618,14 @@ func _on_slider_changed() -> void:
 	_settings.sfx_volume = int(_sfx_slider.value)
 	_apply_settings()
 	_save_settings()
+
+
+func _disconnect_signals() -> void:
+	var loc_mgr: Node = get_node_or_null("/root/LocalisationManager")
+	if loc_mgr and loc_mgr.locale_changed.is_connected(_on_locale_changed):
+		loc_mgr.locale_changed.disconnect(_on_locale_changed)
+	if _theme and _theme.theme_changed.is_connected(_on_theme_changed):
+		_theme.theme_changed.disconnect(_on_theme_changed)
 
 
 func _on_back_pressed() -> void:

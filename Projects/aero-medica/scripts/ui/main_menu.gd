@@ -85,7 +85,8 @@ func _ready() -> void:
 	if _theme and _theme.has_signal("theme_changed"):
 		_theme.theme_changed.connect(_on_theme_changed)
 
-	# Refresh Ollama status every 15 seconds
+	tree_exiting.connect(_disconnect_signals)
+
 	_update_ollama_status()
 	_start_ollama_poll()
 
@@ -547,6 +548,14 @@ func _dismiss_splash() -> void:
 
 
 ## ---- SIGNAL HANDLERS --------------------------------------------------
+
+func _disconnect_signals() -> void:
+	var loc_mgr: Node = get_node_or_null("/root/LocalisationManager")
+	if loc_mgr and loc_mgr.has_signal("locale_changed") and loc_mgr.locale_changed.is_connected(_on_locale_changed):
+		loc_mgr.locale_changed.disconnect(_on_locale_changed)
+	if _theme and _theme.has_signal("theme_changed") and _theme.theme_changed.is_connected(_on_theme_changed):
+		_theme.theme_changed.disconnect(_on_theme_changed)
+
 
 func _on_menu_button_pressed(signal_name: String) -> void:
 	_play_click_sound()

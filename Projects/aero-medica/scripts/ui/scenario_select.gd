@@ -77,8 +77,11 @@ func _ready() -> void:
 	if loc_mgr and loc_mgr.has_signal("locale_changed"):
 		loc_mgr.locale_changed.connect(_on_locale_changed)
 
-	if _theme.has_signal("theme_changed"):
+	if _theme and _theme.has_signal("theme_changed"):
 		_theme.theme_changed.connect(_on_theme_changed)
+
+	# Disconnect from autoload signals when this node is freed (scene change)
+	tree_exiting.connect(_disconnect_autoload_signals)
 
 
 func _check_tutorial_completion() -> void:
@@ -361,6 +364,14 @@ func _on_start_scenario(scenario: Dictionary) -> void:
 	var gm := get_node_or_null("/root/GameManager")
 	if gm and gm.has_method("change_scene"):
 		gm.change_scene(scenario.scene_path)
+
+
+func _disconnect_autoload_signals() -> void:
+	var loc_mgr := get_node_or_null("/root/LocalisationManager")
+	if loc_mgr and loc_mgr.has_signal("locale_changed") and loc_mgr.locale_changed.is_connected(_on_locale_changed):
+		loc_mgr.locale_changed.disconnect(_on_locale_changed)
+	if _theme and _theme.has_signal("theme_changed") and _theme.theme_changed.is_connected(_on_theme_changed):
+		_theme.theme_changed.disconnect(_on_theme_changed)
 
 
 func _on_back_pressed() -> void:
