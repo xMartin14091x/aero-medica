@@ -163,6 +163,8 @@ var _drug_dose_btn: OptionButton = null
 var _drug_feedback_label: Label = null
 var _drug_log_vbox: VBoxContainer = null
 var _drug_admin_manager: Node = null
+var _drug_admin_btn: Button = null
+var _triage_feedback_label: Label = null
 var _current_drug_data: Dictionary = {}  # loaded drugs.json
 
 ## ARC-18: Medical bag tier UI.
@@ -1372,6 +1374,13 @@ func _build_stabilize_tab() -> Control:
 		t_btn.add_theme_color_override("font_hover_color", td[2])
 		triage_row.add_child(t_btn)
 
+	# Triage feedback label — directly under triage buttons
+	_triage_feedback_label = Label.new()
+	_triage_feedback_label.text = ""
+	if tm:
+		tm.style_label(_triage_feedback_label, "body", "text_secondary")
+	container.add_child(_triage_feedback_label)
+
 	## ARC-17: Drug Administration — left: controls, right: log sidebar
 	var drug_title := Label.new()
 	drug_title.text = tr("STABILIZE_DRUG_ADMIN")
@@ -1440,7 +1449,8 @@ func _build_stabilize_tab() -> Control:
 	drug_left.add_child(_drug_dose_btn)
 
 	# Administer button
-	var admin_btn := Button.new()
+	_drug_admin_btn = Button.new()
+	var admin_btn := _drug_admin_btn
 	admin_btn.text = tr("STABILIZE_ADMINISTER")
 	admin_btn.custom_minimum_size = Vector2(0, 44)
 	admin_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -3015,12 +3025,20 @@ func _on_administer_drug_pressed() -> void:
 		return
 	if not _patient:
 		return
-	# Cooldown: 5s, 1 at a time — uses the unified cooldown system
-	if not _can_start_cooldown("drug"):
+	# Cooldown: 5s, 1 at a time — with circular progress
+	if not _drug_admin_btn:
 		return
-	_cooldown_active["drug"] = _cooldown_active.get("drug", 0) + 1
-	var drug_cd_timer := get_tree().create_timer(5.0)
-	drug_cd_timer.timeout.connect(func(): _cooldown_active["drug"] = maxi(0, _cooldown_active.get("drug", 1) - 1))
+	if not _start_cooldown(_drug_admin_btn, "drug", _do_drug_admin):
+		return
+	return  # Deferred to callback
+
+
+## Deferred drug administration — runs after 5s cooldown.
+func _do_drug_admin() -> void:
+	if not _drug_name_btn or not _drug_route_btn or not _drug_dose_btn:
+		return
+	if not _patient:
+		return
 
 	var drug_display: String = _drug_name_btn.get_item_text(_drug_name_btn.selected) if _drug_name_btn.get_item_count() > 0 else ""
 	var drug_key = _drug_name_btn.get_item_metadata(_drug_name_btn.selected) if _drug_name_btn.get_item_count() > 0 else ""
@@ -3229,11 +3247,10 @@ func _on_triage_direct_pressed(tag_name: String) -> void:
 		var tag_int_map := {"GREEN": 0, "YELLOW": 1, "RED": 2, "BLACK": 3}
 		var tag_int: int = tag_int_map.get(tag_name, 0)
 		triage_sys.assign_tag(_patient, tag_int)
-	if _drug_feedback_label:
-		var tm := _get_theme_medical()
-		var color_map := {"RED": Color(1, 0.2, 0.2), "YELLOW": Color(1, 0.9, 0.1), "GREEN": Color(0.2, 0.9, 0.2), "BLACK": Color(0.9, 0.9, 0.9)}
-		_drug_feedback_label.text = "Triage tag assigned: %s" % tag_name
-		_drug_feedback_label.add_theme_color_override("font_color", color_map.get(tag_name, Color.WHITE))
+	var color_map := {"RED": Color(1, 0.2, 0.2), "YELLOW": Color(1, 0.9, 0.1), "GREEN": Color(0.2, 0.9, 0.2), "BLACK": Color(0.9, 0.9, 0.9)}
+	if _triage_feedback_label:
+		_triage_feedback_label.text = "Triage tag assigned: %s" % tag_name
+		_triage_feedback_label.add_theme_color_override("font_color", color_map.get(tag_name, Color.WHITE))
 
 
 # ==============================================================================
