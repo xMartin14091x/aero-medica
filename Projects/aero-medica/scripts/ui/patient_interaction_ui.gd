@@ -279,6 +279,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Open the interaction UI for a patient.
 func open_ui(patient: Node, player: Node) -> void:
+	# Block if scenario has ended
+	var sm: Node = get_node_or_null("/root/ScenarioManager")
+	if sm and "_scenario_running" in sm and not sm._scenario_running:
+		return
 	_patient = patient
 	_player = player
 	_current_tab = Tab.PATIENT
