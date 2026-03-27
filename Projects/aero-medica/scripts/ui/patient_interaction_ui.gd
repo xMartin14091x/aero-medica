@@ -1214,6 +1214,39 @@ func _build_stabilize_tab() -> Control:
 	_bag_items_vbox.visible = false
 	container.add_child(_bag_items_vbox)
 
+	## ── Triage Tags ──
+	var triage_title := Label.new()
+	triage_title.text = "Triage"
+	if tm:
+		tm.style_label(triage_title, "subtitle", "accent_purple")
+	container.add_child(triage_title)
+
+	var triage_row := HBoxContainer.new()
+	triage_row.add_theme_constant_override("separation", 8)
+	triage_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	container.add_child(triage_row)
+
+	var triage_defs := [
+		["GREEN", "Minor", Color(0.2, 0.9, 0.2)],
+		["YELLOW", "Delayed", Color(1.0, 0.9, 0.1)],
+		["RED", "Immediate", Color(1.0, 0.2, 0.2)],
+		["BLACK", "Deceased", Color.WHITE],
+	]
+
+	for td in triage_defs:
+		var t_btn := Button.new()
+		t_btn.text = td[0]
+		t_btn.tooltip_text = td[1]
+		t_btn.custom_minimum_size = Vector2(0, 48)
+		t_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		t_btn.focus_mode = Control.FOCUS_NONE
+		t_btn.pressed.connect(_on_triage_direct_pressed.bind(td[0]))
+		if tm:
+			tm.style_button(t_btn)
+		t_btn.add_theme_color_override("font_color", td[2])
+		t_btn.add_theme_color_override("font_hover_color", td[2])
+		triage_row.add_child(t_btn)
+
 	## ARC-17: Drug Administration — left: controls, right: log sidebar
 	var drug_title := Label.new()
 	drug_title.text = tr("STABILIZE_DRUG_ADMIN")
@@ -3012,6 +3045,22 @@ func _on_triage_color_selected(tag_name: String, qty_label: Label, deploy_btn: B
 		triage_sys.assign_tag(_patient, tag_int)
 
 	if _drug_feedback_label:
+		var color_map := {"RED": Color(1, 0.2, 0.2), "YELLOW": Color(1, 0.9, 0.1), "GREEN": Color(0.2, 0.9, 0.2), "BLACK": Color(0.9, 0.9, 0.9)}
+		_drug_feedback_label.text = "Triage tag assigned: %s" % tag_name
+		_drug_feedback_label.add_theme_color_override("font_color", color_map.get(tag_name, Color.WHITE))
+
+
+## Direct triage tag assignment from standalone buttons (not bag contents).
+func _on_triage_direct_pressed(tag_name: String) -> void:
+	if not _patient:
+		return
+	var triage_sys: Node = get_node_or_null("/root/TriageSystem")
+	if triage_sys and triage_sys.has_method("assign_tag"):
+		var tag_int_map := {"GREEN": 0, "YELLOW": 1, "RED": 2, "BLACK": 3}
+		var tag_int: int = tag_int_map.get(tag_name, 0)
+		triage_sys.assign_tag(_patient, tag_int)
+	if _drug_feedback_label:
+		var tm := _get_theme_medical()
 		var color_map := {"RED": Color(1, 0.2, 0.2), "YELLOW": Color(1, 0.9, 0.1), "GREEN": Color(0.2, 0.9, 0.2), "BLACK": Color(0.9, 0.9, 0.9)}
 		_drug_feedback_label.text = "Triage tag assigned: %s" % tag_name
 		_drug_feedback_label.add_theme_color_override("font_color", color_map.get(tag_name, Color.WHITE))
