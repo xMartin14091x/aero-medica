@@ -57,10 +57,33 @@ func _process(delta: float) -> void:
 
 
 ## Load a scenario from a JSON file path. Spawns entities into the current scene.
+var _loading: bool = false
+
+
+func _cleanup_previous() -> void:
+	_spawned_entities.clear()
+	_elapsed_time = 0.0
+	current_scenario = {}
+	if _hazard_system and is_instance_valid(_hazard_system):
+		_hazard_system.cleanup()
+		_hazard_system = null
+	if _random_event_system and is_instance_valid(_random_event_system):
+		_random_event_system = null
+
+
 func load_scenario(path: String) -> void:
+	# Prevent concurrent loads (old scene's deferred call + new scene's _ready)
+	if _loading:
+		return
+	_loading = true
+
+	# Clean up any previous scenario state
+	_cleanup_previous()
+
 	var file := FileAccess.open(path, FileAccess.READ)
 	if not file:
 		push_error("ScenarioManager: Cannot open scenario file: %s" % path)
+		_loading = false
 		return
 
 	var json := JSON.new()
@@ -91,7 +114,14 @@ func load_scenario(path: String) -> void:
 		# One more frame to let _ready() run on all nodes
 		await get_tree().process_frame
 
+	# Verify scene is still valid before spawning
+	if not get_tree() or not get_tree().current_scene:
+		push_warning("ScenarioManager: Scene freed during load — aborting spawn")
+		_loading = false
+		return
+
 	_spawn_entities()
+	_loading = false
 
 	# Wire telemetry signals and medical bag tier after entities are spawned
 	var scene_root: Node = get_tree().current_scene
