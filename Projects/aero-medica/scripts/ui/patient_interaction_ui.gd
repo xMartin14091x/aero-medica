@@ -1797,11 +1797,20 @@ func _populate_differential_tab() -> void:
 	if not diag_vbox:
 		return
 
-	# Clear existing buttons (but NOT _selected_diagnoses — preserved from open_ui)
+	# Clear existing buttons AND category containers
 	for b in _diagnosis_buttons:
 		if is_instance_valid(b):
 			b.queue_free()
 	_diagnosis_buttons.clear()
+
+	# Clear old category containers from the tree
+	for cat_name in _ddx_category_containers:
+		var cat_wrapper: Control = _ddx_category_containers[cat_name]
+		if is_instance_valid(cat_wrapper):
+			cat_wrapper.queue_free()
+	_ddx_category_containers.clear()
+	_ddx_category_grids.clear()
+	_ddx_category_collapsed.clear()
 
 	var tm := _get_theme_medical()
 
