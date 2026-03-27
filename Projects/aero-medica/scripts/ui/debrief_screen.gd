@@ -613,6 +613,41 @@ func _find_sibling_review_panel() -> Control:
 	return null
 
 
+## Event types to show in timeline + their display names.
+const TIMELINE_EVENT_TYPES := {
+	"interact": "Interacted",
+	"assess_airway": "Checked Airway",
+	"assess_breathing": "Checked Breathing",
+	"assess_pulse": "Checked Pulse",
+	"assess_consciousness": "Checked Consciousness",
+	"assess_bleeding": "Checked Bleeding",
+	"assess_heart_rate": "Checked Heart Rate",
+	"assess_blood_pressure": "Checked Blood Pressure",
+	"assess_spo2": "Checked SpO2",
+	"assess_pupils": "Checked Pupils",
+	"assess_temperature": "Checked Temperature",
+	"assess_blood_glucose": "Checked Blood Glucose",
+	"assess_capillary_refill": "Checked Capillary Refill",
+	"assess_skin": "Checked Skin",
+	"treatment_applied": "Treatment Applied",
+	"triage_assign": "Triage Assigned",
+	"patient_state_changed": "State Changed",
+	"diagnosis_submitted": "Diagnosis Submitted",
+	"cpr_performed": "CPR Performed",
+	"secondary_survey": "Secondary Survey",
+}
+
+## Get patient names from patient_summaries (reliable source — not from raw events).
+func _get_patient_names_from_results(results: Dictionary) -> Array[String]:
+	var names: Array[String] = []
+	var summaries: Array = results.get("patient_summaries", [])
+	for s: Dictionary in summaries:
+		var name: String = s.get("name", "")
+		if name != "" and name not in names:
+			names.append(name)
+	return names
+
+
 ## Populate timeline with patient tabs and event entries.
 func _populate_timeline(results: Dictionary) -> void:
 	var T := ThemeMedical
@@ -624,15 +659,8 @@ func _populate_timeline(results: Dictionary) -> void:
 	for child in _timeline_vbox.get_children():
 		child.queue_free()
 
-	# Build patient tabs from unique targets in events
-	var patient_names: Array[String] = []
-	for event: Dictionary in _timeline_events:
-		var target: String = event.get("target", "")
-		if target != "" and target not in patient_names:
-			# Skip system events
-			var etype: String = event.get("type", "")
-			if etype != "scenario_started" and etype != "scenario_ended" and etype != "scenario_time_expired":
-				patient_names.append(target)
+	# Get patient names from summaries (not raw events — avoids Sidewalk etc.)
+	var patient_names := _get_patient_names_from_results(results)
 
 	# "All" tab
 	var all_btn := Button.new()
@@ -643,7 +671,7 @@ func _populate_timeline(results: Dictionary) -> void:
 	T.style_button(all_btn, "small")
 	_timeline_tabs.add_child(all_btn)
 
-	# Per-patient tabs
+	# Per-patient tabs — ordered by first interaction time
 	for pname in patient_names:
 		var tab_btn := Button.new()
 		tab_btn.text = pname
@@ -653,23 +681,34 @@ func _populate_timeline(results: Dictionary) -> void:
 		T.style_button(tab_btn, "small")
 		_timeline_tabs.add_child(tab_btn)
 
-	# Show all events initially
 	_selected_patient_tab = ""
-	_refresh_timeline_entries()
+	_refresh_timeline_entries(patient_names)
 
 
 ## Refresh timeline entries based on selected patient filter.
-func _refresh_timeline_entries() -> void:
+func _refresh_timeline_entries(known_patients: Array[String] = []) -> void:
 	var T := ThemeMedical
 	for child in _timeline_vbox.get_children():
 		child.queue_free()
 
-	for event: Dictionary in _timeline_events:
+	# Sort events by timestamp
+	var sorted_events := _timeline_events.duplicate()
+	sorted_events.sort_custom(func(a: Dictionary, b: Dictionary): return a.get("timestamp", 0.0) < b.get("timestamp", 0.0))
+
+	for event: Dictionary in sorted_events:
 		var etype: String = event.get("type", "")
-		if etype == "scenario_started" or etype == "scenario_ended" or etype == "scenario_time_expired":
+
+		# Only show recognized event types
+		if etype not in TIMELINE_EVENT_TYPES:
 			continue
 
 		var target: String = event.get("target", "")
+
+		# Filter out non-patient targets (Sidewalk, equipment entities, etc.)
+		if target != "" and not known_patients.is_empty() and target not in known_patients:
+			continue
+
+		# Apply patient filter tab
 		if _selected_patient_tab != "" and target != _selected_patient_tab:
 			continue
 
@@ -678,9 +717,32 @@ func _refresh_timeline_entries() -> void:
 		var seconds := int(timestamp) % 60
 		var details: Dictionary = event.get("details", {})
 
-		var display := "%02d:%02d  %s" % [minutes, seconds, etype.replace("_", " ").capitalize()]
-		if target != "":
-			display += " — %s" % target
+		# Build display text
+		var action_name: String = TIMELINE_EVENT_TYPES[etype]
+
+		# Enrich with details
+		match etype:
+			"treatment_applied":
+				var equip: String = details.get("equipment_name", "")
+				if equip != "":
+					action_name = equip
+				var correct: bool = details.get("was_correct", false)
+				action_name += " [OK]" if correct else ""
+			"triage_assign":
+				var tag: String = details.get("assigned_tag", "")
+				var correct: bool = details.get("was_correct", false)
+				action_name = "Triage: %s %s" % [tag, "✓" if correct else "✗"]
+			"patient_state_changed":
+				var new_state: String = details.get("new_state", "")
+				action_name = "→ %s" % new_state
+			"diagnosis_submitted":
+				var diags: Array = details.get("diagnoses", [])
+				if not diags.is_empty():
+					action_name = "DDx: %s" % ", ".join(PackedStringArray(diags))
+
+		var display := "%02d:%02d  %s" % [minutes, seconds, action_name]
+		if target != "" and _selected_patient_tab == "":
+			display += "  — %s" % target
 
 		var entry := Label.new()
 		entry.text = display
@@ -692,7 +754,8 @@ func _refresh_timeline_entries() -> void:
 ## Handle timeline tab press — filter by patient.
 func _on_timeline_tab_pressed(patient_name: String) -> void:
 	_selected_patient_tab = patient_name
-	_refresh_timeline_entries()
+	var known := _get_patient_names_from_results(_session_results)
+	_refresh_timeline_entries(known)
 
 	# Highlight active tab
 	var T := ThemeMedical
