@@ -248,15 +248,15 @@ func _start_cooldown(btn: Button, group: String, on_complete: Callable = Callabl
 
 
 ## Flash a button red briefly when rejected (max concurrent reached).
+## Always resets to white — prevents stacking from rapid clicks.
 func _flash_button_rejected(btn: Button) -> void:
 	if not is_instance_valid(btn):
 		return
-	var original_modulate: Color = btn.modulate
 	btn.modulate = Color(1.0, 0.3, 0.3, 1.0)
 	var flash_timer := get_tree().create_timer(0.3)
 	flash_timer.timeout.connect(func():
 		if is_instance_valid(btn):
-			btn.modulate = original_modulate
+			btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	)
 
 
