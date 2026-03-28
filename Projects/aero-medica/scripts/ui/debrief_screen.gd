@@ -60,7 +60,7 @@ func _build_ui() -> void:
 
 	# Title
 	_title_label = Label.new()
-	_title_label.text = "Scenario Complete"
+	_title_label.text = tr("DEBRIEF_SCENARIO_COMPLETE")
 	T.style_label(_title_label, "title_large", "accent_blue")
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	outer_vbox.add_child(_title_label)
@@ -92,7 +92,7 @@ func _build_ui() -> void:
 	stats_card.add_child(stats_inner)
 
 	var stats_header := Label.new()
-	stats_header.text = "Quick Summary"
+	stats_header.text = tr("DEBRIEF_STATS_HEADER")
 	T.style_label(stats_header, "subtitle", "text_primary")
 	stats_inner.add_child(stats_header)
 
@@ -132,7 +132,7 @@ func _build_ui() -> void:
 
 	# Patient Summary cards (below timeline in left column)
 	var patients_header := Label.new()
-	patients_header.text = "Patient Summary"
+	patients_header.text = tr("DEBRIEF_PATIENTS_HEADER")
 	T.style_label(patients_header, "subtitle", "text_primary")
 	left_col.add_child(patients_header)
 
@@ -163,7 +163,7 @@ func _build_ui() -> void:
 	review_card.add_child(review_inner)
 
 	_review_status_label = Label.new()
-	_review_status_label.text = "AI Review"
+	_review_status_label.text = tr("REVIEW_TITLE")
 	T.style_label(_review_status_label, "subtitle", "accent_blue")
 	review_inner.add_child(_review_status_label)
 
@@ -185,7 +185,7 @@ func _build_ui() -> void:
 	outer_vbox.add_child(btn_hbox)
 
 	var menu_btn := Button.new()
-	menu_btn.text = "Return to Menu"
+	menu_btn.text = tr("DEBRIEF_RETURN_MENU")
 	menu_btn.custom_minimum_size = Vector2(220, 48)
 	T.style_button(menu_btn, "large")
 	menu_btn.pressed.connect(_on_return_to_menu)
@@ -241,9 +241,9 @@ func show_debrief(results: Dictionary) -> void:
 	# Set title with scenario name
 	var scenario_name: String = results.get("scenario_name", "")
 	if scenario_name != "":
-		_title_label.text = "Scenario Complete — %s" % scenario_name
+		_title_label.text = tr("DEBRIEF_SCENARIO_COMPLETE") + " — %s" % scenario_name
 	else:
-		_title_label.text = "Scenario Complete"
+		_title_label.text = tr("DEBRIEF_SCENARIO_COMPLETE")
 
 	_populate_stats(results)
 	_populate_patient_cards(results)
@@ -475,7 +475,7 @@ func _count_unique_patients_assessed(events: Array) -> int:
 func _request_ai_review(results: Dictionary) -> void:
 	var review_client: Node = get_node_or_null("/root/OllamaReviewClient")
 	if not review_client or not review_client.has_method("request_review"):
-		_review_status_label.text = "AI Review: Ollama not configured"
+		_review_status_label.text = tr("DEBRIEF_OLLAMA_UNCONFIGURED")
 		_review_status_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 		return
 
@@ -484,9 +484,9 @@ func _request_ai_review(results: Dictionary) -> void:
 	if review_client.has_method("get_discovered_url"):
 		discovered_url = review_client.get_discovered_url()
 	if discovered_url != "":
-		_review_status_label.text = "Requesting AI Review from %s..." % discovered_url
+		_review_status_label.text = tr("DEBRIEF_REQUESTING_REVIEW") % discovered_url
 	else:
-		_review_status_label.text = "Discovering Ollama & requesting AI Review..."
+		_review_status_label.text = tr("DEBRIEF_DISCOVERING_OLLAMA")
 	_review_status_label.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
 
 	# Build rich session_data including all events and patient summaries
@@ -545,7 +545,7 @@ func _wire_ai_signals(node: Node) -> void:
 
 ## ReviewParser.review_parsed — structured review data ready.
 func _on_review_parsed(review_data: Dictionary) -> void:
-	_review_status_label.text = "AI Review Ready"
+	_review_status_label.text = tr("DEBRIEF_REVIEW_READY")
 	_review_status_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
 
 	if _review_panel and _review_panel.has_method("show_review"):
@@ -556,7 +556,7 @@ func _on_review_parsed(review_data: Dictionary) -> void:
 
 ## OllamaReviewClient.review_received — display review text directly.
 func _on_review_text_received(review_text: String) -> void:
-	_review_status_label.text = "AI Review"
+	_review_status_label.text = tr("REVIEW_TITLE")
 	_review_status_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
 
 	if _review_text_label:
@@ -587,7 +587,7 @@ func _on_review_failed(_error: String) -> void:
 
 ## Cached review fallback handler.
 func _on_cached_review_served(review_text: String, _is_cached: bool) -> void:
-	_review_status_label.text = "AI Review (Cached)"
+	_review_status_label.text = tr("REVIEW_CACHED")
 	_review_status_label.add_theme_color_override("font_color", Color(0.6, 0.8, 0.3))
 
 	if _review_text_label:
@@ -713,7 +713,7 @@ func _populate_timeline(results: Dictionary) -> void:
 
 	# "All" tab
 	var all_btn := Button.new()
-	all_btn.text = "All"
+	all_btn.text = tr("DEBRIEF_FILTER_ALL")
 	all_btn.custom_minimum_size = Vector2(60, 28)
 	all_btn.focus_mode = Control.FOCUS_NONE
 	all_btn.pressed.connect(_on_timeline_tab_pressed.bind(""))
@@ -810,7 +810,7 @@ func _on_timeline_tab_pressed(patient_name: String) -> void:
 	var T := ThemeMedical
 	for child in _timeline_tabs.get_children():
 		if child is Button:
-			if child.text == patient_name or (patient_name == "" and child.text == "All"):
+			if child.text == patient_name or (patient_name == "" and child.text == tr("DEBRIEF_FILTER_ALL")):
 				child.add_theme_color_override("font_color", T.c("accent_blue"))
 			else:
 				child.add_theme_color_override("font_color", T.c("text_secondary"))

@@ -14,12 +14,12 @@ const PASS_THRESHOLD := 60.0
 
 ## Axis keys + display names.
 const AXES: Array[String] = ["triage_speed", "protocol_accuracy", "decision_quality", "equipment_handling", "patient_outcome"]
-const AXIS_LABELS: Dictionary = {
-	"triage_speed": "Triage Speed",
-	"protocol_accuracy": "Protocol Accuracy",
-	"decision_quality": "Decision Quality",
-	"equipment_handling": "Equipment Handling",
-	"patient_outcome": "Patient Outcome",
+var AXIS_LABELS: Dictionary = {
+	"triage_speed": tr("AXIS_TRIAGE_SPEED"),
+	"protocol_accuracy": tr("AXIS_PROTOCOL_ACCURACY"),
+	"decision_quality": tr("AXIS_DECISION_QUALITY"),
+	"equipment_handling": tr("AXIS_EQUIPMENT_HANDLING"),
+	"patient_outcome": tr("AXIS_PATIENT_OUTCOME"),
 }
 
 ## Scenario definitions for Tab 3 pills.
@@ -134,7 +134,7 @@ func _build_ui() -> void:
 	top_bar.add_child(back_btn)
 
 	var title: Label = Label.new()
-	title.text = "Instructor Dashboard"
+	title.text = tr("DASHBOARD_INSTRUCTOR")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if tm:
 		tm.style_label(title, "title_large")
@@ -265,7 +265,7 @@ func _populate_my_performance() -> void:
 	radar_card.add_child(radar_vbox)
 
 	var radar_title: Label = Label.new()
-	radar_title.text = "Your Performance"
+	radar_title.text = tr("DASHBOARD_YOUR_PERFORMANCE")
 	if tm:
 		tm.style_label(radar_title, "subtitle")
 	else:
@@ -415,7 +415,7 @@ func _add_session_card(container: VBoxContainer, entry: Dictionary) -> void:
 
 	# Pass/Fail badge
 	var badge: Label = Label.new()
-	badge.text = "PASS" if overall >= PASS_THRESHOLD else "FAIL"
+	badge.text = tr("DEBRIEF_PASS") if overall >= PASS_THRESHOLD else tr("DEBRIEF_FAIL")
 	badge.custom_minimum_size.x = 50
 	if tm:
 		var badge_color: String = "accent_green" if overall >= PASS_THRESHOLD else "accent_red"
@@ -468,7 +468,7 @@ func _populate_class_overview() -> void:
 	radar_card.add_child(radar_vbox)
 
 	var radar_title: Label = Label.new()
-	radar_title.text = "Class Average Performance"
+	radar_title.text = tr("DASHBOARD_CLASS_AVG_PERF")
 	if tm:
 		tm.style_label(radar_title, "subtitle")
 	else:
@@ -498,7 +498,7 @@ func _populate_class_overview() -> void:
 
 	# ── Student Performance table ──
 	var table_header_lbl: Label = Label.new()
-	table_header_lbl.text = "Student Performance"
+	table_header_lbl.text = tr("DASHBOARD_STUDENT_PERF")
 	if tm:
 		tm.style_label(table_header_lbl, "subtitle")
 	else:
@@ -561,7 +561,7 @@ func _populate_scenario_breakdown() -> void:
 	radar_card.add_child(radar_inner)
 
 	var radar_title: Label = Label.new()
-	radar_title.text = "Scenario Class Average"
+	radar_title.text = tr("DASHBOARD_SCENARIO_AVG")
 	if tm:
 		tm.style_label(radar_title, "subtitle")
 	radar_inner.add_child(radar_title)
@@ -582,7 +582,7 @@ func _populate_scenario_breakdown() -> void:
 	columns.add_child(right_vbox)
 
 	var table_title: Label = Label.new()
-	table_title.text = "Student Results"
+	table_title.text = tr("DASHBOARD_STUDENT_RESULTS")
 	if tm:
 		tm.style_label(table_title, "subtitle")
 	right_vbox.add_child(table_title)
@@ -630,7 +630,7 @@ func _rebuild_scenario_view() -> void:
 	_clear_children(_scenario_stats_container)
 	if filtered_students.is_empty():
 		var no_data_lbl: Label = Label.new()
-		no_data_lbl.text = "No data for this scenario"
+		no_data_lbl.text = tr("DASHBOARD_NO_DATA_SCENARIO")
 		if tm:
 			tm.style_label(no_data_lbl, "body", "text_muted")
 		_scenario_stats_container.add_child(no_data_lbl)
@@ -641,7 +641,7 @@ func _rebuild_scenario_view() -> void:
 	_clear_children(_scenario_table_container)
 	if filtered_students.is_empty():
 		var empty_lbl: Label = Label.new()
-		empty_lbl.text = "No student results for this scenario yet."
+		empty_lbl.text = tr("DASHBOARD_NO_RESULTS_YET")
 		if tm:
 			tm.style_label(empty_lbl, "body", "text_muted")
 		_scenario_table_container.add_child(empty_lbl)
@@ -751,7 +751,7 @@ func _add_all_axis_averages(container: VBoxContainer, avg_scores: Dictionary) ->
 	container.add_child(sep)
 
 	var axes_header: Label = Label.new()
-	axes_header.text = "All Axis Averages"
+	axes_header.text = tr("DASHBOARD_ALL_AXES")
 	if tm:
 		tm.style_label(axes_header, "body")
 	else:
@@ -786,7 +786,7 @@ func _add_student_table(container: Control, students: Array) -> void:
 	header.add_theme_constant_override("separation", 12)
 	container.add_child(header)
 
-	var col_names: Array[String] = ["Student", "Overall", "Triage", "Protocol", "Decision", "Equipment", "Outcome", "Status"]
+	var col_names: Array[String] = [tr("DASHBOARD_TOTAL_STUDENTS"), tr("DASHBOARD_OVERALL_SCORE"), tr("AXIS_TRIAGE"), tr("AXIS_PROTOCOL_ACCURACY"), tr("AXIS_DECISION_QUALITY"), tr("AXIS_EQUIPMENT_HANDLING"), tr("AXIS_PATIENT_OUTCOME"), "Status"]
 	var col_widths: Array[int] = [160, 60, 60, 60, 60, 70, 60, 60]
 
 	for i in col_names.size():
@@ -853,7 +853,7 @@ func _add_student_table(container: Control, students: Array) -> void:
 
 		# Pass/Fail badge
 		var status_lbl: Label = Label.new()
-		status_lbl.text = "PASS" if overall >= PASS_THRESHOLD else "FAIL"
+		status_lbl.text = tr("DEBRIEF_PASS") if overall >= PASS_THRESHOLD else tr("DEBRIEF_FAIL")
 		status_lbl.custom_minimum_size.x = 60
 		if tm:
 			var c_key: String = "accent_green" if overall >= PASS_THRESHOLD else "accent_red"

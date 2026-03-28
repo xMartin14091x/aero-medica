@@ -217,7 +217,7 @@ func _start_cooldown(btn: Button, group: String, on_complete: Callable = Callabl
 	if active >= config["max_concurrent"]:
 		_flash_button_rejected(btn)
 		if _drug_feedback_label:
-			_drug_feedback_label.text = "Maximum concurrent actions reached."
+			_drug_feedback_label.text = tr("COOLDOWN_MAX_CONCURRENT")
 			var tm := _get_theme_medical()
 			if tm:
 				_drug_feedback_label.add_theme_color_override("font_color", tm.c("accent_red"))
@@ -490,10 +490,10 @@ func open_ui(patient: Node, player: Node) -> void:
 	if _ai_status_label:
 		var tm := _get_theme_medical()
 		if _dialogue_client and _dialogue_client.ollama_available:
-			_ai_status_label.text = "AI Dialogue Active"
+			_ai_status_label.text = tr("PATIENT_AI_ACTIVE")
 			_ai_status_label.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.3, 0.9, 0.4))
 		else:
-			_ai_status_label.text = "Scripted Responses (Ollama Offline)"
+			_ai_status_label.text = tr("PATIENT_SCRIPTED_RESPONSES")
 			_ai_status_label.add_theme_color_override("font_color", tm.c("accent_yellow") if tm else Color(0.9, 0.7, 0.3))
 
 	# ARC-17: connect drug administered signal if available
@@ -603,7 +603,7 @@ func _build_ui() -> void:
 	tab_strip.add_child(spacer)
 
 	_close_btn = Button.new()
-	_close_btn.text = "[Esc]\nClose"
+	_close_btn.text = tr("PATIENT_CLOSE_BUTTON")
 	_close_btn.custom_minimum_size = Vector2(110, 50)
 	_close_btn.focus_mode = Control.FOCUS_NONE
 	_close_btn.pressed.connect(close_ui)
@@ -775,7 +775,7 @@ func _build_patient_tab() -> Control:
 
 	_chat_input = LineEdit.new()
 	_chat_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_chat_input.placeholder_text = "Ask the patient..."
+	_chat_input.placeholder_text = tr("PATIENT_CHAT_PLACEHOLDER")
 	_chat_input.text_submitted.connect(_on_chat_submitted)
 	if tm:
 		tm.style_input(_chat_input)
@@ -1567,7 +1567,7 @@ func _build_stabilize_tab() -> Control:
 	drug_row.add_child(drug_right)
 
 	var drug_log_title := Label.new()
-	drug_log_title.text = "Administration Log"
+	drug_log_title.text = tr("ADMIN_LOG_TITLE")
 	if tm:
 		tm.style_label(drug_log_title, "body", "text_primary")
 	else:
@@ -2534,7 +2534,7 @@ func _on_talk_button_pressed() -> void:
 
 func _on_ai_response(response: String) -> void:
 	if _ai_status_label:
-		_ai_status_label.text = "AI Dialogue Active"
+		_ai_status_label.text = tr("PATIENT_AI_ACTIVE")
 	_add_chat_bubble(response, false)
 
 

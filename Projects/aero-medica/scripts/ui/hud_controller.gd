@@ -192,7 +192,7 @@ func _build_pause_overlay() -> void:
 
 	# Title
 	var title := Label.new()
-	title.text = "หยุดชั่วคราว"
+	title.text = tr("HUD_PAUSED_TITLE")
 	title.add_theme_font_size_override("font_size", 36)
 	title.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -205,7 +205,7 @@ func _build_pause_overlay() -> void:
 
 	# Resume
 	var resume_btn := Button.new()
-	resume_btn.text = "เล่นต่อ"
+	resume_btn.text = tr("MENU_RESUME")
 	resume_btn.custom_minimum_size = Vector2(260, 48)
 	resume_btn.add_theme_font_size_override("font_size", 20)
 	resume_btn.pressed.connect(_on_resume)
@@ -213,7 +213,7 @@ func _build_pause_overlay() -> void:
 
 	# Restart
 	var restart_btn := Button.new()
-	restart_btn.text = "เริ่มสถานการณ์ใหม่"
+	restart_btn.text = tr("MENU_RESTART")
 	restart_btn.custom_minimum_size = Vector2(260, 48)
 	restart_btn.add_theme_font_size_override("font_size", 20)
 	restart_btn.pressed.connect(_on_restart)
@@ -221,7 +221,7 @@ func _build_pause_overlay() -> void:
 
 	# Main Menu
 	var menu_btn := Button.new()
-	menu_btn.text = "กลับหน้าหลัก"
+	menu_btn.text = tr("MENU_QUIT_TO_MENU")
 	menu_btn.custom_minimum_size = Vector2(260, 48)
 	menu_btn.add_theme_font_size_override("font_size", 20)
 	menu_btn.pressed.connect(_on_quit_to_menu)
@@ -229,7 +229,7 @@ func _build_pause_overlay() -> void:
 
 	# Quit to Desktop
 	var quit_btn := Button.new()
-	quit_btn.text = "ออกจากเกม"
+	quit_btn.text = tr("MENU_QUIT")
 	quit_btn.custom_minimum_size = Vector2(260, 48)
 	quit_btn.add_theme_font_size_override("font_size", 20)
 	quit_btn.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
@@ -307,7 +307,7 @@ func _show_quit_confirmation() -> void:
 	_quit_confirm_overlay.add_child(vbox)
 
 	var label := Label.new()
-	label.text = "คุณต้องการออกจากเกมหรือไม่?"
+	label.text = tr("QUIT_CONFIRM_MSG")
 	label.add_theme_font_size_override("font_size", 22)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(label)
@@ -318,7 +318,7 @@ func _show_quit_confirmation() -> void:
 	vbox.add_child(btn_row)
 
 	var yes_btn := Button.new()
-	yes_btn.text = "ออก"
+	yes_btn.text = tr("MENU_QUIT")
 	yes_btn.custom_minimum_size = Vector2(120, 44)
 	yes_btn.add_theme_font_size_override("font_size", 18)
 	yes_btn.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
@@ -326,7 +326,7 @@ func _show_quit_confirmation() -> void:
 	btn_row.add_child(yes_btn)
 
 	var no_btn := Button.new()
-	no_btn.text = "ยกเลิก"
+	no_btn.text = tr("MENU_CANCEL")
 	no_btn.custom_minimum_size = Vector2(120, 44)
 	no_btn.add_theme_font_size_override("font_size", 18)
 	no_btn.pressed.connect(func(): _quit_confirm_overlay.visible = false)

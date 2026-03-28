@@ -47,7 +47,7 @@ const MENU_ITEMS := [
 
 const LOGO_PATH := "res://assets/ui/logo.png"
 const BANNER_PATH := "res://assets/ui/banner.png"
-const VERSION_STRING := "INDEV v1.0.1"
+const VERSION_STRING := "MENU_VERSION"
 
 
 func _ready() -> void:
@@ -167,7 +167,7 @@ func _build_ui() -> void:
 
 	# -- "Press any button to continue" splash prompt (centered on screen)
 	_splash_label = Label.new()
-	_splash_label.text = "Press any button to continue"
+	_splash_label.text = tr("MENU_SPLASH_PROMPT")
 	_splash_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_splash_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	_splash_label.offset_top = -80
@@ -241,7 +241,7 @@ func _build_status_bar() -> void:
 
 	# Version
 	_version_label = Label.new()
-	_version_label.text = VERSION_STRING
+	_version_label.text = tr(VERSION_STRING)
 	_status_bar.add_child(_version_label)
 
 	# Separator
@@ -260,7 +260,7 @@ func _build_status_bar() -> void:
 	dot_center.add_child(_ollama_dot)
 
 	_ollama_label = Label.new()
-	_ollama_label.text = "AI Offline"
+	_ollama_label.text = tr("MENU_AI_OFFLINE")
 	ollama_box.add_child(_ollama_label)
 
 	# Separator
@@ -276,7 +276,7 @@ func _build_status_bar() -> void:
 
 	# Copyright
 	_copyright_label = Label.new()
-	_copyright_label.text = "© 2026"
+	_copyright_label.text = tr("MENU_COPYRIGHT")
 	_status_bar.add_child(_copyright_label)
 
 
@@ -503,7 +503,7 @@ func _update_ollama_status() -> void:
 		var red_c: Color = _theme.c("accent_red") if _theme else Color.RED
 		_ollama_dot.color = green_c if is_online else red_c
 	if _ollama_label:
-		_ollama_label.text = "AI Online" if is_online else "AI Offline"
+		_ollama_label.text = tr("MENU_AI_ONLINE") if is_online else tr("MENU_AI_OFFLINE")
 		if _theme:
 			var label_color: Color = _theme.c("accent_green") if is_online else _theme.c("accent_red")
 			_ollama_label.add_theme_color_override("font_color", label_color)
@@ -626,6 +626,13 @@ func _update_texts() -> void:
 		_quit_cancel_btn.text = tr("MENU_CANCEL")
 	if _quit_confirm_btn:
 		_quit_confirm_btn.text = tr("MENU_CONFIRM")
+
+	if _version_label:
+		_version_label.text = tr(VERSION_STRING)
+	if _copyright_label:
+		_copyright_label.text = tr("MENU_COPYRIGHT")
+	# Ollama label refreshed via _update_ollama_status which now uses tr()
+	_update_ollama_status()
 
 	if _button_container:
 		for btn in _button_container.get_children():
