@@ -596,18 +596,20 @@ func _markdown_to_bbcode(text: String) -> String:
 	var result: String = ""
 	for line in lines:
 		var trimmed: String = line.strip_edges()
-		if trimmed.begins_with("## "):
-			result += "[b][font_size=20][color=#6cb4ee]%s[/color][/font_size][/b]\n" % trimmed.substr(3)
+		if trimmed.begins_with("### "):
+			result += "\n[b][font_size=17][color=#8cb4ee]%s[/color][/font_size][/b]\n" % trimmed.substr(4)
+		elif trimmed.begins_with("## "):
+			result += "\n[b][font_size=20][color=#6cb4ee]%s[/color][/font_size][/b]\n" % trimmed.substr(3)
 		elif trimmed.begins_with("# "):
-			result += "[b][font_size=24][color=#6cb4ee]%s[/color][/font_size][/b]\n" % trimmed.substr(2)
+			result += "\n[b][font_size=24][color=#6cb4ee]%s[/color][/font_size][/b]\n" % trimmed.substr(2)
 		elif trimmed.begins_with("- **") and "**:" in trimmed:
 			var parts: PackedStringArray = trimmed.substr(2).split("**:", true, 1)
 			if parts.size() == 2:
 				result += "  [color=#e8a838]%s[/color]:%s\n" % [parts[0].replace("**", ""), parts[1]]
 			else:
-				result += "  %s\n" % _inline_bold(trimmed.substr(2))
+				result += "  • %s\n" % _inline_bold(trimmed.substr(2))
 		elif trimmed.begins_with("- "):
-			result += "  %s\n" % _inline_bold(trimmed.substr(2))
+			result += "  • %s\n" % _inline_bold(trimmed.substr(2))
 		elif trimmed == "":
 			result += "\n"
 		else:
