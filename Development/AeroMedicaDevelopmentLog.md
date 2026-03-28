@@ -2002,8 +2002,35 @@ Dropdown menus are a common oversight in themed UIs. The unstyled white popup wa
 11
 ---
 
+---
+
+# 28-03-2026
+
+## Session 1 AeroMedica — DDx Duplicate Categories Bug Fix
+Chief Manager Martin reported Differential Diagnosis tab shows duplicating category sets per patient interaction. Root cause: `_populate_differential_tab()` appends without clearing. Fixed: clear children before rebuild.
+
+## Session 2 AeroMedica — Button Cooldown System Implementation
+Implemented action cooldowns per mentor guidance. DRS 0.5s, ABCDE 2s, Vitals 1.5s (2 concurrent), Head-to-toe 2s, Equipment 3s (2 concurrent), Drug admin 5s. Circular arc progress overlay via `draw_arc()`. Assessment deferred to cooldown completion.
+
+## Session 3 AeroMedica — Drug Admin Repeat Interval Removed
+Removed `repeat_interval_min` restriction. Players take full responsibility — no game-imposed drug limits. Wrong drugs cause appropriate patient deterioration.
+
+## Session 4 AeroMedica — Triage Tag UI Repositioning
+Moved triage assignment status label underneath color selection buttons for visibility without scrolling.
+
+## Session 5 AeroMedica — Development Log Extraction
+Extracted all AeroMedica sessions from 16 RoundTable files into single development log (2,009 lines). For competition submission.
+
+## Session 6 AeroMedica — 3D Asset Planning & Kenney Pack Integration
+Downloaded 8 Kenney asset packs (car kit, city commercial/industrial/suburban, roads, furniture). Created `assets/models/kenney/` folder structure. Produced per-scene decoration guide. Zipped project for team distribution.
+
+## Session 7 AeroMedica — Scenario Map Inventory & Team Briefing
+Confirmed 5 playable scenes for competition. Described each with decoration guidance. Legacy RTA V1 unused.
+
+---
+
 ## Development Summary
 
-- **Total AeroMedica sessions extracted:** 58
-- **Source files scanned:** 16
-- **Development period:** 07-03-2026 to 27-03-2026 (21 days)
+- **Total AeroMedica sessions extracted:** 65
+- **Source files scanned:** 17
+- **Development period:** 07-03-2026 to 28-03-2026 (22 days)

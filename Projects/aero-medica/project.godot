@@ -35,6 +35,10 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 
+[gui]
+
+theme/custom_font="res://assets/fonts/Kanit-Regular.ttf"
+
 [input]
 
 move_up={
@@ -75,10 +79,6 @@ drop={
 [physics]
 
 3d/physics_engine="Jolt Physics"
-
-[gui]
-
-theme/custom_font="res://assets/fonts/Kanit-Regular.ttf"
 
 [rendering]
 
