@@ -524,15 +524,8 @@ func _request_ai_review(results: Dictionary) -> void:
 
 func _on_review_timeout() -> void:
 	if "Requesting" in _review_status_label.text or "Discovering" in _review_status_label.text or "Processing" in _review_status_label.text:
-		var review_client: Node = get_node_or_null("/root/OllamaReviewClient")
-		var url_hint := ""
-		if review_client and review_client.has_method("get_discovered_url"):
-			url_hint = review_client.get_discovered_url()
-		if url_hint != "":
-			_review_status_label.text = "AI Review: Ollama at %s not responding (model may be loading)" % url_hint
-		else:
-			_review_status_label.text = "AI Review: Ollama not found on localhost, 127.0.0.1, or LAN IPs"
-		_review_status_label.add_theme_color_override("font_color", Color(0.8, 0.6, 0.3))
+		# Timeout — try cached fallback
+		_on_review_failed("Ollama timeout after 30 seconds")
 
 
 ## Wire AI review signals from OllamaReviewClient and ReviewParser.
@@ -566,21 +559,77 @@ func _on_review_text_received(review_text: String) -> void:
 	_review_status_label.text = "AI Review"
 	_review_status_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
 
-	# Display the raw review text in the scrollable area
 	if _review_text_label:
-		_review_text_label.text = review_text
+		_review_text_label.text = _markdown_to_bbcode(review_text)
 
 
-## OllamaReviewClient.review_failed — API error.
-func _on_review_failed(error: String) -> void:
-	_review_status_label.text = "AI Review unavailable"
+## OllamaReviewClient.review_failed — fallback to cached review, then show error.
+func _on_review_failed(_error: String) -> void:
+	# Try cached fallback before showing error
+	var fallback: Node = get_node_or_null("/root/AIDemoFallback")
+	if fallback and fallback.has_method("try_serve_cached"):
+		var scenario_id: String = _session_results.get("scenario_id", "")
+		var score: float = _session_results.get("overall_score", 50.0)
+		var event_count: int = _session_results.get("events", []).size()
+		if not fallback.cached_review_served.is_connected(_on_cached_review_served):
+			fallback.cached_review_served.connect(_on_cached_review_served, CONNECT_ONE_SHOT)
+		var served: bool = fallback.try_serve_cached(scenario_id, score, event_count)
+		if served:
+			return
+
+	# No fallback available — show error
+	_review_status_label.text = "AI Review unavailable (Ollama offline)"
 	_review_status_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.3))
 
 	if _review_text_label:
-		_review_text_label.text = error
+		_review_text_label.text = "[color=#cc8844]Ollama is not running. Start Ollama for live AI review, or cached reviews will be shown when available.[/color]"
 
-	if _review_panel and _review_panel.has_method("show_error"):
-		_review_panel.show_error("AI Review unavailable: " + error)
+
+## Cached review fallback handler.
+func _on_cached_review_served(review_text: String, _is_cached: bool) -> void:
+	_review_status_label.text = "AI Review (Cached)"
+	_review_status_label.add_theme_color_override("font_color", Color(0.6, 0.8, 0.3))
+
+	if _review_text_label:
+		_review_text_label.text = _markdown_to_bbcode(review_text)
+
+
+## Convert basic markdown to BBCode for RichTextLabel display.
+func _markdown_to_bbcode(text: String) -> String:
+	var lines: PackedStringArray = text.split("\n")
+	var result: String = ""
+	for line in lines:
+		var trimmed: String = line.strip_edges()
+		if trimmed.begins_with("## "):
+			result += "[b][font_size=20][color=#6cb4ee]%s[/color][/font_size][/b]\n" % trimmed.substr(3)
+		elif trimmed.begins_with("# "):
+			result += "[b][font_size=24][color=#6cb4ee]%s[/color][/font_size][/b]\n" % trimmed.substr(2)
+		elif trimmed.begins_with("- **") and "**:" in trimmed:
+			var parts: PackedStringArray = trimmed.substr(2).split("**:", true, 1)
+			if parts.size() == 2:
+				result += "  [color=#e8a838]%s[/color]:%s\n" % [parts[0].replace("**", ""), parts[1]]
+			else:
+				result += "  %s\n" % _inline_bold(trimmed.substr(2))
+		elif trimmed.begins_with("- "):
+			result += "  %s\n" % _inline_bold(trimmed.substr(2))
+		elif trimmed == "":
+			result += "\n"
+		else:
+			result += "%s\n" % _inline_bold(trimmed)
+	return result
+
+
+## Convert **bold** markers to BBCode [b] tags.
+func _inline_bold(text: String) -> String:
+	var out: String = text
+	while "**" in out:
+		var first: int = out.find("**")
+		var second: int = out.find("**", first + 2)
+		if second == -1:
+			break
+		var bold_text: String = out.substr(first + 2, second - first - 2)
+		out = out.substr(0, first) + "[b]" + bold_text + "[/b]" + out.substr(second + 2)
+	return out
 
 
 ## Build metrics dictionary for ReviewPanel sidebar.

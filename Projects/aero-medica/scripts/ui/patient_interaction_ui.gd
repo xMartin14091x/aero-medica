@@ -181,6 +181,16 @@ var _cpr_active: bool = false
 ## Close button reference for theme re-application.
 var _close_btn: Button = null
 
+## Exam sub-tab system.
+var _exam_sub_tabs: Dictionary = {}  # name -> VBoxContainer
+var _exam_sub_tab_btns: Dictionary = {}  # name -> Button
+var _current_exam_sub: String = "primary"
+
+## Stabilize sub-tab system.
+var _stab_sub_tabs: Dictionary = {}  # name -> VBoxContainer
+var _stab_sub_tab_btns: Dictionary = {}  # name -> Button
+var _current_stab_sub: String = "equipment"
+
 
 func _ready() -> void:
 	visible = false
@@ -625,6 +635,30 @@ func _switch_tab(tab: Tab) -> void:
 				btn.add_theme_color_override("font_disabled_color", tm.c("text_secondary"))
 
 
+func _switch_exam_sub(sub_name: String) -> void:
+	_current_exam_sub = sub_name
+	var tm: Node = _get_theme_medical()
+	for key in _exam_sub_tabs:
+		_exam_sub_tabs[key].visible = (key == sub_name)
+		if tm:
+			if key == sub_name:
+				_exam_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_active())
+			else:
+				_exam_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_inactive())
+
+
+func _switch_stab_sub(sub_name: String) -> void:
+	_current_stab_sub = sub_name
+	var tm: Node = _get_theme_medical()
+	for key in _stab_sub_tabs:
+		_stab_sub_tabs[key].visible = (key == sub_name)
+		if tm:
+			if key == sub_name:
+				_stab_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_active())
+			else:
+				_stab_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_inactive())
+
+
 # ==============================================================================
 # TAB BUILD — Patient
 # ==============================================================================
@@ -774,31 +808,63 @@ func _build_patient_tab() -> Control:
 func _build_exam_tab() -> Control:
 	var tm := _get_theme_medical()
 
-	var root := ScrollContainer.new()
+	var root := VBoxContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_theme_constant_override("separation", 8)
 
-	var exam_vbox := VBoxContainer.new()
-	exam_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	exam_vbox.add_theme_constant_override("separation", 32)
-	root.add_child(exam_vbox)
-	# Reference for responsive grids
-	var exam_scroll := root
+	# ── Sub-tab pill strip ──
+	var pill_strip := HBoxContainer.new()
+	pill_strip.add_theme_constant_override("separation", 4)
+	root.add_child(pill_strip)
 
-	# ══ ROW 1: DRSABCDE (left) | Head-to-Toe (right) ══
-	var row1 := HBoxContainer.new()
-	row1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row1.add_theme_constant_override("separation", 12)
-	exam_vbox.add_child(row1)
+	var exam_sub_defs: Array = [
+		["primary", tr("SUB_PRIMARY")],
+		["vitals", tr("SUB_VITALS")],
+		["gcs", tr("SUB_GCS")],
+		["head_to_toe", tr("SUB_HEAD_TO_TOE")],
+	]
 
-	# ── Left: DRSABCDE ──
-	var drs_vbox := VBoxContainer.new()
-	drs_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	drs_vbox.add_theme_constant_override("separation", 6)
-	row1.add_child(drs_vbox)
+	for sub_def in exam_sub_defs:
+		var sub_key: String = sub_def[0]
+		var sub_label: String = sub_def[1]
+		var pill_btn := Button.new()
+		pill_btn.text = sub_label
+		pill_btn.custom_minimum_size = Vector2(80, 32)
+		pill_btn.focus_mode = Control.FOCUS_NONE
+		pill_btn.pressed.connect(_switch_exam_sub.bind(sub_key))
+		if tm:
+			tm.style_button(pill_btn, "small")
+			if sub_key == _current_exam_sub:
+				pill_btn.add_theme_stylebox_override("normal", tm.make_tab_active())
+			else:
+				pill_btn.add_theme_stylebox_override("normal", tm.make_tab_inactive())
+		pill_strip.add_child(pill_btn)
+		_exam_sub_tab_btns[sub_key] = pill_btn
+
+	# ── Sub-tab content panels (only one visible at a time) ──
+	var sub_container := Control.new()
+	sub_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sub_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(sub_container)
+
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "primary" — DRSABCDE
+	# ════════════════════════════════════════════════════════════
+	var primary_scroll := ScrollContainer.new()
+	primary_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	primary_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	primary_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sub_container.add_child(primary_scroll)
+	_exam_sub_tabs["primary"] = primary_scroll
+
+	var primary_vbox := VBoxContainer.new()
+	primary_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	primary_vbox.add_theme_constant_override("separation", 8)
+	primary_scroll.add_child(primary_vbox)
 
 	var title_row := HBoxContainer.new()
-	drs_vbox.add_child(title_row)
+	primary_vbox.add_child(title_row)
 	var title := Label.new()
 	title.text = tr("EXAM_PRIMARY_SURVEY")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -811,7 +877,6 @@ func _build_exam_tab() -> Control:
 		tm.style_label(_exam_counter_label, "body", "accent_blue")
 	title_row.add_child(_exam_counter_label)
 
-	# DRSABCDE steps
 	var drs_steps := [
 		[tr("EXAM_DANGER"), "check_danger"],
 		[tr("EXAM_RESPONSE"), "check_response"],
@@ -824,10 +889,10 @@ func _build_exam_tab() -> Control:
 	]
 
 	var steps_grid := GridContainer.new()
-	steps_grid.columns = 2
+	steps_grid.columns = 4
 	steps_grid.add_theme_constant_override("h_separation", 6)
 	steps_grid.add_theme_constant_override("v_separation", 4)
-	drs_vbox.add_child(steps_grid)
+	primary_vbox.add_child(steps_grid)
 
 	for step in drs_steps:
 		var step_panel := PanelContainer.new()
@@ -861,17 +926,21 @@ func _build_exam_tab() -> Control:
 		step_vbox.add_child(result_lbl)
 		_exam_results[step[1]] = result_lbl
 
-	# ══ ROW 2: Vitals (left) | GCS (right) ══
-	var row2 := HBoxContainer.new()
-	row2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row2.add_theme_constant_override("separation", 12)
-	exam_vbox.add_child(row2)
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "vitals" — Vital Signs + ECG
+	# ════════════════════════════════════════════════════════════
+	var vitals_scroll := ScrollContainer.new()
+	vitals_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vitals_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vitals_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	vitals_scroll.visible = false
+	sub_container.add_child(vitals_scroll)
+	_exam_sub_tabs["vitals"] = vitals_scroll
 
-	# ── Left: Vital Signs ──
 	var vitals_vbox := VBoxContainer.new()
 	vitals_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vitals_vbox.add_theme_constant_override("separation", 6)
-	row2.add_child(vitals_vbox)
+	vitals_vbox.add_theme_constant_override("separation", 8)
+	vitals_scroll.add_child(vitals_vbox)
 
 	var vitals_title := Label.new()
 	vitals_title.text = tr("VITAL_SIGNS_TITLE") if tr("VITAL_SIGNS_TITLE") != "VITAL_SIGNS_TITLE" else "Vital Signs Assessment"
@@ -882,7 +951,7 @@ func _build_exam_tab() -> Control:
 	vitals_vbox.add_child(vitals_title)
 
 	var vitals_grid := GridContainer.new()
-	vitals_grid.columns = 2
+	vitals_grid.columns = 4
 	vitals_grid.add_theme_constant_override("h_separation", 6)
 	vitals_grid.add_theme_constant_override("v_separation", 4)
 	vitals_vbox.add_child(vitals_grid)
@@ -935,19 +1004,19 @@ func _build_exam_tab() -> Control:
 		v_vbox.add_child(v_result)
 		_vital_results[vd[1]] = v_result
 
-	## ARC-14: ECG Monitor section — will be placed as Row 3 (full width) AFTER GCS
-	## Temporarily build ECG elements but DON'T add to tree yet
+	# ── ECG Section (below vitals grid) ──
 	var ecg_title := Label.new()
 	ecg_title.text = "ECG / Cardiac Monitor"
 	if tm:
 		tm.style_label(ecg_title, "subtitle", "accent_green")
+	vitals_vbox.add_child(ecg_title)
 
-	# ECG elements built here but NOT added to tree — will be added as Row 3 after GCS
 	_ecg_mode_label = Label.new()
 	_ecg_mode_label.text = ""
-	_ecg_mode_label.visible = false  # Hidden — no "No monitor deployed" text
+	_ecg_mode_label.visible = false
 	if tm:
 		tm.style_label(_ecg_mode_label, "label", "text_muted")
+	vitals_vbox.add_child(_ecg_mode_label)
 
 	_ecg_panel = PanelContainer.new()
 	_ecg_panel.custom_minimum_size = Vector2(0, 110)
@@ -955,6 +1024,7 @@ func _build_exam_tab() -> Control:
 	_ecg_panel.visible = false
 	if tm:
 		tm.style_panel(_ecg_panel, "info")
+	vitals_vbox.add_child(_ecg_panel)
 
 	var ecg_inner := VBoxContainer.new()
 	_ecg_panel.add_child(ecg_inner)
@@ -972,7 +1042,7 @@ func _build_exam_tab() -> Control:
 		tm.style_label(_ecg_rhythm_label, "label", "text_secondary")
 	else:
 		_ecg_rhythm_label.add_theme_font_size_override("font_size", 13)
-	# NOT added to tree yet — deferred to Row 3
+	vitals_vbox.add_child(_ecg_rhythm_label)
 
 	var ecg_identify_btn := Button.new()
 	ecg_identify_btn.text = "Identify Rhythm"
@@ -982,13 +1052,23 @@ func _build_exam_tab() -> Control:
 	ecg_identify_btn.pressed.connect(_on_ecg_identify_pressed)
 	if tm:
 		tm.style_button(ecg_identify_btn)
-	# NOT added to tree yet — deferred to Row 3
+	vitals_vbox.add_child(ecg_identify_btn)
 
-	## ARC-15: GCS Assessment — RIGHT side of Row 2
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "gcs" — Glasgow Coma Scale
+	# ════════════════════════════════════════════════════════════
+	var gcs_scroll := ScrollContainer.new()
+	gcs_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gcs_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	gcs_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	gcs_scroll.visible = false
+	sub_container.add_child(gcs_scroll)
+	_exam_sub_tabs["gcs"] = gcs_scroll
+
 	var gcs_vbox := VBoxContainer.new()
 	gcs_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	gcs_vbox.add_theme_constant_override("separation", 6)
-	row2.add_child(gcs_vbox)
+	gcs_scroll.add_child(gcs_vbox)
 
 	var gcs_title_hbox := HBoxContainer.new()
 	gcs_vbox.add_child(gcs_title_hbox)
@@ -1072,18 +1152,21 @@ func _build_exam_tab() -> Control:
 		tm.style_button(gcs_read_btn, "small")
 	gcs_vbox.add_child(gcs_read_btn)
 
-	# ══ ROW 3: ECG (full width) — title, mode label, panel, rhythm label, identify button ══
-	exam_vbox.add_child(ecg_title)
-	exam_vbox.add_child(_ecg_mode_label)
-	exam_vbox.add_child(_ecg_panel)
-	exam_vbox.add_child(_ecg_rhythm_label)
-	exam_vbox.add_child(ecg_identify_btn)
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "head_to_toe" — Secondary Survey
+	# ════════════════════════════════════════════════════════════
+	var ss_scroll := ScrollContainer.new()
+	ss_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ss_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	ss_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ss_scroll.visible = false
+	sub_container.add_child(ss_scroll)
+	_exam_sub_tabs["head_to_toe"] = ss_scroll
 
-	## ARC-16: Secondary Survey — RIGHT side of Row 1
 	var ss_vbox := VBoxContainer.new()
 	ss_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ss_vbox.add_theme_constant_override("separation", 6)
-	row1.add_child(ss_vbox)
+	ss_scroll.add_child(ss_vbox)
 
 	var ss_title_hbox := HBoxContainer.new()
 	ss_vbox.add_child(ss_title_hbox)
@@ -1162,22 +1245,59 @@ func _build_exam_tab() -> Control:
 func _build_stabilize_tab() -> Control:
 	var tm := _get_theme_medical()
 
-	var root := ScrollContainer.new()
+	var root := VBoxContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_theme_constant_override("separation", 8)
 
-	var container := VBoxContainer.new()
-	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	container.add_theme_constant_override("separation", 24)
-	root.add_child(container)
+	# ── Sub-tab pill strip ──
+	var pill_strip := HBoxContainer.new()
+	pill_strip.add_theme_constant_override("separation", 4)
+	root.add_child(pill_strip)
 
-	var title := Label.new()
-	title.text = tr("TAB_STABILIZE")
-	if tm:
-		tm.style_label(title, "title", "text_primary")
-	else:
-		title.add_theme_font_size_override("font_size", 22)
-	container.add_child(title)
+	var stab_sub_defs: Array = [
+		["equipment", tr("SUB_EQUIPMENT")],
+		["drug_admin", tr("SUB_DRUG_ADMIN")],
+		["triage", tr("SUB_TRIAGE")],
+	]
+
+	for sub_def in stab_sub_defs:
+		var sub_key: String = sub_def[0]
+		var sub_label: String = sub_def[1]
+		var pill_btn := Button.new()
+		pill_btn.text = sub_label
+		pill_btn.custom_minimum_size = Vector2(80, 32)
+		pill_btn.focus_mode = Control.FOCUS_NONE
+		pill_btn.pressed.connect(_switch_stab_sub.bind(sub_key))
+		if tm:
+			tm.style_button(pill_btn, "small")
+			if sub_key == _current_stab_sub:
+				pill_btn.add_theme_stylebox_override("normal", tm.make_tab_active())
+			else:
+				pill_btn.add_theme_stylebox_override("normal", tm.make_tab_inactive())
+		pill_strip.add_child(pill_btn)
+		_stab_sub_tab_btns[sub_key] = pill_btn
+
+	# ── Sub-tab content panels (only one visible at a time) ──
+	var sub_container := Control.new()
+	sub_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sub_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(sub_container)
+
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "equipment" — CPR + Diagnostic + Treatment
+	# ════════════════════════════════════════════════════════════
+	var equip_scroll := ScrollContainer.new()
+	equip_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	equip_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	equip_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sub_container.add_child(equip_scroll)
+	_stab_sub_tabs["equipment"] = equip_scroll
+
+	var equip_vbox := VBoxContainer.new()
+	equip_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	equip_vbox.add_theme_constant_override("separation", 12)
+	equip_scroll.add_child(equip_vbox)
 
 	# CPR action — visible only during cardiac arrest, prominent red button
 	_cpr_button = Button.new()
@@ -1189,7 +1309,6 @@ func _build_stabilize_tab() -> Control:
 	_cpr_button.visible = false  # Shown only when patient is in cardiac arrest
 	if tm:
 		tm.style_button(_cpr_button, "large")
-		# Override with red styling for CPR urgency
 		var cpr_normal: StyleBoxFlat = tm.make_btn_normal()
 		cpr_normal.bg_color = tm.c("accent_red")
 		_cpr_button.add_theme_stylebox_override("normal", cpr_normal)
@@ -1201,7 +1320,7 @@ func _build_stabilize_tab() -> Control:
 	else:
 		_cpr_button.add_theme_font_size_override("font_size", 18)
 		_cpr_button.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
-	container.add_child(_cpr_button)
+	equip_vbox.add_child(_cpr_button)
 
 	_cpr_status_label = Label.new()
 	_cpr_status_label.text = ""
@@ -1210,12 +1329,12 @@ func _build_stabilize_tab() -> Control:
 		tm.style_label(_cpr_status_label, "body_small", "text_secondary")
 	else:
 		_cpr_status_label.add_theme_font_size_override("font_size", 14)
-	container.add_child(_cpr_status_label)
+	equip_vbox.add_child(_cpr_status_label)
 
-	## ARC-18: Medical Bag Tier Indicator (at TOP, before equipment grid)
+	## ARC-18: Medical Bag Tier Indicator
 	var tier_hbox := HBoxContainer.new()
 	tier_hbox.add_theme_constant_override("separation", 8)
-	container.add_child(tier_hbox)
+	equip_vbox.add_child(tier_hbox)
 
 	var tier_label_title := Label.new()
 	tier_label_title.text = "Medical Bag Tier: "
@@ -1234,13 +1353,13 @@ func _build_stabilize_tab() -> Control:
 		_bag_tier_label.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.3, 0.9, 0.4))
 	tier_hbox.add_child(_bag_tier_label)
 
-	# ══ Equipment Row: Diagnostic (left) | Treatment (right) ══
+	# ── Equipment Row: Diagnostic (left) | Treatment (right) ──
 	var equip_row := HBoxContainer.new()
 	equip_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	equip_row.add_theme_constant_override("separation", 12)
-	container.add_child(equip_row)
+	equip_vbox.add_child(equip_row)
 
-	# ── Left: Diagnostic Equipment ──
+	# Left: Diagnostic Equipment
 	var diag_col := VBoxContainer.new()
 	diag_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	diag_col.add_theme_constant_override("separation", 6)
@@ -1286,7 +1405,7 @@ func _build_stabilize_tab() -> Control:
 		eq_panel.add_child(eq_btn)
 		_equipment_buttons[eq[1]] = eq_btn
 
-	# ── Right: Treatment Equipment ──
+	# Right: Treatment Equipment
 	var treat_col := VBoxContainer.new()
 	treat_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	treat_col.add_theme_constant_override("separation", 6)
@@ -1339,70 +1458,44 @@ func _build_stabilize_tab() -> Control:
 	## Bag Contents — hidden container (populate functions still write to _bag_items_vbox)
 	_bag_items_vbox = VBoxContainer.new()
 	_bag_items_vbox.visible = false
-	container.add_child(_bag_items_vbox)
+	equip_vbox.add_child(_bag_items_vbox)
 
-	## ── Triage Tags ──
-	var triage_title := Label.new()
-	triage_title.text = "Triage"
-	if tm:
-		tm.style_label(triage_title, "subtitle", "accent_purple")
-	container.add_child(triage_title)
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "drug_admin" — Drug Administration
+	# ════════════════════════════════════════════════════════════
+	var drug_scroll := ScrollContainer.new()
+	drug_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drug_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	drug_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	drug_scroll.visible = false
+	sub_container.add_child(drug_scroll)
+	_stab_sub_tabs["drug_admin"] = drug_scroll
 
-	var triage_row := HBoxContainer.new()
-	triage_row.add_theme_constant_override("separation", 8)
-	triage_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	container.add_child(triage_row)
+	var drug_outer := VBoxContainer.new()
+	drug_outer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drug_outer.add_theme_constant_override("separation", 8)
+	drug_scroll.add_child(drug_outer)
 
-	var triage_defs := [
-		["GREEN", "Minor", Color(0.2, 0.9, 0.2)],
-		["YELLOW", "Delayed", Color(1.0, 0.9, 0.1)],
-		["RED", "Immediate", Color(1.0, 0.2, 0.2)],
-		["BLACK", "Deceased", Color.WHITE],
-	]
-
-	for td in triage_defs:
-		var t_btn := Button.new()
-		t_btn.text = td[0]
-		t_btn.tooltip_text = td[1]
-		t_btn.custom_minimum_size = Vector2(0, 48)
-		t_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		t_btn.focus_mode = Control.FOCUS_NONE
-		t_btn.pressed.connect(_on_triage_direct_pressed.bind(td[0]))
-		if tm:
-			tm.style_button(t_btn)
-		t_btn.add_theme_color_override("font_color", td[2])
-		t_btn.add_theme_color_override("font_hover_color", td[2])
-		triage_row.add_child(t_btn)
-
-	# Triage feedback label — directly under triage buttons
-	_triage_feedback_label = Label.new()
-	_triage_feedback_label.text = ""
-	if tm:
-		tm.style_label(_triage_feedback_label, "body", "text_secondary")
-	container.add_child(_triage_feedback_label)
-
-	## ARC-17: Drug Administration — left: controls, right: log sidebar
 	var drug_title := Label.new()
 	drug_title.text = tr("STABILIZE_DRUG_ADMIN")
 	if tm:
 		tm.style_label(drug_title, "subtitle", "accent_blue")
 	else:
 		drug_title.add_theme_font_size_override("font_size", 18)
-	container.add_child(drug_title)
+	drug_outer.add_child(drug_title)
 
 	var drug_row := HBoxContainer.new()
 	drug_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	drug_row.add_theme_constant_override("separation", 16)
-	container.add_child(drug_row)
+	drug_outer.add_child(drug_row)
 
-	# ── Left: Drug selection + Administer ──
+	# Left: Drug selection + Administer (1/4)
 	var drug_left := VBoxContainer.new()
 	drug_left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	drug_left.size_flags_stretch_ratio = 1.0
 	drug_left.add_theme_constant_override("separation", 8)
 	drug_row.add_child(drug_left)
 
-	# Drug dropdown
 	var drug_name_label := Label.new()
 	drug_name_label.text = tr("STABILIZE_DRUG") + ":"
 	if tm:
@@ -1418,7 +1511,6 @@ func _build_stabilize_tab() -> Control:
 		tm.style_option_button(_drug_name_btn)
 	drug_left.add_child(_drug_name_btn)
 
-	# Route dropdown
 	var drug_route_label := Label.new()
 	drug_route_label.text = tr("STABILIZE_ROUTE") + ":"
 	if tm:
@@ -1433,7 +1525,6 @@ func _build_stabilize_tab() -> Control:
 		tm.style_option_button(_drug_route_btn)
 	drug_left.add_child(_drug_route_btn)
 
-	# Dose dropdown
 	var drug_dose_label := Label.new()
 	drug_dose_label.text = tr("STABILIZE_DOSE") + ":"
 	if tm:
@@ -1448,7 +1539,6 @@ func _build_stabilize_tab() -> Control:
 		tm.style_option_button(_drug_dose_btn)
 	drug_left.add_child(_drug_dose_btn)
 
-	# Administer button
 	_drug_admin_btn = Button.new()
 	var admin_btn := _drug_admin_btn
 	admin_btn.text = tr("STABILIZE_ADMINISTER")
@@ -1460,7 +1550,6 @@ func _build_stabilize_tab() -> Control:
 		tm.style_button(admin_btn)
 	drug_left.add_child(admin_btn)
 
-	# Feedback label
 	_drug_feedback_label = Label.new()
 	_drug_feedback_label.text = ""
 	_drug_feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1470,7 +1559,7 @@ func _build_stabilize_tab() -> Control:
 		_drug_feedback_label.add_theme_font_size_override("font_size", 13)
 	drug_left.add_child(_drug_feedback_label)
 
-	# ── Right: Administration Log (sidebar, 3x wider) ──
+	# Right: Administration Log (3/4)
 	var drug_right := VBoxContainer.new()
 	drug_right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	drug_right.size_flags_stretch_ratio = 3.0
@@ -1495,6 +1584,68 @@ func _build_stabilize_tab() -> Control:
 	_drug_log_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_drug_log_vbox.add_theme_constant_override("separation", 4)
 	log_scroll.add_child(_drug_log_vbox)
+
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "triage" — Triage Tags
+	# ════════════════════════════════════════════════════════════
+	var triage_panel := VBoxContainer.new()
+	triage_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	triage_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	triage_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	triage_panel.visible = false
+	triage_panel.add_theme_constant_override("separation", 16)
+	sub_container.add_child(triage_panel)
+	_stab_sub_tabs["triage"] = triage_panel
+
+	var triage_title := Label.new()
+	triage_title.text = "Assign Triage Tag"
+	if tm:
+		tm.style_label(triage_title, "subtitle", "accent_purple")
+	triage_panel.add_child(triage_title)
+
+	var triage_row := HBoxContainer.new()
+	triage_row.add_theme_constant_override("separation", 8)
+	triage_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	triage_panel.add_child(triage_row)
+
+	var triage_defs := [
+		["GREEN", "Minor", Color(0.2, 0.7, 0.2)],
+		["YELLOW", "Delayed", Color(0.9, 0.8, 0.1)],
+		["RED", "Immediate", Color(0.8, 0.2, 0.2)],
+		["BLACK", "Deceased", Color(0.15, 0.15, 0.15)],
+	]
+
+	for td in triage_defs:
+		var t_btn := Button.new()
+		t_btn.text = td[0]
+		t_btn.tooltip_text = td[1]
+		t_btn.custom_minimum_size = Vector2(0, 64)
+		t_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		t_btn.focus_mode = Control.FOCUS_NONE
+		t_btn.pressed.connect(_on_triage_direct_pressed.bind(td[0]))
+		if tm:
+			tm.style_button(t_btn, "large")
+		# Apply background color to the button
+		var t_style: StyleBoxFlat = tm.make_btn_normal() if tm else StyleBoxFlat.new()
+		t_style.bg_color = td[2]
+		t_style.corner_radius_top_left = 8
+		t_style.corner_radius_top_right = 8
+		t_style.corner_radius_bottom_left = 8
+		t_style.corner_radius_bottom_right = 8
+		t_btn.add_theme_stylebox_override("normal", t_style)
+		var t_hover: StyleBoxFlat = t_style.duplicate()
+		t_hover.bg_color = td[2].lightened(0.15)
+		t_btn.add_theme_stylebox_override("hover", t_hover)
+		# WHITE text for all triage buttons (BLACK tag needs white text for contrast)
+		t_btn.add_theme_color_override("font_color", Color.WHITE)
+		t_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+		triage_row.add_child(t_btn)
+
+	_triage_feedback_label = Label.new()
+	_triage_feedback_label.text = ""
+	if tm:
+		tm.style_label(_triage_feedback_label, "body", "text_secondary")
+	triage_panel.add_child(_triage_feedback_label)
 
 	return root
 
@@ -1647,6 +1798,22 @@ func _apply_theme() -> void:
 		tm.style_input(_chat_input)
 	if _talk_button:
 		tm.style_button(_talk_button)
+
+	# Exam sub-tab pills
+	for key in _exam_sub_tab_btns:
+		tm.style_button(_exam_sub_tab_btns[key], "small")
+		if key == _current_exam_sub:
+			_exam_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_active())
+		else:
+			_exam_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_inactive())
+
+	# Stabilize sub-tab pills
+	for key in _stab_sub_tab_btns:
+		tm.style_button(_stab_sub_tab_btns[key], "small")
+		if key == _current_stab_sub:
+			_stab_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_active())
+		else:
+			_stab_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_inactive())
 
 	# Exam tab — DRSABCDE buttons
 	for key in _exam_buttons:

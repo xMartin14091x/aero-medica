@@ -249,3 +249,50 @@ RESULT_MINOR,เล็กน้อย,Minor
 RESULT_MODERATE,ปานกลาง,Moderate
 RESULT_SEVERE,รุนแรง,Severe
 RESULT_PROCEED_SECONDARY,ดำเนินการตรวจร่างกายต่อ,Proceed with secondary survey
+
+SUB_PRIMARY,การตรวจเบื้องต้น,Primary
+SUB_VITALS,สัญญาณชีพ,Vitals
+SUB_GCS,GCS,GCS
+SUB_HEAD_TO_TOE,ศีรษะถึงปลายเท้า,Head-to-Toe
+SUB_EQUIPMENT,อุปกรณ์,Equipment
+SUB_DRUG_ADMIN,การให้ยา,Drug Admin
+SUB_TRIAGE,การคัดกรอง,Triage
+
+STABILIZE_DIAGNOSTIC,อุปกรณ์วินิจฉัย,Diagnostic Equipment
+STABILIZE_TREATMENT,อุปกรณ์รักษา,Treatment Equipment
+TRIAGE_CURRENTLY_ASSIGNED,แท็กคัดกรองปัจจุบัน,Currently Assigned
+
+GCS_TITLE,GCS — Glasgow Coma Scale,GCS — Glasgow Coma Scale
+GCS_EYE,ตา (E),Eye (E)
+GCS_VERBAL,พูด (V),Verbal (V)
+GCS_MOTOR,การเคลื่อนไหว (M),Motor (M)
+GCS_READ_PATIENT,อ่านจากผู้ป่วย,Read from Patient
+GCS_TOTAL,คะแนนรวม GCS,GCS Total
+ECG_TITLE,ECG / จอมอนิเตอร์หัวใจ,ECG / Cardiac Monitor
+ECG_NO_MONITOR,ยังไม่ติดตั้งมอนิเตอร์,No monitor deployed
+ECG_IDENTIFY,ระบุจังหวะ,Identify Rhythm
+
+DASHBOARD_MY_PERFORMANCE,ผลงานของฉัน,My Performance
+DASHBOARD_CLASS_OVERVIEW,ภาพรวมชั้นเรียน,Class Overview
+DASHBOARD_SCENARIO_BREAKDOWN,แยกตามสถานการณ์,Scenario Breakdown
+DASHBOARD_RECENT_SESSIONS,เซสชันล่าสุด,Recent Sessions
+DASHBOARD_BEST_AXIS,จุดแข็ง,Best Axis
+DASHBOARD_NO_SESSIONS,ยังไม่มีเซสชัน,No sessions recorded yet
+DASHBOARD_STUDENT_RESULTS,ผลนักเรียน,Student Results
+DASHBOARD_CLASS_AVG,คะแนนเฉลี่ยชั้นเรียน,Class Average
+
+DDX_SEARCH,ค้นหาการวินิจฉัย...,Search diagnoses...
+DDX_SELECTED,เลือกแล้ว,Selected
+DDX_CAT_CARDIAC,หัวใจ,Cardiac
+DDX_CAT_RESPIRATORY,ระบบหายใจ,Respiratory
+DDX_CAT_TRAUMA,อุบัติเหตุ,Trauma
+DDX_CAT_SHOCK,ภาวะช็อก,Shock
+DDX_CAT_NEUROLOGICAL,ระบบประสาท,Neurological
+DDX_CAT_METABOLIC,เมตาบอลิก,Metabolic
+DDX_CAT_OTHER,อื่นๆ,Other
+
+COOLDOWN_MAX_CONCURRENT,ถึงขีดจำกัดแล้ว! สูงสุด %d พร้อมกัน,Limit reached! Max %d concurrent
+COOLDOWN_PROCESSING,กำลังดำเนินการ...,Processing...
+
+REVIEW_CACHED,บทวิจารณ์ AI (แคช),AI Review (Cached)
+REVIEW_OFFLINE,Ollama ไม่ทำงาน — แสดงบทวิจารณ์แคชแทน,Ollama offline — showing cached review
