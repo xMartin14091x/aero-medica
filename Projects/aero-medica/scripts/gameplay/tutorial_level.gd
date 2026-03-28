@@ -85,10 +85,6 @@ func _place_spawn_markers() -> void:
 		equip_spawn.position = equip_positions[i]
 		add_child(equip_spawn)
 
-	# Park benches (placeholder boxes)
-	_create_prop(Vector3(3 * TILE_SIZE, 0.25, 3 * TILE_SIZE), Vector3(1.2, 0.5, 0.4), Color(0.45, 0.3, 0.15))
-	_create_prop(Vector3(3 * TILE_SIZE, 0.25, 7 * TILE_SIZE), Vector3(1.2, 0.5, 0.4), Color(0.45, 0.3, 0.15))
-
 	# Lighting — outdoor daylight
 	var light := DirectionalLight3D.new()
 	light.rotation_degrees = Vector3(-45, 30, 0)
