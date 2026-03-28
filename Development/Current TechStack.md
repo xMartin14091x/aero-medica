@@ -1,7 +1,7 @@
 # AeroMedica — Current TechStack
 
 **Project:** AeroMedica
-**Last Updated:** 21-03-2026 (v1.0.0 Phase 0-7 complete, v1.0.1 Phase 0-1,3-6 complete, Phase 2 pending)
+**Last Updated:** 29-03-2026 (v1.0.0 Phase 0-8 complete, v1.0.1 Phase 0-6 complete, UI revamp v2.0 applied)
 
 ---
 
@@ -24,6 +24,28 @@ MON-12 to MON-13 (telemetry wiring + position tracking), SYN-07 to SYN-10 (proto
 ## Phase 4 — Dynamic Environment & Scene Variation (COMPLETE)
 
 MON-14 (Environmental Hazard System — HazardSystem + HazardZone), MON-15 (Random Event System — RandomEventSystem), SYN-11 (Scene Variation Engine — SceneVariation), SYN-12 (Physics Interaction System — PhysicsInteractable), ARC-09 (Hazard Visual Effects), ARC-10 (Environmental Audio Cues).
+
+## Post-Phase Systems (21-03 to 29-03-2026)
+
+### Bug Fixes & Polish (22 bugs fixed)
+- ActionMenu artifact, movement lock, camera scroll, vital signs display, triage algorithm, DDx label mismatches, signal disconnect crashes, scenario load guards, post-incapacitation cleanup, ECG rhythm auto-update, deterioration budget scaling, patient name in reviewer, diagnosis persistence, cooldown red flash
+
+### New Systems Added
+- **Deterioration Budget** — Two-phase per-patient timer (Phase 1: 300s pre-arrest, Phase 2: 120s post-arrest). Scales by patient count. Focused interaction drains faster (3.33x/2.0x).
+- **CPR + AED + ROSC** — CPR gated behind pulse assessment. AED auto-checks shockable rhythm. ROSC triggers sinus brady. Atropine auto-updates rhythm based on HR.
+- **Hazard System** — Fire/traffic zones. Player incapacitation at 15s. 25% patient deterioration boost near hazards. AI reviewer feedback on hazard exposure.
+- **Action Cooldown System** — Per-group delays (DRS 0.5s, ABCDE 2s, Vitals 1.5s, Equipment 3s, Drug 5s) with circular arc progress overlay and concurrent limits.
+- **AI Demo Fallback** — 70 cached review files (35 EN + 35 TH) across 7 scenarios x 5 tiers. Locale-aware loading. Triggers on Ollama timeout (15s).
+- **Bilingual System** — 300+ translation keys (TH/EN). examination_findings_th per patient. All UI labels use tr(). Instant locale switch.
+- **Sub-Tab UI** — Exam: 4 sub-tabs (Primary/Vitals/GCS/Head-to-Toe). Stabilize: 3 sub-tabs (Equipment/Drug Admin/Triage).
+- **3-Tab Dashboard** — My Performance (personal radar + history), Class Overview (class stats + radar + student table), Scenario Breakdown (per-scenario filter).
+- **Severity Markers** — 3-tier system for head-to-toe findings: ⚠ RED (life-threatening), ⚡ YELLOW (significant), no marker GREEN (normal).
+- **Markdown→BBCode Renderer** — Converts #/##/### headers, **bold**, - bullets to BBCode for RichTextLabel display.
+- **Drug Admin State Context** — Telemetry logs patient state + rhythm at time of drug administration.
+- **Post-Treatment Slowdown** — Each effective treatment reduces deterioration_rate by 20% (stacks, floor 0.1x).
+
+### Autoloads (13 total)
+GameManager, LocalisationManager, TelemetryCollector, ScenarioManager, OllamaReviewClient, OllamaDialogueClient, ECGRhythmManager, GCSAssessmentManager, SecondarySurveyManager, TriageSystem, ThemeMedical, AIDemoFallback, HistoryManager
 
 ---
 

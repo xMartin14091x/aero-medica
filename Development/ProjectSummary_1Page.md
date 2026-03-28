@@ -23,12 +23,13 @@ AeroMedica เปลี่ยนคอมพิวเตอร์ทุกเค
 
 **สภาพผู้ป่วยแย่ลงตามเวลาจริง** — ถ้าไม่รักษาทัน ผู้ป่วยอาจเสียชีวิตได้
 
-## สถานการณ์จำลอง
+## สถานการณ์จำลอง (5 ฉาก)
 
-- **Cardiac Arrest** — ผู้ป่วยหัวใจหยุดเต้นในที่ทำงาน (BLS: CPR + AED)
-- **Road Traffic Accident** — อุบัติเหตุทางถนน 3 ผู้บาดเจ็บ ความรุนแรงต่างกัน
-- **Building Fire** — สูดดมควัน, CO poisoning
-- **Mass Casualty Incident** — ระเบิดตลาด 6 ผู้บาดเจ็บ, ฝึก Triage
+- **Tutorial** — ผู้ป่วย 1 คน ไม่จำกัดเวลา เรียนรู้ระบบพื้นฐาน
+- **Cardiac Arrest** — ผู้ป่วยหัวใจหยุดเต้นในที่ทำงาน (BLS: CPR + AED + ROSC)
+- **Road Traffic Accident** — อุบัติเหตุทางถนน 3 ผู้บาดเจ็บ ความรุนแรงต่างกัน + เขตอันตรายไฟ
+- **Building Fire** — อพยพผู้ป่วย 3 คน สูดดมควัน CO poisoning + เขตอันตรายไฟ
+- **Mass Casualty Incident** — ระเบิดตลาด 6 ผู้บาดเจ็บ + random event ฝึก START Triage
 
 ## เทคโนโลยีหลัก
 
@@ -41,11 +42,18 @@ AeroMedica เปลี่ยนคอมพิวเตอร์ทุกเค
 | **AI Dialogue** | Ollama (ออฟไลน์) — บทสนทนาผู้ป่วยที่ไม่ซ้ำกัน |
 | **Drug Administration** | เลือกยา + ขนาด + ช่องทาง, ติดตาม Medication Error |
 | **Telemetry** | บันทึกทุกการกระทำ → Debrief Score + Protocol Adherence Report |
+| **AI Reviewer** | Ollama วิเคราะห์ผลงาน + cached fallback (Thai/English) เมื่อออฟไลน์ |
+| **Deterioration Budget** | Phase 1: 5 นาที (ก่อน cardiac arrest), Phase 2: 2 นาที (ก่อนเสียชีวิต) — ปรับตามจำนวนผู้ป่วย |
+| **Cooldown System** | ปุ่มแต่ละชนิดมี delay + concurrent limit + circular progress overlay |
+| **Bilingual** | Thai/English สลับได้ทุกหน้า — TranslationServer + 300+ tr() keys |
+| **Dashboard** | 3 tabs: My Performance, Class Overview, Scenario Breakdown + radar chart |
+| **ECG Display** | 7 จังหวะหัวใจ (Normal Sinus → Asystole) + strip images |
+| **Severity Markers** | ⚠ RED, ⚡ YELLOW, no marker GREEN — Head-to-Toe findings |
 
 ## กลุ่มเป้าหมาย
 
-- **หลัก (B2C):** บุคคลทั่วไป, ผู้สนใจการแพทย์, เกมเมอร์ที่อยากเรียนรู้
-- **รอง (B2B):** บุคลากรทางการแพทย์, ผู้เข้ารับการฝึกอบรม
+- **หลัก (B2B):** EMT/Paramedic นักเรียน, สถาบันฝึกอบรมแพทย์ฉุกเฉิน
+- **รอง (B2C):** บุคลากรทางการแพทย์ ผู้สนใจเรียนรู้
 
 ## ผลกระทบที่คาดหวัง
 
