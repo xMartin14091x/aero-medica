@@ -194,11 +194,19 @@ func request_review(session_data: Dictionary, protocol_analysis: Dictionary, err
 	# Compose the user prompt with all analysis data
 	var user_prompt := _compose_user_prompt(session_data, protocol_analysis, errors, answer_sheet)
 
+	# Append language instruction based on user's locale preference
+	var locale: String = TranslationServer.get_locale()
+	var lang_instruction: String = ""
+	if locale.begins_with("th"):
+		lang_instruction = "\n\nIMPORTANT: You MUST respond entirely in Thai (ภาษาไทย). All section headers, feedback, and recommendations must be in Thai. Keep medical abbreviations (SpO2, HR, BP, GCS, CPR, AED, etc.) in English."
+	else:
+		lang_instruction = "\n\nRespond in English."
+
 	# Build Ollama API request body
 	var request_body := {
 		"model": _config.get("model", "llama3.1:8b"),
 		"prompt": user_prompt,
-		"system": _system_prompt,
+		"system": _system_prompt + lang_instruction,
 		"stream": false,
 		"options": {
 			"num_predict": _config.get("max_tokens", 1500),
