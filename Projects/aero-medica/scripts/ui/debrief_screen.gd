@@ -511,16 +511,20 @@ func _request_ai_review(results: Dictionary) -> void:
 		"player_hazard_time": results.get("player_hazard_time", 0.0),
 	}
 
+	_review_request_active = true
 	review_client.request_review(session_data, protocol_analysis, errors, answer_sheet)
 
-	# Timeout fallback — 30s to account for discovery + LLM generation
-	var timer := get_tree().create_timer(30.0)
+	# Timeout fallback — 15s (faster fallback to cached reviews)
+	var timer := get_tree().create_timer(15.0)
 	timer.timeout.connect(_on_review_timeout)
 
 
+var _review_request_active: bool = false
+
 func _on_review_timeout() -> void:
-	if "Requesting" in _review_status_label.text or "Discovering" in _review_status_label.text or "Processing" in _review_status_label.text:
+	if _review_request_active:
 		# Timeout — try cached fallback
+		_review_request_active = false
 		_on_review_failed("Ollama timeout after 30 seconds")
 
 
@@ -552,6 +556,7 @@ func _on_review_parsed(review_data: Dictionary) -> void:
 
 ## OllamaReviewClient.review_received — display review text directly.
 func _on_review_text_received(review_text: String) -> void:
+	_review_request_active = false
 	_review_status_label.text = tr("REVIEW_TITLE")
 	_review_status_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
 
@@ -561,6 +566,7 @@ func _on_review_text_received(review_text: String) -> void:
 
 ## OllamaReviewClient.review_failed — fallback to cached review, then show error.
 func _on_review_failed(_error: String) -> void:
+	_review_request_active = false
 	# Try cached fallback before showing error
 	var fallback: Node = get_node_or_null("/root/AIDemoFallback")
 	if fallback and fallback.has_method("try_serve_cached"):
