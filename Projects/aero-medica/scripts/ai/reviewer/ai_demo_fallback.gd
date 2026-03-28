@@ -64,16 +64,30 @@ var _cache_map: Dictionary = {
 
 ## Try to serve a cached review based on scenario ID and overall score.
 ## Returns true if a cached review was found and emitted, false otherwise.
+## When the active locale begins with "th", attempts to load the Thai (_th) variant
+## first, then falls back to the English version if the Thai file does not exist.
 func try_serve_cached(scenario_id: String, overall_score: float, event_count: int) -> bool:
 	var tier := _determine_tier(overall_score, event_count)
-	var review_text := _load_cached_review(scenario_id, tier)
+	var use_thai := TranslationServer.get_locale().begins_with("th")
+
+	# Attempt locale-specific cached review first, then fall back to default.
+	var review_text := ""
+	if use_thai:
+		review_text = _load_cached_review(scenario_id, tier, true)
+	if review_text == "":
+		review_text = _load_cached_review(scenario_id, tier, false)
 
 	if review_text != "":
 		cached_review_served.emit(review_text, true)
 		return true
 
-	# Fallback: try loading any review for this scenario
-	var any_review := _load_any_cached_review(scenario_id)
+	# Fallback: try loading any review for this scenario (Thai first if applicable)
+	var any_review := ""
+	if use_thai:
+		any_review = _load_any_cached_review(scenario_id, true)
+	if any_review == "":
+		any_review = _load_any_cached_review(scenario_id, false)
+
 	if any_review != "":
 		cached_review_served.emit(any_review, true)
 		return true
@@ -95,12 +109,17 @@ func _determine_tier(overall_score: float, event_count: int) -> String:
 
 
 ## Load a specific cached review file.
-func _load_cached_review(scenario_id: String, tier: String) -> String:
+## When use_thai is true, appends "_th" before the file extension to load the
+## Thai variant. Returns empty string if the file does not exist.
+func _load_cached_review(scenario_id: String, tier: String, use_thai: bool = false) -> String:
 	var scenario_map: Dictionary = _cache_map.get(scenario_id, {})
 	var filename: String = scenario_map.get(tier, "")
 
 	if filename == "":
 		return ""
+
+	if use_thai:
+		filename = filename.replace(".txt", "_th.txt")
 
 	var path := CACHE_DIR + filename
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -113,10 +132,11 @@ func _load_cached_review(scenario_id: String, tier: String) -> String:
 
 
 ## Load any cached review for a scenario (first found).
-func _load_any_cached_review(scenario_id: String) -> String:
+## When use_thai is true, attempts to load Thai variants.
+func _load_any_cached_review(scenario_id: String, use_thai: bool = false) -> String:
 	var scenario_map: Dictionary = _cache_map.get(scenario_id, {})
 	for tier: String in scenario_map:
-		var text := _load_cached_review(scenario_id, tier)
+		var text := _load_cached_review(scenario_id, tier, use_thai)
 		if text != "":
 			return text
 	return ""
