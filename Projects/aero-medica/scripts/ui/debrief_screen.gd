@@ -10,7 +10,7 @@ signal return_to_menu()
 var _background: ColorRect = null
 var _title_label: Label = null
 var _stats_vbox: VBoxContainer = null
-var _patients_scroll: ScrollContainer = null
+## (removed _patients_scroll — patient summary cards auto-fit without scroll)
 var _patients_vbox: VBoxContainer = null
 var _review_status_label: Label = null
 var _review_text_label: RichTextLabel = null
@@ -99,25 +99,25 @@ func _build_ui() -> void:
 	_stats_vbox = VBoxContainer.new()
 	stats_inner.add_child(_stats_vbox)
 
-	# Timeline card (60% of left column)
+	# Timeline card (70% of left column — large, readable)
 	var timeline_card := PanelContainer.new()
 	T.style_panel(timeline_card)
 	timeline_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	timeline_card.size_flags_stretch_ratio = 0.6
+	timeline_card.size_flags_stretch_ratio = 0.7
 	left_col.add_child(timeline_card)
 
 	var timeline_inner := VBoxContainer.new()
-	timeline_inner.add_theme_constant_override("separation", 6)
+	timeline_inner.add_theme_constant_override("separation", 10)
 	timeline_card.add_child(timeline_inner)
 
 	var timeline_header := Label.new()
-	timeline_header.text = "Timeline"
+	timeline_header.text = tr("TIMELINE_ACTION")
 	T.style_label(timeline_header, "subtitle", "text_primary")
 	timeline_inner.add_child(timeline_header)
 
 	# Patient tabs (horizontal buttons to filter timeline)
 	_timeline_tabs = HBoxContainer.new()
-	_timeline_tabs.add_theme_constant_override("separation", 4)
+	_timeline_tabs.add_theme_constant_override("separation", 6)
 	timeline_inner.add_child(_timeline_tabs)
 
 	# Scrollable timeline events
@@ -127,23 +127,19 @@ func _build_ui() -> void:
 
 	_timeline_vbox = VBoxContainer.new()
 	_timeline_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_timeline_vbox.add_theme_constant_override("separation", 2)
+	_timeline_vbox.add_theme_constant_override("separation", 4)
 	timeline_scroll.add_child(_timeline_vbox)
 
-	# Patient Summary cards (below timeline in left column)
+	# Patient Summary cards (below timeline — no scroll, auto-fit)
 	var patients_header := Label.new()
 	patients_header.text = tr("DEBRIEF_PATIENTS_HEADER")
 	T.style_label(patients_header, "subtitle", "text_primary")
 	left_col.add_child(patients_header)
 
-	_patients_scroll = ScrollContainer.new()
-	_patients_scroll.custom_minimum_size = Vector2(0, 100)
-	left_col.add_child(_patients_scroll)
-
 	_patients_vbox = VBoxContainer.new()
 	_patients_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_patients_vbox.add_theme_constant_override("separation", 6)
-	_patients_scroll.add_child(_patients_vbox)
+	_patients_vbox.add_theme_constant_override("separation", 8)
+	left_col.add_child(_patients_vbox)
 
 	# ── RIGHT COLUMN (3/4 width) — AI Review ──
 	var right_col := VBoxContainer.new()
@@ -665,25 +661,38 @@ func _find_sibling_review_panel() -> Control:
 ## Event types to show in timeline + their display names.
 const TIMELINE_EVENT_TYPES := {
 	"interact": "Interacted",
-	"assess_airway": "Checked Airway",
-	"assess_breathing": "Checked Breathing",
+	# DRSABCDE primary survey
+	"assess_danger": "D — Danger Check",
+	"assess_response": "R — Response Check",
+	"assess_send_help": "S — Send for Help",
+	"assess_airway": "A — Airway Check",
+	"assess_breathing": "B — Breathing Check",
+	"assess_circulation": "C — Circulation Check",
+	"assess_disability": "D — Disability Check",
+	"assess_exposure": "E — Exposure Check",
+	# Vital signs
 	"assess_pulse": "Checked Pulse",
 	"assess_consciousness": "Checked Consciousness",
 	"assess_bleeding": "Checked Bleeding",
-	"assess_heart_rate": "Checked Heart Rate",
-	"assess_blood_pressure": "Checked Blood Pressure",
-	"assess_spo2": "Checked SpO2",
-	"assess_pupils": "Checked Pupils",
-	"assess_temperature": "Checked Temperature",
-	"assess_blood_glucose": "Checked Blood Glucose",
-	"assess_capillary_refill": "Checked Capillary Refill",
-	"assess_skin": "Checked Skin",
+	"assess_heart_rate": "Vital: Heart Rate",
+	"assess_blood_pressure": "Vital: Blood Pressure",
+	"assess_spo2": "Vital: SpO2",
+	"assess_pupils": "Vital: Pupils",
+	"assess_temperature": "Vital: Temperature",
+	"assess_blood_glucose": "Vital: Blood Glucose",
+	"assess_capillary_refill": "Vital: Capillary Refill",
+	"assess_skin": "Vital: Skin Assessment",
+	# Equipment + treatment
+	"equipment_deployed": "Equipment Deployed",
 	"treatment_applied": "Treatment Applied",
+	"drug_administered": "Drug Administered",
+	# Triage + state
 	"triage_assign": "Triage Assigned",
 	"patient_state_changed": "State Changed",
 	"diagnosis_submitted": "Diagnosis Submitted",
 	"cpr_performed": "CPR Performed",
 	"secondary_survey": "Secondary Survey",
+	"gcs_assessed": "GCS Assessed",
 }
 
 ## Get patient names from patient_summaries (reliable source — not from raw events).
@@ -795,7 +804,7 @@ func _refresh_timeline_entries(known_patients: Array[String] = []) -> void:
 
 		var entry := Label.new()
 		entry.text = display
-		T.style_label(entry, "caption", "text_secondary")
+		T.style_label(entry, "body_small", "text_primary")
 		entry.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_timeline_vbox.add_child(entry)
 
