@@ -31,6 +31,11 @@ ThemeMedical="*res://scripts/core/theme_medical.gd"
 AIDemoFallback="*res://scripts/ai/reviewer/ai_demo_fallback.gd"
 HistoryManager="*res://scripts/dashboard/history_manager.gd"
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://data/translations/translations.en.translation", "res://data/translations/translations.th.translation")
+locale/locale_filter_mode=0
+
 [display]
 
 window/size/viewport_width=1920
