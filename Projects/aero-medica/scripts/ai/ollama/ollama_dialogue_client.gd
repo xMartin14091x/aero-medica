@@ -76,21 +76,17 @@ func _setup_http() -> void:
 ## Auto-discover Ollama by probing candidate addresses in parallel.
 ## Checks: localhost, 127.0.0.1, and all local network IPs on port 11434.
 func _discover_ollama() -> void:
-	# If config explicitly sets a URL, use it directly
+	# Build candidate list: configured URL first (if set), then localhost, 127.0.0.1, then all local IPs
+	var candidates: Array[String] = []
+
 	var config_url: String = _config.get("ollama_url", "")
 	if config_url != "":
-		_discovered_url = config_url
-		_discovery_done = true
-		ollama_available = true
-		print("OllamaDialogueClient: Using configured URL: %s" % config_url)
-		ollama_discovered.emit(config_url)
-		_flush_queued_asks()
-		return
+		candidates.append(config_url)
 
-	# Build candidate list: localhost, 127.0.0.1, then all local IPs
-	var candidates: Array[String] = []
-	candidates.append("http://localhost:11434")
-	candidates.append("http://127.0.0.1:11434")
+	if "http://localhost:11434" not in candidates:
+		candidates.append("http://localhost:11434")
+	if "http://127.0.0.1:11434" not in candidates:
+		candidates.append("http://127.0.0.1:11434")
 
 	# Get all local network addresses from the OS
 	var local_addresses: PackedStringArray = IP.get_local_addresses()

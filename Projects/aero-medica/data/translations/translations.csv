@@ -107,7 +107,7 @@ REVIEW_ERROR,ไม่สามารถสร้างบทวิจารณ�
 REVIEW_CONTINUE,ดำเนินการต่อ,Continue
 
 DASHBOARD_STUDENT,แดชบอร์ดนักเรียน,Student Dashboard
-DASHBOARD_INSTRUCTOR,แดชบอร์ดผู้สอน,Instructor Dashboard
+DASHBOARD_TITLE,แดชบอร์ด,Dashboard
 DASHBOARD_HISTORY,ประวัติ,History
 DASHBOARD_OVERALL_SCORE,คะแนนรวม,Overall Score
 DASHBOARD_PASS_RATE,อัตราผ่าน,Pass Rate
@@ -232,6 +232,8 @@ SETTINGS_AI_STATUS,สถานะ Ollama,Ollama Status
 SETTINGS_AI_ONLINE,ออนไลน์,Online
 SETTINGS_AI_OFFLINE,ออฟไลน์,Offline
 SETTINGS_AI_MODEL,โมเดล AI,AI Model
+SETTINGS_AI_RECONNECT,เชื่อมต่อใหม่,Reconnect
+SETTINGS_AI_RECONNECTING,กำลังค้นหา...,Searching...
 SETTINGS_ABOUT,เกี่ยวกับ,About
 
 VITAL_SIGNS_TITLE,การตรวจสัญญาณชีพ,Vital Signs Assessment
@@ -280,6 +282,17 @@ DASHBOARD_BEST_AXIS,จุดแข็ง,Best Axis
 DASHBOARD_NO_SESSIONS,ยังไม่มีเซสชัน,No sessions recorded yet
 DASHBOARD_STUDENT_RESULTS,ผลนักเรียน,Student Results
 DASHBOARD_CLASS_AVG,คะแนนเฉลี่ยชั้นเรียน,Class Average
+DASHBOARD_EXPORT_CSV,ส่งออก CSV,Export CSV
+DASHBOARD_EXPORT_JSON,ส่งออก JSON,Export JSON
+DASHBOARD_PROGRESSION,กราฟพัฒนาการ,Score Progression
+DASHBOARD_TREND_UP,แนวโน้มดีขึ้น,Improving
+DASHBOARD_TREND_DOWN,แนวโน้มแย่ลง,Declining
+DASHBOARD_TREND_STABLE,คงที่,Stable
+DASHBOARD_EMPTY_STATE,ยังไม่มีเซสชัน ทำสถานการณ์จำลองให้เสร็จเพื่อดูผลงานที่นี่,No sessions yet. Complete a scenario to see your performance here.
+DASHBOARD_SCENARIO_STATS,สถิติสถานการณ์,Scenario Statistics
+DASHBOARD_SESSIONS_COUNT,จำนวนเซสชัน,Session Count
+DASHBOARD_BEST_SCORE,คะแนนสูงสุด,Best Score
+DASHBOARD_LATEST_SCORE,คะแนนล่าสุด,Latest Score
 
 DDX_SEARCH,ค้นหาการวินิจฉัย...,Search diagnoses...
 DDX_SELECTED,เลือกแล้ว,Selected
@@ -321,6 +334,10 @@ MENU_SPLASH_PROMPT,กดปุ่มใดก็ได้เพื่อดำ�
 MENU_VERSION,INDEV v1.0.1,INDEV v1.0.1
 MENU_AI_ONLINE,AI ออนไลน์,AI Online
 MENU_AI_OFFLINE,AI ออฟไลน์,AI Offline
+OLLAMA_POPUP_TITLE,ไม่พบ Ollama,Ollama Not Found
+OLLAMA_POPUP_MSG,เกมจะใช้ข้อความที่สร้างไว้ล่วงหน้าแทน AI — การสนทนากับผู้ป่วยและ AI Reviewer จะใช้คำตอบสำเร็จรูป,The game will use pre-generated text instead of AI — patient dialogue and AI Reviewer will use cached responses.
+OLLAMA_POPUP_CHECKED,ตรวจสอบแล้ว:,Checked:
+OLLAMA_POPUP_OK,เข้าใจแล้ว,Got it
 MENU_COPYRIGHT,© 2026,© 2026
 
 AXIS_TRIAGE_SPEED,ความเร็วคัดกรอง,Triage Speed

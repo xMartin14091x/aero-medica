@@ -31,6 +31,7 @@ var _quit_title: Label = null
 var _quit_msg: Label = null
 var _quit_confirm_btn: Button = null
 var _quit_cancel_btn: Button = null
+var _ollama_popup_shown: bool = false
 
 ## Splash state — "Press any button to continue"
 var _splash_label: Label = null
@@ -89,6 +90,7 @@ func _ready() -> void:
 
 	_update_ollama_status()
 	_start_ollama_poll()
+	_listen_for_ollama_discovery()
 
 
 ## ---- BUILD UI STRUCTURE ------------------------------------------------
@@ -517,6 +519,170 @@ func _start_ollama_poll() -> void:
 	add_child(timer)
 
 
+## Listen for Ollama discovery result to show popup if not found.
+func _listen_for_ollama_discovery() -> void:
+	var client: Node = get_node_or_null("/root/OllamaDialogueClient")
+	if not client:
+		return
+
+	# If discovery already completed, check immediately
+	if "ollama_available" in client and "_discovery_done" in client:
+		if client._discovery_done:
+			_check_ollama_popup.call_deferred()
+			return
+
+	# Wait for discovery to finish — poll after probe timeout (4s covers 3s probe + margin)
+	var check_timer := Timer.new()
+	check_timer.wait_time = 4.0
+	check_timer.one_shot = true
+	check_timer.timeout.connect(_check_ollama_popup)
+	add_child(check_timer)
+	check_timer.start()
+
+
+## Show popup notification if Ollama was not found after discovery.
+func _check_ollama_popup() -> void:
+	if _ollama_popup_shown:
+		return
+
+	var client: Node = get_node_or_null("/root/OllamaDialogueClient")
+	if not client or not ("ollama_available" in client):
+		return
+
+	if client.ollama_available:
+		return  # Ollama found — no popup needed
+
+	_ollama_popup_shown = true
+	_show_ollama_offline_popup()
+
+
+func _show_ollama_offline_popup() -> void:
+	# Full-screen dimmed overlay
+	var overlay: ColorRect = ColorRect.new()
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0.0, 0.0, 0.0, 0.6)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(overlay)
+
+	# Center container for the dialog card
+	var center: CenterContainer = CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+
+	# Dialog card
+	var card: PanelContainer = PanelContainer.new()
+	card.custom_minimum_size = Vector2(480, 0)
+	if _theme:
+		# Use a highlighted card style with accent border
+		var style := StyleBoxFlat.new()
+		style.bg_color = _theme.c("bg_card") if _theme.has_method("c") else Color(0.1, 0.12, 0.18)
+		style.border_color = _theme.c("accent_yellow") if _theme.has_method("c") else Color(1.0, 0.85, 0.2)
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(12)
+		style.set_content_margin_all(0)
+		card.add_theme_stylebox_override("panel", style)
+	center.add_child(card)
+
+	var margin: MarginContainer = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 32)
+	margin.add_theme_constant_override("margin_right", 32)
+	margin.add_theme_constant_override("margin_top", 28)
+	margin.add_theme_constant_override("margin_bottom", 28)
+	card.add_child(margin)
+
+	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 20)
+	margin.add_child(vbox)
+
+	# Warning icon + title row
+	var title_row: HBoxContainer = HBoxContainer.new()
+	title_row.add_theme_constant_override("separation", 10)
+	title_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(title_row)
+
+	var icon_lbl: Label = Label.new()
+	icon_lbl.text = "!"
+	icon_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if _theme:
+		icon_lbl.add_theme_font_size_override("font_size", 24)
+		icon_lbl.add_theme_color_override("font_color", _theme.c("accent_yellow"))
+	else:
+		icon_lbl.add_theme_font_size_override("font_size", 24)
+		icon_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+	# Circle background for icon
+	var icon_bg: PanelContainer = PanelContainer.new()
+	icon_bg.custom_minimum_size = Vector2(36, 36)
+	var icon_style := StyleBoxFlat.new()
+	icon_style.bg_color = Color(1.0, 0.85, 0.2, 0.15)
+	icon_style.set_corner_radius_all(18)
+	icon_style.set_content_margin_all(0)
+	icon_bg.add_theme_stylebox_override("panel", icon_style)
+	var icon_center: CenterContainer = CenterContainer.new()
+	icon_bg.add_child(icon_center)
+	icon_center.add_child(icon_lbl)
+	title_row.add_child(icon_bg)
+
+	var title_lbl: Label = Label.new()
+	title_lbl.text = tr("OLLAMA_POPUP_TITLE")
+	if _theme:
+		_theme.style_label(title_lbl, "title_large")
+	else:
+		title_lbl.add_theme_font_size_override("font_size", 22)
+	title_row.add_child(title_lbl)
+
+	# Separator line
+	var sep: HSeparator = HSeparator.new()
+	if _theme:
+		var sep_height := StyleBoxFlat.new()
+		sep_height.bg_color = Color(1.0, 0.85, 0.2, 0.3)
+		sep.add_theme_stylebox_override("separator", sep_height)
+	vbox.add_child(sep)
+
+	# Message body
+	var msg_lbl: Label = Label.new()
+	msg_lbl.text = tr("OLLAMA_POPUP_MSG")
+	msg_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	msg_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if _theme:
+		_theme.style_label(msg_lbl, "body")
+	else:
+		msg_lbl.add_theme_font_size_override("font_size", 14)
+	vbox.add_child(msg_lbl)
+
+	# Checked addresses info
+	var addr_lbl: Label = Label.new()
+	var local_ips: PackedStringArray = IP.get_local_addresses()
+	var display_ips: Array[String] = ["localhost", "127.0.0.1"]
+	for addr: String in local_ips:
+		if addr == "127.0.0.1" or addr == "::1" or addr.begins_with("fe80:"):
+			continue
+		if "." in addr and ":" not in addr:
+			display_ips.append(addr)
+			break  # Show just the first real LAN IP to keep it clean
+	addr_lbl.text = tr("OLLAMA_POPUP_CHECKED") + " " + ", ".join(display_ips)
+	addr_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if _theme:
+		_theme.style_label(addr_lbl, "body_small", "text_muted")
+	else:
+		addr_lbl.add_theme_font_size_override("font_size", 12)
+		addr_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+	vbox.add_child(addr_lbl)
+
+	# Button
+	var btn_center: CenterContainer = CenterContainer.new()
+	vbox.add_child(btn_center)
+
+	var ok_btn: Button = Button.new()
+	ok_btn.text = tr("OLLAMA_POPUP_OK")
+	ok_btn.custom_minimum_size = Vector2(160, 42)
+	if _theme:
+		_theme.style_button(ok_btn, "primary")
+	ok_btn.pressed.connect(func() -> void:
+		overlay.queue_free()
+	)
+	btn_center.add_child(ok_btn)
+
+
 ## ---- SPLASH DISMISS ---------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -575,7 +741,7 @@ func _on_menu_button_pressed(signal_name: String) -> void:
 			dashboard_requested.emit()
 			var gm: Node = get_node_or_null("/root/GameManager")
 			if gm and gm.has_method("change_scene"):
-				gm.change_scene("res://scenes/ui/dashboard/InstructorDashboard.tscn")
+				gm.change_scene("res://scenes/ui/dashboard/Dashboard.tscn")
 		"settings_requested":
 			settings_requested.emit()
 			var gm: Node = get_node_or_null("/root/GameManager")

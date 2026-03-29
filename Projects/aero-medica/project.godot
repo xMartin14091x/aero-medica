@@ -29,7 +29,7 @@ SecondarySurveyManager="*res://scripts/medical/secondary_survey_manager.gd"
 TriageSystem="*res://scripts/medical/triage_system.gd"
 ThemeMedical="*res://scripts/core/theme_medical.gd"
 AIDemoFallback="*res://scripts/ai/reviewer/ai_demo_fallback.gd"
-HistoryManager="*res://scripts/core/history_manager.gd"
+HistoryManager="*res://scripts/dashboard/history_manager.gd"
 
 [display]
 

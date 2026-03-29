@@ -320,6 +320,15 @@ func _build_ai_card() -> void:
 	_ai_url_label.text = _ai_config.get("ollama_url", "http://localhost:11434")
 	url_row.add_child(_ai_url_label)
 
+	# Reconnect button
+	var reconnect_btn := Button.new()
+	reconnect_btn.text = tr("SETTINGS_AI_RECONNECT")
+	reconnect_btn.custom_minimum_size = Vector2(160, 36)
+	if _theme:
+		_theme.style_button(reconnect_btn, "small")
+	reconnect_btn.pressed.connect(_on_reconnect_ollama)
+	vbox.add_child(reconnect_btn)
+
 
 ## ── Card 5: About ───────────────────────────────────────────────────
 
@@ -729,6 +738,60 @@ func _set_ollama_status(online: bool) -> void:
 		_ollama_status_dot.color = _theme.c("accent_red")
 		_ollama_status_label.text = "Offline"
 		_theme.style_label(_ollama_status_label, "body", "accent_red")
+
+
+## Re-trigger Ollama discovery on both AI clients and refresh status.
+func _on_reconnect_ollama() -> void:
+	_ollama_status_label.text = tr("SETTINGS_AI_RECONNECTING")
+	if _theme:
+		_theme.style_label(_ollama_status_label, "body", "accent_yellow")
+	else:
+		_ollama_status_label.add_theme_color_override("font_color", Color.YELLOW)
+	_ollama_status_dot.color = Color.YELLOW
+
+	# Re-trigger discovery on dialogue client
+	var dialogue_client: Node = get_node_or_null("/root/OllamaDialogueClient")
+	if dialogue_client:
+		if "ollama_available" in dialogue_client:
+			dialogue_client.ollama_available = false
+		if "_discovery_done" in dialogue_client:
+			dialogue_client._discovery_done = false
+		if "_discovered_url" in dialogue_client:
+			dialogue_client._discovered_url = ""
+		if dialogue_client.has_method("_discover_ollama"):
+			dialogue_client._discover_ollama()
+
+	# Re-trigger discovery on review client
+	var review_client: Node = get_node_or_null("/root/OllamaReviewClient")
+	if review_client:
+		if "_discovery_done" in review_client:
+			review_client._discovery_done = false
+		if "_discovered_url" in review_client:
+			review_client._discovered_url = ""
+		if review_client.has_method("_discover_ollama"):
+			review_client._discover_ollama()
+
+	# Check result after probe timeout
+	var check_timer := Timer.new()
+	check_timer.wait_time = 4.0
+	check_timer.one_shot = true
+	check_timer.timeout.connect(_on_reconnect_check)
+	add_child(check_timer)
+	check_timer.start()
+
+
+func _on_reconnect_check() -> void:
+	var dialogue_client: Node = get_node_or_null("/root/OllamaDialogueClient")
+	var is_online := false
+	if dialogue_client and "ollama_available" in dialogue_client:
+		is_online = dialogue_client.ollama_available
+
+	_set_ollama_status(is_online)
+
+	# Also update the URL label to show discovered address
+	if is_online and dialogue_client and "_discovered_url" in dialogue_client:
+		if _ai_url_label:
+			_ai_url_label.text = dialogue_client._discovered_url
 
 
 ## ── Audio System Discovery ──────────────────────────────────────────
