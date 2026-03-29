@@ -2027,10 +2027,39 @@ Downloaded 8 Kenney asset packs (car kit, city commercial/industrial/suburban, r
 ## Session 7 AeroMedica — Scenario Map Inventory & Team Briefing
 Confirmed 5 playable scenes for competition. Described each with decoration guidance. Legacy RTA V1 unused.
 
+## Session 8 AeroMedica — Sub-Tab UI Refactor + Dashboard 3-Tab + AI Fallback
+Three parallel workstreams: (1) Exam split into 4 sub-tabs (Primary/Vitals/GCS/Head-to-Toe), Stabilize into 3 (Equipment/Drug Admin/Triage) per teammate UX feedback. (2) Dashboard 3-tab revamp (My Performance, Class Overview, Scenario Breakdown). (3) AI reviewer cached fallback fix + markdown→BBCode rendering. 40+ bilingual translation keys added. Pushed to GitHub `ui-revamp-v2` (commit `e593cec`).
+
+---
+
+## 29-03-2026
+*Source: 29-03-2026_RoundTable_Vol1, March/29-03-2026_RoundTable_Vol1*
+
+## Session 1 AeroMedica — Medical Skill Degradation Research
+Web research for competition poster problem statement. Found key statistic: Paramedic skill degradation ~61% within 2 years (Stept & Stross, 1980, Annals of Emergency Medicine). ACLS pass rates drop to 14% at 12 months post-certification (Smith et al., 2008). Research used for poster Section 1 (Problem) and pitch script.
+
+## Session 2 AeroMedica — /plan: Dashboard B2B Simplification
+Planned and executed Dashboard B2B Simplification (supersedes MOD-DB-01). Changes: renamed "Instructor Dashboard" to "Dashboard", reduced from 3 tabs to 2 (ผลงานของฉัน + แยกตามสถานการณ์), removed class overview tab entirely, removed all mock student data (`_generate_mock_students()`, seed 42), removed peer/student comparison. New features: LineChart score progression, CSV/JSON data export via DataExporter, trend indicators per axis. Data loads fresh from HistoryManager on every open. Plan document: `04_Modification Logs/Dashboard/02. PLANNED_DashboardB2BSimplification_29-03-2026.md`. New file: `scripts/ui/dashboard.gd` (997 lines). Scene: `scenes/ui/dashboard/Dashboard.tscn`.
+
+## Session 3 AeroMedica — Score + Save Pipeline (HistoryManager)
+Discovered that `HistoryManager.save_session_scores()` was never called — the entire save pipeline was disconnected. Wired scoring pipeline: ScenarioManager now calls `_save_session_to_history(results)` after `scenario_ended` signal. Pipeline: ScoringEngine.calculate_scores() with ProtocolAdherenceTracker → HistoryManager.save_session_scores() → JSON to `user://history/`. Fallback basic scoring if ScoringEngine unavailable. Fixed HistoryManager autoload path (`scripts/core/` → `scripts/dashboard/`). Fixed `data_exporter.gd` type inference errors (lines 111-113).
+
+## Session 4 AeroMedica — Ollama Discovery Always-Probe + Startup Popup
+Fixed both AI clients (`ollama_dialogue_client.gd`, `ollama_review_client.gd`) to always probe all addresses (localhost, 127.0.0.1, local IPs) instead of assuming available when config URL is set. Added `ollama_available` flag and `_mark_discovery_failed()` to review client (was missing). Added in-game styled popup overlay on main menu when Ollama is not found after 4-second probe timeout — dimmed backdrop, yellow-bordered card, shows checked addresses, "เข้าใจแล้ว" dismiss button. Popup shows once per game launch. Added Reconnect button in Settings > AI section to re-trigger discovery on both clients.
+
+## Session 5 AeroMedica — Kenney Assets + LFS Cleanup + GitHub Push
+Removed `.glb` from Git LFS tracking (22MB Kenney assets too small to warrant LFS, and LFS quota was a concern). Added 982 Kenney low-poly 3D asset files (cars, commercial, industrial, suburban, platformer). Re-applied all code changes lost during `git lfs migrate export` (8 files). Committed and pushed to GitHub `ui-revamp-v2` (commit `8e8f53c`, 505 files changed).
+
+## Session 6 AeroMedica — Competition Poster Refinement
+Reviewed and refined Gemini-generated infographic poster. Key feedback applied: replaced gold/yellow accent theme with navy blue + blue highlights to match game's visual identity, changed business model from B2B2C to B2B (hospitals + training institutions only, removed general public), restructured Section 5 from dev stats to proper prototype conclusion (what/function/how to use/current state), corrected Section 6 text. Extracted and verified all Thai text from generated poster. Provided 5 specific text corrections for regeneration.
+
+## Session 7 AeroMedica — Prototype Development Process Document Review
+Reviewed `PrototypeDevelopmentProcess_TH_4Pages.md` for competition submission. Identified 4 factual issues: Dashboard "3 tabs" → should be 2, "dashboard สำหรับผู้สอน" → just "dashboard", 5 ฉาก vs 7 scenario JSONs inconsistency (clarified: 5 active + 2 variant/alternate), missing reference section. Produced corrected Section 7 (prototype conclusion with 4 subsections: what/function/how/status) and Section 8 (references to development artifacts). Confirmed 7 JSON files: 5 active scenarios matching SCENARIOS array + 2 variants (duplicate cardiac, multi-patient fire).
+
 ---
 
 ## Development Summary
 
-- **Total AeroMedica sessions extracted:** 65
-- **Source files scanned:** 17
-- **Development period:** 07-03-2026 to 28-03-2026 (22 days)
+- **Total AeroMedica sessions extracted:** 72
+- **Source files scanned:** 19
+- **Development period:** 07-03-2026 to 29-03-2026 (23 days)
