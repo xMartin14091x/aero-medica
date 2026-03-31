@@ -39,7 +39,7 @@ All AI tools served as assistants under human direction. The team made every des
 
 **Verification:** Every code output was tested in-game by the team before acceptance. Every document was reviewed and corrected by the team before submission.
 
-### 3. Google Gemini (Gemini 2.5 Pro) — Visual and Ideation Assistant
+### 3. Google Gemini (Gemini 3.1 Pro) — Visual and Ideation Assistant
 
 **Role:** Brainstorming helper and image generator.
 
