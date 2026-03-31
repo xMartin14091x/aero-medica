@@ -21,7 +21,7 @@ func _ready() -> void:
 
 	#_generate_floor()  # Floor tiles already placed in CardiacArrest.tscn — disabled to prevent overlap
 	_create_walls()
-	_place_furniture()
+	#_place_furniture()  # [MANUAL] Team places assets via Godot editor
 	_place_spawn_markers()
 	_setup_navigation()
 	_setup_lighting()
@@ -93,6 +93,7 @@ func _create_wall_segment(pos: Vector3, wall_size: Vector3) -> void:
 	body.add_child(col)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 func _place_furniture() -> void:
 	# Office desk
 	_create_prop(Vector3(2.0 * TILE_SIZE, 0.4, 2.0 * TILE_SIZE), Vector3(1.6, 0.8, 0.8), Color(0.5, 0.35, 0.2))
@@ -197,6 +198,7 @@ func _set_ambient_audio() -> void:
 			audio_sys.set_ambient(3)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 func _create_prop(pos: Vector3, box_size: Vector3, color: Color) -> void:
 	var body := StaticBody3D.new()
 	body.position = pos

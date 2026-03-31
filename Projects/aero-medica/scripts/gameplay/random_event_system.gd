@@ -171,7 +171,62 @@ func _spawn_new_patient(data: Dictionary) -> void:
 		persona.pain_level = persona_data.get("pain_level", 0)
 		persona.panic_level = persona_data.get("panic_level", 0.0)
 		persona.language_clarity = persona_data.get("language_clarity", 1.0)
+		# Load SAMPLE history data from event JSON
+		var history_data: Dictionary = data.get("history", {})
+		if not history_data.is_empty():
+			persona.history_symptoms = history_data.get("symptoms", {})
+			persona.history_allergies = history_data.get("allergies", {})
+			persona.history_medications = history_data.get("medications", {})
+			persona.history_past = history_data.get("past_history", {})
+			persona.history_last_meal = history_data.get("last_meal", {})
+			persona.history_events = history_data.get("events", {})
+			persona.history_opqrst = history_data.get("opqrst", {})
 		patient.persona = persona
+
+	# Load vital signs from event data
+	if medical:
+		var vitals_data: Dictionary = data.get("vitals", {})
+		if not vitals_data.is_empty():
+			if vitals_data.has("heart_rate"):
+				medical.heart_rate = vitals_data["heart_rate"]
+			if vitals_data.has("blood_pressure_systolic"):
+				medical.blood_pressure_systolic = vitals_data["blood_pressure_systolic"]
+			if vitals_data.has("blood_pressure_diastolic"):
+				medical.blood_pressure_diastolic = vitals_data["blood_pressure_diastolic"]
+			if vitals_data.has("spo2"):
+				medical.spo2 = vitals_data["spo2"]
+			if vitals_data.has("temperature"):
+				medical.temperature = vitals_data["temperature"]
+			if vitals_data.has("blood_glucose"):
+				medical.blood_glucose = vitals_data["blood_glucose"]
+			if vitals_data.has("capillary_refill"):
+				medical.capillary_refill = vitals_data["capillary_refill"]
+			if vitals_data.has("pupil_left_size"):
+				medical.pupil_left_size = vitals_data["pupil_left_size"]
+			if vitals_data.has("pupil_right_size"):
+				medical.pupil_right_size = vitals_data["pupil_right_size"]
+			if vitals_data.has("pupil_left_reactive"):
+				medical.pupil_left_reactive = vitals_data["pupil_left_reactive"]
+			if vitals_data.has("pupil_right_reactive"):
+				medical.pupil_right_reactive = vitals_data["pupil_right_reactive"]
+			if vitals_data.has("skin_color"):
+				medical.skin_color = vitals_data["skin_color"]
+			if vitals_data.has("skin_temperature"):
+				medical.skin_temperature = vitals_data["skin_temperature"]
+			if vitals_data.has("skin_moisture"):
+				medical.skin_moisture = vitals_data["skin_moisture"]
+			if vitals_data.has("ecg_rhythm"):
+				medical.ecg_rhythm = vitals_data["ecg_rhythm"]
+			if vitals_data.has("gcs_eye"):
+				medical.gcs_eye = vitals_data["gcs_eye"]
+			if vitals_data.has("gcs_verbal"):
+				medical.gcs_verbal = vitals_data["gcs_verbal"]
+			if vitals_data.has("gcs_motor"):
+				medical.gcs_motor = vitals_data["gcs_motor"]
+		# Load examination findings (Head-to-Toe) — both English and Thai
+		medical.examination_findings = data.get("examination_findings", {})
+		if data.has("examination_findings_th"):
+			medical.examination_findings_th = data.get("examination_findings_th", {})
 
 	# Configure deterioration
 	var deterioration: Node = patient.get_node_or_null("DeteriorationSystem")
@@ -181,6 +236,19 @@ func _spawn_new_patient(data: Dictionary) -> void:
 			deterioration.deterioration_rate = det_data["rate"]
 		if det_data.has("enabled"):
 			deterioration.deterioration_enabled = det_data["enabled"]
+		if det_data.has("bleeding_interval"):
+			deterioration.bleeding_interval = det_data["bleeding_interval"]
+		if det_data.has("airway_to_unconscious"):
+			deterioration.airway_to_unconscious = det_data["airway_to_unconscious"]
+		if det_data.has("unconscious_to_cardiac"):
+			deterioration.unconscious_to_cardiac = det_data["unconscious_to_cardiac"]
+		if det_data.has("cardiac_to_dead"):
+			deterioration.cardiac_to_dead = det_data["cardiac_to_dead"]
+
+	# Store per-patient correct diagnosis from event data (if present).
+	var patient_correct_ddx: Array = data.get("correct_diagnosis", [])
+	if not patient_correct_ddx.is_empty():
+		patient.set_meta("correct_diagnosis", patient_correct_ddx)
 
 	# Add to patients group for telemetry tracking
 	patient.add_to_group("patients")

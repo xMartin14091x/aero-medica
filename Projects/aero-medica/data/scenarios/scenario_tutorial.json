@@ -48,10 +48,19 @@
 				"head": "No head injury. No scalp laceration. Alert, responds to voice. Pupils equal 4mm, briskly reactive bilaterally. No facial trauma.",
 				"neck": "No cervical tenderness. Trachea midline. No JVD.",
 				"chest": "Clear bilateral breath sounds. No chest wall tenderness. RR 20 /min. SpO2 97%.",
-				"abdomen": "Soft. Mild left flank tenderness on palpation — likely from impact. No guarding or rigidity.",
+				"abdomen": "⚡ Soft. Mild left flank tenderness on palpation — likely from impact. No guarding or rigidity.",
 				"pelvis": "Stable on compression. No pelvic tenderness.",
 				"back": "No midline spinal tenderness. No deformity.",
-				"extremities": "Left lower leg: 8cm laceration with active venous bleeding, severity 1. Glass and road debris visible. Right leg intact. Distal pulses present bilaterally. CRT 2 sec."
+				"extremities": "⚡ Left lower leg: 8cm laceration with active venous bleeding, severity 1. Glass and road debris visible. Right leg intact. Distal pulses present bilaterally. CRT 2 sec."
+			},
+			"examination_findings_th": {
+				"head": "ไม่มีบาดเจ็บที่ศีรษะ ไม่มีแผลฉีกที่หนังศีรษะ ตื่นตัว ตอบสนองต่อเสียง รูม่านตาเท่ากัน 4mm ตอบสนองต่อแสงดีทั้ง 2 ข้าง ไม่มีบาดเจ็บที่ใบหน้า",
+				"neck": "ไม่มีกดเจ็บที่คอ หลอดลมอยู่กึ่งกลาง ไม่มีหลอดเลือดดำที่คอโป่ง",
+				"chest": "เสียงหายใจปกติทั้ง 2 ข้าง ไม่มีกดเจ็บที่ผนังทรวงอก RR 20 /min SpO2 97%",
+				"abdomen": "⚡ ท้องนิ่ม กดเจ็บเล็กน้อยบริเวณสีข้างซ้าย — น่าจะจากแรงกระแทก ไม่มี guarding หรือ rigidity",
+				"pelvis": "เชิงกรานมั่นคงเมื่อกด ไม่มีกดเจ็บที่เชิงกราน",
+				"back": "ไม่มีกดเจ็บแนวกระดูกสันหลัง ไม่มีความผิดรูป",
+				"extremities": "⚡ ขาซ้ายส่วนล่าง: แผลฉีก 8cm มีเลือดดำไหลออก ความรุนแรงระดับ 1 มองเห็นเศษแก้วและเศษวัสดุจากถนน ขาขวาปกติ คลำชีพจรปลายมือปลายเท้าได้ทั้ง 2 ข้าง CRT 2 sec"
 			},
 			"history": {
 				"symptoms": {
@@ -86,6 +95,7 @@
 				"enabled": true,
 				"bleeding_interval": 60.0
 			},
+			"correct_diagnosis": ["Minor Bleeding / Laceration", "Soft Tissue Injury"],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
@@ -93,8 +103,7 @@
 				"assess_airway",
 				"assess_breathing",
 				"assess_pulse",
-				"control_bleeding",
-				"reassess"
+				"triage_assign"
 			]
 		}
 	],

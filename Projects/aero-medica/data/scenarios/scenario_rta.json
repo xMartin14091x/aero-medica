@@ -8,7 +8,11 @@
 	"time_limit_seconds": 900,
 	"patients": [
 		{
-			"position": { "x": 3.96, "y": 0.0, "z": 2.81 },
+			"position": {
+				"x": 3.96,
+				"y": 0.0,
+				"z": 2.81
+			},
 			"persona": {
 				"name": "Somchai",
 				"age": 35,
@@ -83,30 +87,49 @@
 			"examination_findings": {
 				"head": "No head injury. No scalp laceration. GCS 15 (E4V5M6) — Alert. Pupils equal, 4mm, briskly reactive bilaterally. No facial trauma.",
 				"neck": "No midline cervical tenderness. Trachea midline. No JVD. No neck hematoma. C-spine clinically low risk.",
-				"chest": "Splinting of respiration on left side. Tenderness ribs 4-6 left lateral wall. Crepitus on palpation. Possible hemothorax — breath sounds reduced left base. RR 22 /min, SpO2 94%.",
-				"abdomen": "Soft. Mild left upper quadrant tenderness — possible splenic contusion. No guarding or rigidity. No distension.",
+				"chest": "⚡ Splinting of respiration on left side. Tenderness ribs 4-6 left lateral wall. Crepitus on palpation. Possible hemothorax — breath sounds reduced left base. RR 22 /min, SpO2 94%.",
+				"abdomen": "⚡ Soft. Mild left upper quadrant tenderness — possible splenic contusion. No guarding or rigidity. No distension.",
 				"pelvis": "Stable on single anterior compression. No pelvic tenderness.",
 				"back": "No midline spinal tenderness. No posterior rib deformity.",
-				"extremities": "Large laceration left lower leg — active arterial bleeding, severity 2. Glass fragments visible. Tourniquet site identified 2-3 inches proximal. Right leg intact. Distal pulses present bilaterally."
+				"extremities": "⚠ Large laceration left lower leg — active arterial bleeding, severity 2. Glass fragments visible. Tourniquet site identified 2-3 inches proximal. Right leg intact. Distal pulses present bilaterally."
+			},
+			"examination_findings_th": {
+				"head": "ไม่มีบาดเจ็บที่ศีรษะ ไม่มีแผลฉีกที่หนังศีรษะ GCS 15 (E4V5M6) — ตื่นตัว รูม่านตาเท่ากัน 4mm ตอบสนองต่อแสงดีทั้ง 2 ข้าง ไม่มีบาดเจ็บที่ใบหน้า",
+				"neck": "ไม่มีกดเจ็บแนวกลางกระดูกคอ หลอดลมอยู่กึ่งกลาง ไม่มีหลอดเลือดดำที่คอโป่ง ไม่มีก้อนเลือดที่คอ กระดูกคอความเสี่ยงต่ำทางคลินิก",
+				"chest": "⚡ หายใจเจ็บด้านซ้าย กดเจ็บซี่โครง 4-6 ผนังด้านข้างซ้าย คลำได้เสียงกรอบแกรบ อาจมี hemothorax — เสียงหายใจลดลงที่ฐานปอดซ้าย RR 22 /min SpO2 94%",
+				"abdomen": "⚡ ท้องนิ่ม กดเจ็บเล็กน้อยบริเวณท้องซ้ายบน — อาจม้ามช้ำ ไม่มี guarding หรือ rigidity ไม่อืด",
+				"pelvis": "เชิงกรานมั่นคงเมื่อกดด้านหน้า ไม่มีกดเจ็บที่เชิงกราน",
+				"back": "ไม่มีกดเจ็บแนวกระดูกสันหลัง ไม่มีความผิดรูปของซี่โครงด้านหลัง",
+				"extremities": "⚠ แผลฉีกขนาดใหญ่ที่ขาซ้ายส่วนล่าง — เลือดแดงไหล ความรุนแรงระดับ 2 มองเห็นเศษแก้ว ระบุตำแหน่งรัดห้ามเลือด 2-3 นิ้วเหนือแผล ขาขวาปกติ คลำชีพจรปลายเท้าได้ทั้ง 2 ข้าง"
 			},
 			"deterioration": {
-				"rate": 0.8,
+				"rate": 0.5,
 				"enabled": true,
-				"bleeding_interval": 30.0
+				"bleeding_interval": 60.0,
+				"airway_to_unconscious": 240.0,
+				"unconscious_to_cardiac": 180.0,
+				"cardiac_to_dead": 120.0
 			},
+			"correct_diagnosis": [
+				"Trauma -- Multi-system",
+				"Haemorrhagic Shock",
+				"Internal Bleeding"
+			],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"assess_airway",
 				"assess_breathing",
 				"assess_pulse",
-				"control_bleeding",
-				"triage_assign",
-				"reassess"
+				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": 7.96, "y": 0.0, "z": -1.19 },
+			"position": {
+				"x": 7.96,
+				"y": 0.0,
+				"z": -1.19
+			},
 			"persona": {
 				"name": "Nanthida",
 				"age": 28,
@@ -179,33 +202,50 @@
 				"gcs_motor": 5
 			},
 			"examination_findings": {
-				"head": "Multiple small facial lacerations. No scalp laceration. GCS 12 (E4V3M5) — responds to voice, confused verbal. Pupils equal 3mm, reactive. No periorbital bruising.",
+				"head": "⚡ Multiple small facial lacerations. No scalp laceration. GCS 12 (E4V3M5) — responds to voice, confused verbal. Pupils equal 3mm, reactive. No periorbital bruising.",
 				"neck": "⚠ Midline cervical tenderness C4-C5 — suspected cervical fracture. Tracheal deviation to right side — sign of tension pneumothorax. Neck veins flat. Immobilise cervical spine.",
 				"chest": "⚠ Paradoxical chest movement left side — suspected flail chest or tension pneumothorax. Breath sounds markedly diminished left. RR 28 /min. SpO2 88% — hypoxia critical. Immediate airway management required.",
 				"abdomen": "Soft. No tenderness. No bruising.",
 				"pelvis": "Stable on compression.",
 				"back": "Unable to fully assess — patient in respiratory distress. Maintain spinal precautions.",
-				"extremities": "Minor bruising bilateral upper extremities from impact. No fractures palpated. Distal pulses present. OCP noted (increased DVT risk)."
+				"extremities": "⚡ Minor bruising bilateral upper extremities from impact. No fractures palpated. Distal pulses present. OCP noted (increased DVT risk)."
+			},
+			"examination_findings_th": {
+				"head": "⚡ แผลฉีกเล็กหลายแห่งที่ใบหน้า ไม่มีแผลฉีกที่หนังศีรษะ GCS 12 (E4V3M5) — ตอบสนองต่อเสียง พูดสับสน รูม่านตาเท่ากัน 3mm ตอบสนองต่อแสง ไม่มีรอยช้ำรอบตา",
+				"neck": "⚠ กดเจ็บแนวกลางกระดูกคอ C4-C5 — สงสัยกระดูกคอหัก หลอดลมเบี่ยงไปทางขวา — สัญญาณของ tension pneumothorax หลอดเลือดดำที่คอแฟบ ต้องตรึงกระดูกคอ",
+				"chest": "⚠ หน้าอกเคลื่อนไหวผิดปกติด้านซ้าย — สงสัย flail chest หรือ tension pneumothorax เสียงหายใจลดลงมากด้านซ้าย RR 28 /min SpO2 88% — ขาดออกซิเจนวิกฤต ต้องจัดการทางเดินหายใจทันที",
+				"abdomen": "ท้องนิ่ม ไม่กดเจ็บ ไม่มีรอยช้ำ",
+				"pelvis": "มั่นคงเมื่อกด",
+				"back": "ไม่สามารถประเมินได้เต็มที่ — ผู้ป่วยหายใจลำบาก รักษาการป้องกันกระดูกสันหลัง",
+				"extremities": "⚡ รอยช้ำเล็กน้อยที่แขนทั้ง 2 ข้างจากแรงกระแทก คลำไม่พบกระดูกหัก คลำชีพจรปลายมือปลายเท้าได้ รับประทานยาคุมกำเนิด (เพิ่มความเสี่ยง DVT)"
 			},
 			"deterioration": {
-				"rate": 1.0,
+				"rate": 0.5,
 				"enabled": true,
-				"bleeding_interval": 40.0,
-				"airway_to_unconscious": 35.0
+				"bleeding_interval": 60.0,
+				"airway_to_unconscious": 180.0,
+				"unconscious_to_cardiac": 180.0,
+				"cardiac_to_dead": 120.0
 			},
+			"correct_diagnosis": [
+				"Tension Pneumothorax",
+				"Spinal Injury"
+			],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"assess_airway",
-				"head_tilt_chin_lift",
 				"assess_breathing",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": -0.04, "y": 0.0, "z": -3.19 },
+			"position": {
+				"x": -0.04,
+				"y": 0.0,
+				"z": -3.19
+			},
 			"persona": {
 				"name": "Prasert",
 				"age": 52,
@@ -286,41 +326,53 @@
 				"back": "Unable to fully assess — patient unresponsive and critically unstable. Minimal log-roll with spinal precautions.",
 				"extremities": "⚠ Medical bracelet: WARFARIN — anticoagulant therapy, critically impaired haemostasis. Poor distal perfusion, CRT 5 sec. Multiple abrasions. No obvious long-bone fractures."
 			},
-			"deterioration": {
-				"rate": 1.2,
-				"enabled": true,
-				"bleeding_interval": 20.0,
-				"airway_to_unconscious": 30.0,
-				"unconscious_to_cardiac": 45.0,
-				"cardiac_to_dead": 25.0
+			"examination_findings_th": {
+				"head": "⚠ แผลฉีกบริเวณขมับขวา 4cm — เลือดไหลอยู่ GCS 4 (E1V1M2) — TBI รุนแรง รูม่านตาขวาขยาย 7mm ไม่ตอบสนอง ซ้าย 6mm ไม่ตอบสนอง — รูม่านตาทั้ง 2 ข้างขยาย สัญญาณความดันในกะโหลกสูงและ herniation สงสัยกะโหลกฐานแตก — ห้ามใส่ NPA",
+				"neck": "ไม่มีบาดเจ็บภายนอกที่คอที่มองเห็น ไม่มีหลอดเลือดดำที่คอโป่ง ไม่มี carotid bruit หลอดลมดูอยู่กึ่งกลาง",
+				"chest": "⚠ มีเสียงหายใจทั้ง 2 ข้างแต่ลดลง RR 6 /min — แทบไม่หายใจ SpO2 85% — ขาดออกซิเจนวิกฤต ต้องช่วยหายใจด้วย BVM ทันที",
+				"abdomen": "⚠ ท้องอืดและแข็ง — peritonism มีรอยช้ำจากเข็มขัดนิรภัยบริเวณท้องส่วนบน สงสัยม้ามหรือตับแตกจากบาดเจ็บมีเลือดออกภายใน",
+				"pelvis": "⚠ กระดูกเชิงกรานหักไม่มั่นคง — ห้ามกดซ้ำ ควรใช้ pelvic binder เป็นแหล่งเลือดออกหลัก",
+				"back": "ไม่สามารถประเมินได้เต็มที่ — ผู้ป่วยไม่รู้สึกตัวและอาการวิกฤต พลิกตัวน้อยที่สุดพร้อมป้องกันกระดูกสันหลัง",
+				"extremities": "⚠ สร้อยข้อมือ: WARFARIN — ยาต้านการแข็งตัวของเลือด การห้ามเลือดบกพร่องอย่างวิกฤต เลือดไหลเวียนปลายมือปลายเท้าไม่ดี CRT 5 sec มีรอยถลอกหลายแห่ง ไม่พบกระดูกยาวหักชัดเจน"
 			},
+			"deterioration": {
+				"rate": 0.6,
+				"enabled": true,
+				"bleeding_interval": 40.0,
+				"airway_to_unconscious": 60.0,
+				"unconscious_to_cardiac": 240.0,
+				"cardiac_to_dead": 120.0
+			},
+			"correct_diagnosis": [
+				"Head Injury / TBI",
+				"Haemorrhagic Shock",
+				"Internal Bleeding"
+			],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"assess_airway",
-				"jaw_thrust",
 				"assess_breathing",
-				"bag_valve_mask",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		}
 	],
 	"bag_tier": "ALS",
-	"equipment": [
-		{
-			"type": "STRETCHER",
-			"name": "Stretcher",
-			"use_label": "Load Patient",
-			"position": { "x": -6.0, "y": 0.0, "z": -2.0 }
-		}
+	"equipment": [],
+	"correct_diagnosis": [
+		"Trauma — Multi-system",
+		"Spinal Injury",
+		"Haemorrhagic Shock"
 	],
-	"correct_diagnosis": ["Trauma — Multi-system", "Spinal Injury", "Haemorrhagic Shock"],
 	"hazards": [
 		{
 			"type": "FIRE",
-			"position": { "x": 10.0, "y": 0.0, "z": 4.0 },
+			"position": {
+				"x": 10.0,
+				"y": 0.0,
+				"z": 4.0
+			},
 			"radius": 2.5,
 			"spread_rate": 0.1,
 			"max_radius": 4.0,

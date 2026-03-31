@@ -107,7 +107,7 @@ REVIEW_ERROR,ไม่สามารถสร้างบทวิจารณ�
 REVIEW_CONTINUE,ดำเนินการต่อ,Continue
 
 DASHBOARD_STUDENT,แดชบอร์ดนักเรียน,Student Dashboard
-DASHBOARD_INSTRUCTOR,แดชบอร์ดผู้สอน,Instructor Dashboard
+DASHBOARD_TITLE,แดชบอร์ด,Dashboard
 DASHBOARD_HISTORY,ประวัติ,History
 DASHBOARD_OVERALL_SCORE,คะแนนรวม,Overall Score
 DASHBOARD_PASS_RATE,อัตราผ่าน,Pass Rate
@@ -167,3 +167,196 @@ MINUTES,นาที,min
 SECONDS,วินาที,sec
 PERCENT,เปอร์เซ็นต์,%
 STARS,ดาว,stars
+
+TAB_PATIENT,ผู้ป่วย,Patient
+TAB_EXAM,ตรวจร่างกาย,Exam
+TAB_STABILIZE,รักษาเสถียรภาพ,Stabilize
+TAB_DIFFERENTIAL,วินิจฉัยแยกโรค,Diff Dx
+
+EXAM_PRIMARY_SURVEY,การตรวจเบื้องต้น (DRSABCDE),Primary Survey (DRSABCDE)
+EXAM_DANGER,D — อันตราย,D — Danger
+EXAM_RESPONSE,R — การตอบสนอง,R — Response
+EXAM_SEND_HELP,S — เรียกช่วยเหลือ,S — Send for Help
+EXAM_AIRWAY,A — ทางเดินหายใจ,A — Airway
+EXAM_BREATHING,B — การหายใจ,B — Breathing
+EXAM_CIRCULATION,C — การไหลเวียน,C — Circulation
+EXAM_DISABILITY,D — ระดับความรู้สึกตัว,D — Disability
+EXAM_EXPOSURE,E — เปิดดูร่างกาย,E — Exposure
+
+VITAL_HEART_RATE,อัตราการเต้นหัวใจ,Heart Rate
+VITAL_BLOOD_PRESSURE,ความดันโลหิต,Blood Pressure
+VITAL_SPO2,ออกซิเจนในเลือด,SpO2 / Oxygen Sat
+VITAL_TEMPERATURE,อุณหภูมิ,Temperature
+VITAL_BLOOD_GLUCOSE,น้ำตาลในเลือด,Blood Glucose
+VITAL_CAPILLARY_REFILL,Capillary Refill,Capillary Refill
+VITAL_PUPILS,รูม่านตา,Pupils
+VITAL_SKIN,ผิวหนัง,Skin Assessment
+
+SECONDARY_HEAD,ศีรษะ,Head
+SECONDARY_NECK,คอ,Neck
+SECONDARY_CHEST,ทรวงอก,Chest
+SECONDARY_ABDOMEN,ท้อง,Abdomen
+SECONDARY_PELVIS,เชิงกราน,Pelvis
+SECONDARY_BACK,หลัง,Back
+SECONDARY_EXTREMITIES,แขนขา,Extremities
+
+EQUIP_OXYGEN_MASK,หน้ากากออกซิเจน,O2 Mask
+EQUIP_BVM,ถุงช่วยหายใจ,BVM
+EQUIP_IV_ACCESS,เปิดเส้น IV,IV Access
+EQUIP_C_COLLAR,ปลอกคอ,C-Collar
+EQUIP_TOURNIQUET,สายรัดห้ามเลือด,Tourniquet
+EQUIP_PULSE_OXIMETER,เครื่องวัดออกซิเจน,Pulse Oximeter
+EQUIP_BP_CUFF,เครื่องวัดความดัน,BP Cuff
+EQUIP_PENLIGHT,ไฟฉายตรวจ,Penlight
+EQUIP_THERMOMETER,เทอร์โมมิเตอร์,Thermometer
+EQUIP_GLUCOMETER,เครื่องวัดน้ำตาล,Glucometer
+
+STABILIZE_CPR,เริ่ม CPR (กดหน้าอก),Start CPR (Chest Compressions)
+STABILIZE_MEDICAL_BAG,ถุงอุปกรณ์การแพทย์,Medical Bag
+STABILIZE_BAG_CONTENTS,อุปกรณ์ในถุง,Bag Contents
+STABILIZE_DRUG_ADMIN,การให้ยา,Drug Administration
+STABILIZE_DRUG,ยา,Drug
+STABILIZE_ROUTE,ทาง,Route
+STABILIZE_DOSE,ขนาดยา,Dose
+STABILIZE_ADMINISTER,ให้ยา,Administer
+
+DDX_INSTRUCTIONS,เลือกการวินิจฉัยสูงสุด 3 รายการ ตามลำดับความน่าจะเป็น แล้วกดส่ง,Select up to 3 diagnoses in order of likelihood then submit.
+DDX_SUBMIT,ส่งการวินิจฉัย,Submit Diagnosis
+DDX_SUBMITTED,ส่งแล้ว,Diagnosis Submitted
+
+SETTINGS_APPEARANCE,ธีม,Appearance
+SETTINGS_THEME_DARK,โหมดมืด,Dark Mode
+SETTINGS_THEME_LIGHT,โหมดสว่าง,Light Mode
+SETTINGS_AI_CONFIG,การตั้งค่า AI,AI Configuration
+SETTINGS_AI_STATUS,สถานะ Ollama,Ollama Status
+SETTINGS_AI_ONLINE,ออนไลน์,Online
+SETTINGS_AI_OFFLINE,ออฟไลน์,Offline
+SETTINGS_AI_MODEL,โมเดล AI,AI Model
+SETTINGS_AI_RECONNECT,เชื่อมต่อใหม่,Reconnect
+SETTINGS_AI_RECONNECTING,กำลังค้นหา...,Searching...
+SETTINGS_ABOUT,เกี่ยวกับ,About
+
+VITAL_SIGNS_TITLE,การตรวจสัญญาณชีพ,Vital Signs Assessment
+SECONDARY_SURVEY_TITLE,ตรวจร่างกายทั่วไป — ศีรษะถึงปลายเท้า,Secondary Survey — Head-to-Toe
+
+RESULT_SAFE,ปลอดภัย,Safe
+RESULT_ASSESSED,ประเมินแล้ว,Assessed
+RESULT_ALERTED,แจ้งเหตุแล้ว,Alerted
+RESULT_PRESENT,มี,PRESENT
+RESULT_ABSENT,ไม่มี,ABSENT
+RESULT_NORMAL,ปกติ,NORMAL
+RESULT_ABNORMAL,ผิดปกติ,ABNORMAL
+RESULT_NONE,ไม่มี,None
+RESULT_MINOR,เล็กน้อย,Minor
+RESULT_MODERATE,ปานกลาง,Moderate
+RESULT_SEVERE,รุนแรง,Severe
+RESULT_PROCEED_SECONDARY,ดำเนินการตรวจร่างกายต่อ,Proceed with secondary survey
+
+SUB_PRIMARY,การตรวจเบื้องต้น,Primary
+SUB_VITALS,สัญญาณชีพ,Vitals
+SUB_GCS,GCS,GCS
+SUB_HEAD_TO_TOE,ศีรษะถึงปลายเท้า,Head-to-Toe
+SUB_EQUIPMENT,อุปกรณ์,Equipment
+SUB_DRUG_ADMIN,การให้ยา,Drug Admin
+SUB_TRIAGE,การคัดกรอง,Triage
+
+STABILIZE_DIAGNOSTIC,อุปกรณ์วินิจฉัย,Diagnostic Equipment
+STABILIZE_TREATMENT,อุปกรณ์รักษา,Treatment Equipment
+TRIAGE_CURRENTLY_ASSIGNED,แท็กคัดกรองปัจจุบัน,Currently Assigned
+
+GCS_TITLE,GCS — Glasgow Coma Scale,GCS — Glasgow Coma Scale
+GCS_EYE,ตา (E),Eye (E)
+GCS_VERBAL,พูด (V),Verbal (V)
+GCS_MOTOR,การเคลื่อนไหว (M),Motor (M)
+GCS_READ_PATIENT,อ่านจากผู้ป่วย,Read from Patient
+GCS_TOTAL,คะแนนรวม GCS,GCS Total
+ECG_TITLE,ECG / จอมอนิเตอร์หัวใจ,ECG / Cardiac Monitor
+ECG_NO_MONITOR,ยังไม่ติดตั้งมอนิเตอร์,No monitor deployed
+ECG_IDENTIFY,ระบุจังหวะ,Identify Rhythm
+
+DASHBOARD_MY_PERFORMANCE,ผลงานของฉัน,My Performance
+DASHBOARD_CLASS_OVERVIEW,ภาพรวมชั้นเรียน,Class Overview
+DASHBOARD_SCENARIO_BREAKDOWN,แยกตามสถานการณ์,Scenario Breakdown
+DASHBOARD_RECENT_SESSIONS,เซสชันล่าสุด,Recent Sessions
+DASHBOARD_BEST_AXIS,จุดแข็ง,Best Axis
+DASHBOARD_NO_SESSIONS,ยังไม่มีเซสชัน,No sessions recorded yet
+DASHBOARD_STUDENT_RESULTS,ผลนักเรียน,Student Results
+DASHBOARD_CLASS_AVG,คะแนนเฉลี่ยชั้นเรียน,Class Average
+DASHBOARD_EXPORT_CSV,ส่งออก CSV,Export CSV
+DASHBOARD_EXPORT_JSON,ส่งออก JSON,Export JSON
+DASHBOARD_PROGRESSION,กราฟพัฒนาการ,Score Progression
+DASHBOARD_TREND_UP,แนวโน้มดีขึ้น,Improving
+DASHBOARD_TREND_DOWN,แนวโน้มแย่ลง,Declining
+DASHBOARD_TREND_STABLE,คงที่,Stable
+DASHBOARD_EMPTY_STATE,ยังไม่มีเซสชัน ทำสถานการณ์จำลองให้เสร็จเพื่อดูผลงานที่นี่,No sessions yet. Complete a scenario to see your performance here.
+DASHBOARD_SCENARIO_STATS,สถิติสถานการณ์,Scenario Statistics
+DASHBOARD_SESSIONS_COUNT,จำนวนเซสชัน,Session Count
+DASHBOARD_BEST_SCORE,คะแนนสูงสุด,Best Score
+DASHBOARD_LATEST_SCORE,คะแนนล่าสุด,Latest Score
+
+DDX_SEARCH,ค้นหาการวินิจฉัย...,Search diagnoses...
+DDX_SELECTED,เลือกแล้ว,Selected
+DDX_CAT_CARDIAC,หัวใจ,Cardiac
+DDX_CAT_RESPIRATORY,ระบบหายใจ,Respiratory
+DDX_CAT_TRAUMA,อุบัติเหตุ,Trauma
+DDX_CAT_SHOCK,ภาวะช็อก,Shock
+DDX_CAT_NEUROLOGICAL,ระบบประสาท,Neurological
+DDX_CAT_METABOLIC,เมตาบอลิก,Metabolic
+DDX_CAT_OTHER,อื่นๆ,Other
+
+COOLDOWN_MAX_CONCURRENT,ถึงขีดจำกัดแล้ว! สูงสุด %d พร้อมกัน,Limit reached! Max %d concurrent
+COOLDOWN_PROCESSING,กำลังดำเนินการ...,Processing...
+
+REVIEW_CACHED,บทวิจารณ์ AI (แคช),AI Review (Cached)
+REVIEW_OFFLINE,Ollama ไม่ทำงาน — แสดงบทวิจารณ์แคชแทน,Ollama offline — showing cached review
+
+DEBRIEF_STATS_HEADER,สรุปย่อ,Quick Summary
+DEBRIEF_PATIENTS_HEADER,สรุปผู้ป่วย,Patient Summary
+DEBRIEF_RETURN_MENU,กลับสู่เมนู,Return to Menu
+DEBRIEF_EQUIPMENT_FORMAT,อุปกรณ์: %s,Equipment: %s
+DEBRIEF_DIAGNOSIS_FORMAT,วินิจฉัย: %s (%d ถูกต้อง),DDx: %s (%d correct)
+DEBRIEF_OLLAMA_UNCONFIGURED,บทวิจารณ์ AI: ไม่ได้ตั้งค่า Ollama,AI Review: Ollama not configured
+DEBRIEF_REQUESTING_REVIEW,กำลังขอบทวิจารณ์ AI จาก %s...,Requesting AI Review from %s...
+DEBRIEF_DISCOVERING_OLLAMA,กำลังค้นหา Ollama และขอบทวิจารณ์ AI...,Discovering Ollama & requesting AI Review...
+DEBRIEF_REVIEW_READY,บทวิจารณ์ AI พร้อม,AI Review Ready
+DEBRIEF_OLLAMA_OFFLINE,บทวิจารณ์ AI ไม่พร้อม (Ollama ออฟไลน์),AI Review unavailable (Ollama offline)
+DEBRIEF_OLLAMA_OFFLINE_MSG,Ollama ไม่ทำงาน เปิด Ollama เพื่อรับบทวิจารณ์ AI สด หรือบทวิจารณ์แคชจะแสดงเมื่อพร้อม,Ollama is not running. Start Ollama for live AI review or cached reviews will be shown when available.
+DEBRIEF_FILTER_ALL,ทั้งหมด,All
+DEBRIEF_SCENARIO_COMPLETE,สถานการณ์เสร็จสิ้น,Scenario Complete
+
+PATIENT_AI_ACTIVE,AI สนทนาพร้อม,AI Dialogue Active
+PATIENT_SCRIPTED_RESPONSES,คำตอบตามสคริปต์ (Ollama ออฟไลน์),Scripted Responses (Ollama Offline)
+PATIENT_CLOSE_BUTTON,[Esc]\nปิด,[Esc]\nClose
+PATIENT_CHAT_PLACEHOLDER,ถามผู้ป่วย...,Ask the patient...
+PATIENT_OPQRST,O - OPQRST (ปวด),O - OPQRST (Pain)
+
+MENU_SPLASH_PROMPT,กดปุ่มใดก็ได้เพื่อดำเนินการต่อ,Press any button to continue
+MENU_VERSION,INDEV v1.0.1,INDEV v1.0.1
+MENU_AI_ONLINE,AI ออนไลน์,AI Online
+MENU_AI_OFFLINE,AI ออฟไลน์,AI Offline
+OLLAMA_POPUP_TITLE,ไม่พบ Ollama,Ollama Not Found
+OLLAMA_POPUP_MSG,เกมจะใช้ข้อความที่สร้างไว้ล่วงหน้าแทน AI — การสนทนากับผู้ป่วยและ AI Reviewer จะใช้คำตอบสำเร็จรูป,The game will use pre-generated text instead of AI — patient dialogue and AI Reviewer will use cached responses.
+OLLAMA_POPUP_CHECKED,ตรวจสอบแล้ว:,Checked:
+OLLAMA_POPUP_OK,เข้าใจแล้ว,Got it
+MENU_COPYRIGHT,© 2026,© 2026
+
+AXIS_TRIAGE_SPEED,ความเร็วคัดกรอง,Triage Speed
+AXIS_PROTOCOL_ACCURACY,ความถูกต้องขั้นตอน,Protocol Accuracy
+AXIS_DECISION_QUALITY,คุณภาพการตัดสินใจ,Decision Quality
+AXIS_EQUIPMENT_HANDLING,การจัดการอุปกรณ์,Equipment Handling
+AXIS_PATIENT_OUTCOME,ผลลัพธ์ผู้ป่วย,Patient Outcome
+
+DASHBOARD_CLASS_AVG_PERF,ผลงานเฉลี่ยชั้นเรียน,Class Average Performance
+DASHBOARD_STUDENT_PERF,ผลงานนักเรียน,Student Performance
+DASHBOARD_SCENARIO_AVG,คะแนนเฉลี่ยสถานการณ์,Scenario Class Average
+DASHBOARD_NO_DATA_SCENARIO,ไม่มีข้อมูลสถานการณ์นี้,No data for this scenario
+DASHBOARD_NO_RESULTS_YET,ยังไม่มีผลนักเรียนสำหรับสถานการณ์นี้,No student results for this scenario yet
+DASHBOARD_ALL_AXES,ค่าเฉลี่ยทุกแกน,All Axis Averages
+DASHBOARD_BEST_FORMAT,จุดแข็ง: %s (%d%%),Best: %s (%d%%)
+DASHBOARD_WEAKEST_FORMAT,จุดอ่อน: %s (%d%%),Weakest: %s (%d%%)
+DASHBOARD_CLASS_AVG_FORMAT,คะแนนเฉลี่ยชั้นเรียน: %d%%,Class average: %d%%
+DASHBOARD_YOUR_PERFORMANCE,ผลงานของคุณ,Your Performance
+DASHBOARD_STATS_FORMAT,%d นักเรียน | เฉลี่ย: %d%% | ผ่าน: %d/%d,%d students | Avg: %d%% | Pass: %d/%d
+
+ADMIN_LOG_TITLE,บันทึกการให้ยา,Administration Log
+ADMIN_NO_LOG,ยังไม่มีบันทึก,No entries yet

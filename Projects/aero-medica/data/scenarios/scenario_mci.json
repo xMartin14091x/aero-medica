@@ -8,7 +8,11 @@
 	"time_limit_seconds": 1200,
 	"patients": [
 		{
-			"position": { "x": 5.0, "y": 0.0, "z": 3.0 },
+			"position": {
+				"x": 5.0,
+				"y": 0.0,
+				"z": 3.0
+			},
 			"persona": {
 				"name": "Lek",
 				"age": 22,
@@ -45,13 +49,22 @@
 				"gcs_motor": 6
 			},
 			"examination_findings": {
-				"head": "No head injury. Tinnitus — bilateral blast ear injury. No bleeding from ears. GCS 15 (E4V5M6). Alert, oriented, ambulatory.",
+				"head": "⚡ No head injury. Tinnitus — bilateral blast ear injury. No bleeding from ears. GCS 15 (E4V5M6). Alert, oriented, ambulatory.",
 				"neck": "No cervical injury. Trachea midline.",
 				"chest": "Clear breath sounds. RR 18 /min — normal. SpO2 98%. No chest wall injury.",
 				"abdomen": "Soft, non-tender. No penetrating injuries.",
 				"pelvis": "No injury.",
 				"back": "No injuries.",
-				"extremities": "Multiple superficial lacerations both forearms from shrapnel — minor, no active bleeding. Can walk. CRT 1.5 sec. START triage: GREEN — Minor."
+				"extremities": "⚡ Multiple superficial lacerations both forearms from shrapnel — minor, no active bleeding. Can walk. CRT 1.5 sec. START triage: GREEN — Minor."
+			},
+			"examination_findings_th": {
+				"head": "⚡ ไม่มีบาดเจ็บที่ศีรษะ มีเสียงดังในหู — บาดเจ็บหูทั้ง 2 ข้างจากแรงระเบิด ไม่มีเลือดออกจากหู GCS 15 (E4V5M6) ตื่นตัว รู้สึกตัวดี เดินได้",
+				"neck": "ไม่มีบาดเจ็บที่คอ หลอดลมอยู่กึ่งกลาง",
+				"chest": "เสียงหายใจปกติ RR 18 /min — ปกติ SpO2 98% ไม่มีบาดเจ็บที่ผนังทรวงอก",
+				"abdomen": "ท้องนิ่ม ไม่กดเจ็บ ไม่มีบาดแผลทะลุ",
+				"pelvis": "ไม่มีบาดเจ็บ",
+				"back": "ไม่มีบาดเจ็บ",
+				"extremities": "⚡ แผลฉีกตื้นหลายแห่งที่แขนทั้ง 2 ข้างจากสะเก็ดระเบิด — เล็กน้อย ไม่มีเลือดไหล เดินได้ CRT 1.5 sec START triage: GREEN — เล็กน้อย"
 			},
 			"history": {
 				"symptoms": {
@@ -84,8 +97,15 @@
 			"deterioration": {
 				"rate": 0.2,
 				"enabled": true,
-				"bleeding_interval": 60.0
+				"bleeding_interval": 60.0,
+				"airway_to_unconscious": 300.0,
+				"unconscious_to_cardiac": 240.0,
+				"cardiac_to_dead": 180.0
 			},
+			"correct_diagnosis": [
+				"Blast Injury",
+				"Soft Tissue Injury"
+			],
 			"correct_protocol_sequence": [
 				"assess_consciousness",
 				"assess_breathing",
@@ -94,7 +114,11 @@
 			]
 		},
 		{
-			"position": { "x": 8.0, "y": 0.0, "z": 6.0 },
+			"position": {
+				"x": 8.0,
+				"y": 0.0,
+				"z": 6.0
+			},
 			"persona": {
 				"name": "Malee",
 				"age": 40,
@@ -131,13 +155,22 @@
 				"gcs_motor": 6
 			},
 			"examination_findings": {
-				"head": "No head injury. Crying, confused. Pupils 4mm, reactive. GCS 14 (E4V4M6).",
+				"head": "⚡ No head injury. Crying, confused. Pupils 4mm, reactive. GCS 14 (E4V4M6).",
 				"neck": "No cervical injury. Trachea midline.",
-				"chest": "Clear breath sounds. RR 24 /min — tachypnoea. SpO2 94%.",
-				"abdomen": "Tender left lower quadrant. No rigidity. Possible contusion from blast debris.",
+				"chest": "⚡ Clear breath sounds. RR 24 /min — tachypnoea. SpO2 94%.",
+				"abdomen": "⚡ Tender left lower quadrant. No rigidity. Possible contusion from blast debris.",
 				"pelvis": "No pelvic injury.",
 				"back": "No injuries.",
 				"extremities": "⚠ Left thigh: penetrating shrapnel wound — 15cm metal fragment embedded. Active arterial bleeding, severity 2. Tourniquet required proximal to wound. Right arm abrasions. CRT 3 sec — delayed. Allergy: Sulfonamides. START triage: RED — Immediate."
+			},
+			"examination_findings_th": {
+				"head": "⚡ ไม่มีบาดเจ็บที่ศีรษะ ร้องไห้ สับสน รูม่านตา 4mm ตอบสนองต่อแสง GCS 14 (E4V4M6)",
+				"neck": "ไม่มีบาดเจ็บที่คอ หลอดลมอยู่กึ่งกลาง",
+				"chest": "⚡ เสียงหายใจปกติ RR 24 /min — หายใจเร็ว SpO2 94%",
+				"abdomen": "⚡ กดเจ็บบริเวณท้องน้อยด้านซ้าย ไม่มี rigidity อาจมีรอยช้ำจากเศษซากระเบิด",
+				"pelvis": "ไม่มีบาดเจ็บที่เชิงกราน",
+				"back": "ไม่มีบาดเจ็บ",
+				"extremities": "⚠ ต้นขาซ้าย: แผลทะลุจากสะเก็ดระเบิด — เศษโลหะ 15cm ฝังอยู่ เลือดแดงไหลอยู่ ความรุนแรงระดับ 2 ต้องรัดห้ามเลือดเหนือแผล แขนขวามีรอยถลอก CRT 3 sec — ล่าช้า แพ้ยา: Sulfonamides START triage: RED — เร่งด่วน"
 			},
 			"history": {
 				"symptoms": {
@@ -168,21 +201,31 @@
 				}
 			},
 			"deterioration": {
-				"rate": 1.0,
+				"rate": 0.6,
 				"enabled": true,
-				"bleeding_interval": 25.0
+				"bleeding_interval": 45.0,
+				"airway_to_unconscious": 300.0,
+				"unconscious_to_cardiac": 240.0,
+				"cardiac_to_dead": 180.0
 			},
+			"correct_diagnosis": [
+				"Penetrating Trauma",
+				"Haemorrhagic Shock"
+			],
 			"correct_protocol_sequence": [
 				"assess_consciousness",
 				"assess_airway",
 				"assess_breathing",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": 12.0, "y": 0.0, "z": 4.0 },
+			"position": {
+				"x": 12.0,
+				"y": 0.0,
+				"z": 4.0
+			},
 			"persona": {
 				"name": "Tawan",
 				"age": 65,
@@ -221,11 +264,20 @@
 			"examination_findings": {
 				"head": "⚠ Large temporal laceration with active bleeding. Blood from left ear — suspect basilar skull fracture. GCS 4 (E1V1M2). Left pupil 6mm fixed, right 4mm reactive — unilateral blown pupil, raised ICP. Do NOT insert NPA.",
 				"neck": "⚠ Airway obstructed — blood and vomitus. Position recovery or suction required. Trachea midline. No JVD.",
-				"chest": "RR 8 /min — bradypnoea. Reduced bilateral air entry. SpO2 80% — critical. BVM ventilation required.",
+				"chest": "⚠ RR 8 /min — bradypnoea. Reduced bilateral air entry. SpO2 80% — critical. BVM ventilation required.",
 				"abdomen": "Soft. No obvious penetrating injury.",
 				"pelvis": "Unable to assess — patient unresponsive.",
 				"back": "Not assessed — maintain spinal precautions.",
-				"extremities": "Cool, pale, diaphoretic. CRT 4 sec. No obvious fractures. Weak distal pulses. START triage: RED — Immediate."
+				"extremities": "⚡ Cool, pale, diaphoretic. CRT 4 sec. No obvious fractures. Weak distal pulses. START triage: RED — Immediate."
+			},
+			"examination_findings_th": {
+				"head": "⚠ แผลฉีกขนาดใหญ่บริเวณขมับมีเลือดไหล มีเลือดออกจากหูซ้าย — สงสัยกะโหลกฐานแตก GCS 4 (E1V1M2) รูม่านตาซ้าย 6mm ไม่ตอบสนอง ขวา 4mm ตอบสนอง — รูม่านตาข้างเดียวขยาย ความดันในกะโหลกสูง ห้ามใส่ NPA",
+				"neck": "⚠ ทางเดินหายใจอุดกั้น — เลือดและอาเจียน ต้องจัดท่าพักฟื้นหรือดูด หลอดลมอยู่กึ่งกลาง ไม่มีหลอดเลือดดำที่คอโป่ง",
+				"chest": "⚠ RR 8 /min — หายใจช้า ลมเข้าปอดลดลงทั้ง 2 ข้าง SpO2 80% — วิกฤต ต้องช่วยหายใจด้วย BVM",
+				"abdomen": "ท้องนิ่ม ไม่พบบาดแผลทะลุชัดเจน",
+				"pelvis": "ไม่สามารถประเมินได้ — ผู้ป่วยไม่รู้สึกตัว",
+				"back": "ไม่ได้ประเมิน — รักษาการป้องกันกระดูกสันหลัง",
+				"extremities": "⚡ เย็น ซีด เหงื่อออก CRT 4 sec ไม่พบกระดูกหักชัดเจน คลำชีพจรปลายมือปลายเท้าได้แต่อ่อน START triage: RED — เร่งด่วน"
 			},
 			"history": {
 				"symptoms": {
@@ -256,25 +308,31 @@
 				}
 			},
 			"deterioration": {
-				"rate": 1.2,
+				"rate": 0.8,
 				"enabled": true,
 				"bleeding_interval": 35.0,
 				"airway_to_unconscious": 30.0,
-				"unconscious_to_cardiac": 50.0,
-				"cardiac_to_dead": 25.0
+				"unconscious_to_cardiac": 180.0,
+				"cardiac_to_dead": 120.0
 			},
+			"correct_diagnosis": [
+				"Head Injury / TBI",
+				"Blast Injury"
+			],
 			"correct_protocol_sequence": [
 				"assess_consciousness",
 				"assess_airway",
-				"head_tilt_chin_lift",
 				"assess_breathing",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": 3.0, "y": 0.0, "z": 8.0 },
+			"position": {
+				"x": 3.0,
+				"y": 0.0,
+				"z": 8.0
+			},
 			"persona": {
 				"name": "Kanda",
 				"age": 33,
@@ -313,11 +371,20 @@
 			"examination_findings": {
 				"head": "No head injury. Alert, oriented. Pupils 4mm, equal, reactive. GCS 15 (E4V5M6).",
 				"neck": "No cervical injury. Trachea midline.",
-				"chest": "Clear breath sounds. RR 26 /min — mild tachypnoea from anxiety. SpO2 96%.",
+				"chest": "⚡ Clear breath sounds. RR 26 /min — mild tachypnoea from anxiety. SpO2 96%.",
 				"abdomen": "Soft. No tenderness. No penetrating injuries.",
 				"pelvis": "No injury.",
 				"back": "No injuries.",
-				"extremities": "Right forearm: 10cm laceration, active venous bleeding severity 1 — direct pressure required. Right ankle swollen and tender — possible sprain or fracture. Can bear weight with difficulty. CRT 2 sec. Carries EpiPen for peanut allergy. START triage: YELLOW — Delayed."
+				"extremities": "⚡ Right forearm: 10cm laceration, active venous bleeding severity 1 — direct pressure required. Right ankle swollen and tender — possible sprain or fracture. Can bear weight with difficulty. CRT 2 sec. Carries EpiPen for peanut allergy. START triage: YELLOW — Delayed."
+			},
+			"examination_findings_th": {
+				"head": "ไม่มีบาดเจ็บที่ศีรษะ ตื่นตัว รู้สึกตัวดี รูม่านตา 4mm เท่ากัน ตอบสนองต่อแสง GCS 15 (E4V5M6)",
+				"neck": "ไม่มีบาดเจ็บที่คอ หลอดลมอยู่กึ่งกลาง",
+				"chest": "⚡ เสียงหายใจปกติ RR 26 /min — หายใจเร็วเล็กน้อยจากความวิตกกังวล SpO2 96%",
+				"abdomen": "ท้องนิ่ม ไม่กดเจ็บ ไม่มีบาดแผลทะลุ",
+				"pelvis": "ไม่มีบาดเจ็บ",
+				"back": "ไม่มีบาดเจ็บ",
+				"extremities": "⚡ แขนขวา: แผลฉีก 10cm เลือดดำไหล ความรุนแรงระดับ 1 — ต้องกดห้ามเลือดโดยตรง ข้อเท้าขวาบวมและกดเจ็บ — อาจเคล็ดหรือหัก ลงน้ำหนักได้ลำบาก CRT 2 sec พกปากกา EpiPen สำหรับแพ้ถั่วลิสง START triage: YELLOW — รอได้"
 			},
 			"history": {
 				"symptoms": {
@@ -350,18 +417,28 @@
 			"deterioration": {
 				"rate": 0.6,
 				"enabled": true,
-				"bleeding_interval": 40.0
+				"bleeding_interval": 40.0,
+				"airway_to_unconscious": 300.0,
+				"unconscious_to_cardiac": 240.0,
+				"cardiac_to_dead": 180.0
 			},
+			"correct_diagnosis": [
+				"Blast Injury",
+				"Soft Tissue Injury"
+			],
 			"correct_protocol_sequence": [
 				"assess_consciousness",
 				"assess_breathing",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": 10.0, "y": 0.0, "z": 10.0 },
+			"position": {
+				"x": 10.0,
+				"y": 0.0,
+				"z": 10.0
+			},
 			"persona": {
 				"name": "Boonsri",
 				"age": 70,
@@ -399,12 +476,21 @@
 			},
 			"examination_findings": {
 				"head": "⚠ Massive head trauma — open skull fracture with brain matter visible. Pupils bilateral 7mm, fixed and dilated. GCS 3 (E1V1M1). Incompatible with survival.",
-				"neck": "No pulse. No breathing. Trachea deviated — possible massive thoracic injury.",
+				"neck": "⚠ No pulse. No breathing. Trachea deviated — possible massive thoracic injury.",
 				"chest": "⚠ No spontaneous breathing. Massive thoracic crush injury — flail segment visible. No breath sounds. Asystole on monitor. In MCI context: expectant (BLACK) — resources better allocated to salvageable patients.",
-				"abdomen": "Distended. Likely internal haemorrhage. Not survivable with injuries sustained.",
+				"abdomen": "⚠ Distended. Likely internal haemorrhage. Not survivable with injuries sustained.",
 				"pelvis": "Unable to assess — massive trauma.",
 				"back": "Not assessed.",
 				"extremities": "⚠ Cold, cyanotic, mottled. No pulses. No response to any stimulus. START triage: BLACK — Expectant/Deceased."
+			},
+			"examination_findings_th": {
+				"head": "⚠ บาดเจ็บศีรษะรุนแรง — กะโหลกแตกเปิดมองเห็นเนื้อสมอง รูม่านตาทั้ง 2 ข้าง 7mm ไม่ตอบสนองและขยาย GCS 3 (E1V1M1) ไม่สามารถรอดชีวิตได้",
+				"neck": "⚠ ไม่มีชีพจร ไม่หายใจ หลอดลมเบี่ยง — อาจมีบาดเจ็บทรวงอกรุนแรง",
+				"chest": "⚠ ไม่หายใจเอง บาดเจ็บทรวงอกจากการถูกทับรุนแรง — มองเห็น flail segment ไม่มีเสียงหายใจ Asystole บนจอ ในสถานการณ์ MCI: คาดว่าเสียชีวิต (BLACK) — ควรจัดสรรทรัพยากรให้ผู้ป่วยที่รักษาได้",
+				"abdomen": "⚠ ท้องอืด น่าจะมีเลือดออกภายใน ไม่สามารถรอดชีวิตได้จากบาดเจ็บที่ได้รับ",
+				"pelvis": "ไม่สามารถประเมินได้ — บาดเจ็บรุนแรง",
+				"back": "ไม่ได้ประเมิน",
+				"extremities": "⚠ เย็น เขียว ผิวลาย ไม่มีชีพจร ไม่ตอบสนองต่อสิ่งกระตุ้นใดๆ START triage: BLACK — คาดว่าเสียชีวิต"
 			},
 			"history": {
 				"symptoms": {
@@ -435,10 +521,16 @@
 				}
 			},
 			"deterioration": {
-				"rate": 1.5,
+				"rate": 0.8,
 				"enabled": true,
-				"cardiac_to_dead": 20.0
+				"cardiac_to_dead": 120.0,
+				"airway_to_unconscious": 300.0,
+				"unconscious_to_cardiac": 240.0
 			},
+			"correct_diagnosis": [
+				"Cardiac Arrest",
+				"Trauma -- Multi-system"
+			],
 			"correct_protocol_sequence": [
 				"assess_consciousness",
 				"assess_airway",
@@ -448,7 +540,11 @@
 			]
 		},
 		{
-			"position": { "x": 14.0, "y": 0.0, "z": 7.0 },
+			"position": {
+				"x": 14.0,
+				"y": 0.0,
+				"z": 7.0
+			},
 			"persona": {
 				"name": "Chai",
 				"age": 48,
@@ -485,13 +581,22 @@
 				"gcs_motor": 5
 			},
 			"examination_findings": {
-				"head": "No head injury. Pale, diaphoretic. Confused, responds to voice. GCS 12 (E3V4M5). Pupils 4mm, reactive.",
-				"neck": "No cervical injury. Trachea midline. Flat neck veins — hypovolaemia.",
-				"chest": "Tachypnoea RR 30 /min. Clear breath sounds. SpO2 91%.",
+				"head": "⚡ No head injury. Pale, diaphoretic. Confused, responds to voice. GCS 12 (E3V4M5). Pupils 4mm, reactive.",
+				"neck": "⚡ No cervical injury. Trachea midline. Flat neck veins — hypovolaemia.",
+				"chest": "⚡ Tachypnoea RR 30 /min. Clear breath sounds. SpO2 91%.",
 				"abdomen": "⚠ Rigid, distended abdomen. Rebound tenderness — peritonism. Penetrating shrapnel wound right upper quadrant. Suspected hepatic/bowel injury with active internal haemorrhage. Surgical emergency.",
-				"pelvis": "Tender on compression — possible pelvic fracture. Pelvic binder indicated.",
+				"pelvis": "⚡ Tender on compression — possible pelvic fracture. Pelvic binder indicated.",
 				"back": "Not assessed — patient in extremis.",
 				"extremities": "⚠ Left leg: open femur fracture with severe active haemorrhage — severity 3. Bone visible. Tourniquet required immediately. CRT 4.5 sec. Cold, pale, shocked. BP 75/45 — Class III haemorrhagic shock. START triage: RED — Immediate."
+			},
+			"examination_findings_th": {
+				"head": "⚡ ไม่มีบาดเจ็บที่ศีรษะ ซีด เหงื่อออก สับสน ตอบสนองต่อเสียง GCS 12 (E3V4M5) รูม่านตา 4mm ตอบสนองต่อแสง",
+				"neck": "⚡ ไม่มีบาดเจ็บที่คอ หลอดลมอยู่กึ่งกลาง หลอดเลือดดำที่คอแฟบ — ขาดน้ำ/เลือด",
+				"chest": "⚡ หายใจเร็ว RR 30 /min เสียงหายใจปกติ SpO2 91%",
+				"abdomen": "⚠ ท้องแข็ง อืด กดแล้วเจ็บเมื่อปล่อย — peritonism แผลทะลุจากสะเก็ดระเบิดบริเวณท้องขวาบน สงสัยบาดเจ็บตับ/ลำไส้มีเลือดออกภายใน ต้องผ่าตัดฉุกเฉิน",
+				"pelvis": "⚡ กดเจ็บเมื่อกด — อาจกระดูกเชิงกรานหัก ควรใช้ pelvic binder",
+				"back": "ไม่ได้ประเมิน — ผู้ป่วยอาการวิกฤต",
+				"extremities": "⚠ ขาซ้าย: กระดูกต้นขาหักเปิดมีเลือดไหลรุนแรง — ความรุนแรงระดับ 3 มองเห็นกระดูก ต้องรัดห้ามเลือดทันที CRT 4.5 sec เย็น ซีด ช็อก BP 75/45 — ช็อกจากเสียเลือดระดับ III START triage: RED — เร่งด่วน"
 			},
 			"history": {
 				"symptoms": {
@@ -522,30 +627,36 @@
 				}
 			},
 			"deterioration": {
-				"rate": 1.3,
+				"rate": 0.8,
 				"enabled": true,
-				"bleeding_interval": 20.0
+				"bleeding_interval": 35.0,
+				"airway_to_unconscious": 300.0,
+				"unconscious_to_cardiac": 240.0,
+				"cardiac_to_dead": 180.0
 			},
+			"correct_diagnosis": [
+				"Haemorrhagic Shock",
+				"Penetrating Trauma",
+				"Fracture -- Open"
+			],
 			"correct_protocol_sequence": [
 				"assess_consciousness",
 				"assess_airway",
 				"assess_breathing",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		}
 	],
 	"bag_tier": "ALS",
-	"equipment": [
-		{
-			"type": "STRETCHER",
-			"name": "Stretcher",
-			"use_label": "Load Patient",
-			"position": { "x": 1.0, "y": 0.0, "z": 10.0 }
-		}
+	"equipment_multiplier": 4.5,
+	"equipment": [],
+	"correct_diagnosis": [
+		"Blast Injury",
+		"Penetrating Trauma",
+		"Haemorrhagic Shock",
+		"Cardiac Arrest"
 	],
-	"correct_diagnosis": ["Blast Injury", "Penetrating Trauma", "Haemorrhagic Shock", "Cardiac Arrest"],
 	"hazards": [],
 	"random_events": [
 		{
@@ -553,7 +664,11 @@
 			"trigger_time_min": 300.0,
 			"trigger_time_max": 480.0,
 			"data": {
-				"position": { "x": 6.0, "y": 0.0, "z": 12.0 },
+				"position": {
+					"x": 6.0,
+					"y": 0.0,
+					"z": 12.0
+				},
 				"persona": {
 					"name": "Anong",
 					"age": 19,
@@ -596,11 +711,55 @@
 					"abdomen": "Soft. No tenderness.",
 					"pelvis": "No injury.",
 					"back": "No injuries.",
-					"extremities": "Laceration right forearm — venous bleeding, severity 1. Direct pressure. Ambulatory. START triage: GREEN."
+					"extremities": "⚡ Laceration right forearm — venous bleeding, severity 1. Direct pressure. Ambulatory. START triage: GREEN."
 				},
+				"examination_findings_th": {
+					"head": "ไม่มีบาดเจ็บที่ศีรษะ ตื่นตัว ตกใจกลัว GCS 15",
+					"neck": "ไม่มีบาดเจ็บ",
+					"chest": "ปกติ RR 22 SpO2 97%",
+					"abdomen": "ท้องนิ่ม ไม่กดเจ็บ",
+					"pelvis": "ไม่มีบาดเจ็บ",
+					"back": "ไม่มีบาดเจ็บ",
+					"extremities": "⚡ แผลฉีกที่แขนขวา — เลือดดำไหล ความรุนแรงระดับ 1 กดห้ามเลือดโดยตรง เดินได้ START triage: GREEN"
+				},
+				"history": {
+					"symptoms": {
+						"what_happened": "I was walking near the market when I heard a loud explosion. I started running toward it to see if anyone needed help, and something sharp hit my arm. It's bleeding but I can move my fingers.",
+						"where_hurts": "My right forearm. It stings a lot. It's mostly the cut — nothing else hurts.",
+						"when_started": "Just a few minutes ago. Right after I started running toward the market.",
+						"pain_scale": "Maybe a 4? It stings and throbs but it's not the worst pain."
+					},
+					"allergies": {
+						"any_allergies": "No, I don't have any allergies that I know of.",
+						"medication_allergies": "No. I've taken paracetamol and antibiotics before with no problems."
+					},
+					"medications": {
+						"current_meds": "No, I'm not taking anything regularly.",
+						"what_meds": "Nothing. Just paracetamol sometimes when I have a headache."
+					},
+					"past_history": {
+						"medical_conditions": "No, I'm healthy. No diseases or conditions.",
+						"surgeries": "No, I've never had surgery."
+					},
+					"last_meal": {
+						"when_ate": "About two hours ago, before I came to the market.",
+						"what_ate": "Rice with stir-fried basil chicken and an iced tea."
+					},
+					"events": {
+						"what_doing": "I was on my way to the market to buy some things. I heard the explosion and ran toward it — I thought maybe I could help someone. Then I felt something slash my arm.",
+						"witnesses": "I was alone. But there were other people running too — I didn't know any of them."
+					}
+				},
+				"correct_diagnosis": [
+					"Minor Bleeding / Laceration"
+				],
 				"deterioration": {
-					"rate": 0.5,
-					"enabled": true
+					"rate": 0.2,
+					"enabled": true,
+					"bleeding_interval": 300.0,
+					"airway_to_unconscious": 1200.0,
+					"unconscious_to_cardiac": 600.0,
+					"cardiac_to_dead": 180.0
 				}
 			}
 		}

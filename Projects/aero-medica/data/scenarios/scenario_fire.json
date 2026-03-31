@@ -8,7 +8,11 @@
 	"time_limit_seconds": 720,
 	"patients": [
 		{
-			"position": { "x": 21.3, "y": 0.0, "z": 26.0 },
+			"position": {
+				"x": 21.3,
+				"y": 0.0,
+				"z": 26.0
+			},
 			"persona": {
 				"name": "Niran",
 				"age": 30,
@@ -45,13 +49,22 @@
 				"gcs_motor": 6
 			},
 			"examination_findings": {
-				"head": "No head injury. Alert and oriented. Soot around nostrils — mild inhalation exposure. Pupils 4mm equal, reactive. GCS 15 (E4V5M6).",
+				"head": "⚡ No head injury. Alert and oriented. Soot around nostrils — mild inhalation exposure. Pupils 4mm equal, reactive. GCS 15 (E4V5M6).",
 				"neck": "No cervical tenderness. Trachea midline. No stridor. No JVD.",
-				"chest": "Mild bilateral wheezing — smoke exposure. Adequate air entry. RR 28 /min — tachypnoea. SpO2 93%. Supplemental oxygen indicated.",
+				"chest": "⚡ Mild bilateral wheezing — smoke exposure. Adequate air entry. RR 28 /min — tachypnoea. SpO2 93%. Supplemental oxygen indicated.",
 				"abdomen": "Soft, non-tender. No burns to trunk.",
 				"pelvis": "No injury. Stable.",
 				"back": "No spinal tenderness. No burns.",
 				"extremities": "⚠ Left forearm: second-degree burn, partial thickness, 10cm area with blistering. Active bleeding from 5cm laceration right shin — severity 1. Distal pulses present. CRT 2 sec."
+			},
+			"examination_findings_th": {
+				"head": "⚡ ไม่มีบาดเจ็บที่ศีรษะ ตื่นตัวและรู้สึกตัวดี มีคราบเขม่ารอบรูจมูก — สัมผัสควันเล็กน้อย รูม่านตา 4mm เท่ากัน ตอบสนองต่อแสง GCS 15 (E4V5M6)",
+				"neck": "ไม่มีกดเจ็บที่คอ หลอดลมอยู่กึ่งกลาง ไม่มีเสียง stridor ไม่มีหลอดเลือดดำที่คอโป่ง",
+				"chest": "⚡ มีเสียง wheezing เล็กน้อยทั้ง 2 ข้าง — จากการสัมผัสควัน ลมเข้าปอดเพียงพอ RR 28 /min — หายใจเร็ว SpO2 93% ควรให้ออกซิเจนเสริม",
+				"abdomen": "ท้องนิ่ม ไม่กดเจ็บ ไม่มีแผลไหม้ที่ลำตัว",
+				"pelvis": "ไม่มีบาดเจ็บ มั่นคง",
+				"back": "ไม่มีกดเจ็บกระดูกสันหลัง ไม่มีแผลไหม้",
+				"extremities": "⚠ แขนซ้าย: แผลไหม้ระดับ 2 ความหนาบางส่วน พื้นที่ 10cm มีตุ่มพอง เลือดไหลจากแผลฉีก 5cm ที่หน้าแข้งขวา — ความรุนแรงระดับ 1 คลำชีพจรปลายมือปลายเท้าได้ CRT 2 sec"
 			},
 			"history": {
 				"symptoms": {
@@ -91,14 +104,16 @@
 				"assess_consciousness",
 				"assess_airway",
 				"assess_breathing",
-				"oxygen_mask",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": 20.0, "y": 0.0, "z": 26.0 },
+			"position": {
+				"x": 20.0,
+				"y": 0.0,
+				"z": 26.0
+			},
 			"persona": {
 				"name": "Ploy",
 				"age": 25,
@@ -136,13 +151,22 @@
 				"co_exposure": true
 			},
 			"examination_findings": {
-				"head": "Soot deposits around mouth and nose. Singed eyebrows. No head trauma from fall. Confused, responds to voice. Pupils 4mm equal, reactive. GCS 13 (E3V4M6).",
+				"head": "⚡ Soot deposits around mouth and nose. Singed eyebrows. No head trauma from fall. Confused, responds to voice. Pupils 4mm equal, reactive. GCS 13 (E3V4M6).",
 				"neck": "⚠ Audible stridor — upper airway oedema from inhalation injury. Trachea midline. No JVD. Immediate airway management required — consider early advanced airway.",
 				"chest": "⚠ Severe bilateral wheezing. Marked intercostal recession. RR 10 /min — bradypnoea, exhaustion. SpO2 82% — critical hypoxia. High-flow O2 + BVM assist ventilation needed. Note: SpO2 unreliable with CO exposure.",
 				"abdomen": "Soft. No tenderness. No burns.",
 				"pelvis": "No injury.",
 				"back": "No spinal tenderness. Minor soot contamination.",
-				"extremities": "Cool peripherally. CRT 3.5 sec — delayed. No burns on extremities. No fractures. Distal pulses weak but present."
+				"extremities": "⚡ Cool peripherally. CRT 3.5 sec — delayed. No burns on extremities. No fractures. Distal pulses weak but present."
+			},
+			"examination_findings_th": {
+				"head": "⚡ มีคราบเขม่ารอบปากและจมูก คิ้วไหม้ ไม่มีบาดเจ็บที่ศีรษะจากการล้ม สับสน ตอบสนองต่อเสียง รูม่านตา 4mm เท่ากัน ตอบสนองต่อแสง GCS 13 (E3V4M6)",
+				"neck": "⚠ ได้ยินเสียง stridor — ทางเดินหายใจส่วนบนบวมจากการบาดเจ็บจากการสูดดม หลอดลมอยู่กึ่งกลาง ไม่มีหลอดเลือดดำที่คอโป่ง ต้องจัดการทางเดินหายใจทันที — พิจารณาใส่ท่อช่วยหายใจแต่เนิ่นๆ",
+				"chest": "⚠ มีเสียง wheezing รุนแรงทั้ง 2 ข้าง กล้ามเนื้อซี่โครงหดตัวมาก RR 10 /min — หายใจช้า อ่อนเพลีย SpO2 82% — ขาดออกซิเจนวิกฤต ต้องให้ O2 อัตราสูง + ช่วยหายใจด้วย BVM หมายเหตุ: SpO2 ไม่น่าเชื่อถือเมื่อสัมผัส CO",
+				"abdomen": "ท้องนิ่ม ไม่กดเจ็บ ไม่มีแผลไหม้",
+				"pelvis": "ไม่มีบาดเจ็บ",
+				"back": "ไม่มีกดเจ็บกระดูกสันหลัง มีเขม่าปนเปื้อนเล็กน้อย",
+				"extremities": "⚡ ปลายมือปลายเท้าเย็น CRT 3.5 sec — ล่าช้า ไม่มีแผลไหม้ที่แขนขา ไม่มีกระดูกหัก คลำชีพจรปลายมือปลายเท้าได้แต่อ่อน"
 			},
 			"history": {
 				"symptoms": {
@@ -173,24 +197,26 @@
 				}
 			},
 			"deterioration": {
-				"rate": 1.0,
+				"rate": 0.7,
 				"enabled": true,
-				"airway_to_unconscious": 40.0,
-				"unconscious_to_cardiac": 50.0
+				"airway_to_unconscious": 120.0,
+				"unconscious_to_cardiac": 150.0
 			},
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"assess_airway",
-				"head_tilt_chin_lift",
 				"assess_breathing",
-				"oxygen_mask",
 				"assess_pulse",
 				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": 22.5, "y": 0.0, "z": 26.0 },
+			"position": {
+				"x": 22.5,
+				"y": 0.0,
+				"z": 26.0
+			},
 			"persona": {
 				"name": "Arthit",
 				"age": 60,
@@ -231,10 +257,19 @@
 				"head": "⚠ 6cm scalp laceration from falling debris — active bleeding. GCS 4 (E1V1M2) — extension to pain only. Pupils bilateral 5mm, fixed — raised ICP. Soot in airway. Cherry-red discolouration — CO poisoning.",
 				"neck": "⚠ Airway obstructed — soot, oedema, possible thermal injury to upper airway. Jaw thrust required. Trachea midline. No JVD.",
 				"chest": "⚠ RR 4 /min — near apnoea. Bilateral reduced air entry. Scattered crackles. SpO2 75% — critical. BVM ventilation required immediately. Second/third-degree burns to anterior chest wall — approximately 18% TBSA.",
-				"abdomen": "Firm. Mild distension. Burns extending to upper abdomen. Suspect fluid loss from burns and possible internal injury from crush.",
+				"abdomen": "⚡ Firm. Mild distension. Burns extending to upper abdomen. Suspect fluid loss from burns and possible internal injury from crush.",
 				"pelvis": "Stable. No incontinence.",
 				"back": "⚠ Second-degree burns to upper back. Debris impact marks. Unable to fully assess — maintain spinal precautions.",
 				"extremities": "⚠ Bilateral upper extremity burns — second/third degree. CRT 4.5 sec — severely delayed. Weak distal pulses. Known diabetic (BGL 250) — Metformin, Enalapril, Aspirin found. Medical bracelet: DIABETIC."
+			},
+			"examination_findings_th": {
+				"head": "⚠ แผลฉีกที่หนังศีรษะ 6cm จากเศษซากที่ตกลงมา — เลือดไหลอยู่ GCS 4 (E1V1M2) — เหยียดแขนขาเมื่อเจ็บเท่านั้น รูม่านตาทั้ง 2 ข้าง 5mm ไม่ตอบสนอง — ความดันในกะโหลกสูง มีเขม่าในทางเดินหายใจ ผิวหนังแดงเชอร์รี่ — พิษจาก CO",
+				"neck": "⚠ ทางเดินหายใจอุดกั้น — เขม่า บวม อาจมีการบาดเจ็บจากความร้อนต่อทางเดินหายใจส่วนบน ต้องทำ jaw thrust หลอดลมอยู่กึ่งกลาง ไม่มีหลอดเลือดดำที่คอโป่ง",
+				"chest": "⚠ RR 4 /min — เกือบหยุดหายใจ ลมเข้าปอดลดลงทั้ง 2 ข้าง มีเสียง crackles กระจาย SpO2 75% — วิกฤต ต้องช่วยหายใจด้วย BVM ทันที แผลไหม้ระดับ 2/3 ที่ผนังทรวงอกด้านหน้า — ประมาณ 18% TBSA",
+				"abdomen": "⚡ ท้องแข็ง อืดเล็กน้อย แผลไหม้ลามถึงท้องส่วนบน สงสัยสูญเสียน้ำจากแผลไหม้และอาจมีบาดเจ็บภายในจากการถูกทับ",
+				"pelvis": "มั่นคง ไม่กลั้นปัสสาวะไม่อยู่",
+				"back": "⚠ แผลไหม้ระดับ 2 ที่หลังส่วนบน รอยกระแทกจากเศษซาก ไม่สามารถตรวจได้เต็มที่ — รักษาการป้องกันกระดูกสันหลัง",
+				"extremities": "⚠ แผลไหม้แขนทั้ง 2 ข้าง — ระดับ 2/3 CRT 4.5 sec — ล่าช้ามาก คลำชีพจรปลายมือปลายเท้าได้แต่อ่อน ทราบว่าเป็นเบาหวาน (BGL 250) — พบ Metformin, Enalapril, Aspirin สร้อยข้อมือ: เบาหวาน"
 			},
 			"history": {
 				"symptoms": {
@@ -265,70 +300,69 @@
 				}
 			},
 			"deterioration": {
-				"rate": 1.3,
+				"rate": 0.8,
 				"enabled": true,
 				"bleeding_interval": 25.0,
 				"airway_to_unconscious": 25.0,
-				"unconscious_to_cardiac": 40.0,
-				"cardiac_to_dead": 25.0
+				"unconscious_to_cardiac": 120.0,
+				"cardiac_to_dead": 90.0
 			},
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"assess_airway",
-				"jaw_thrust",
 				"assess_breathing",
-				"bag_valve_mask",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		}
 	],
 	"bag_tier": "ALS",
-	"equipment": [
-		{
-			"type": "STRETCHER",
-			"name": "Stretcher",
-			"use_label": "Load Patient",
-			"position": { "x": 0.0, "y": 0.0, "z": 5.0 }
-		}
+	"equipment": [],
+	"correct_diagnosis": [
+		"Smoke Inhalation",
+		"Burns (Thermal)",
+		"Crush Injury / Rhabdomyolysis"
 	],
-	"correct_diagnosis": ["Smoke Inhalation", "Burns (Thermal)", "Crush Injury / Rhabdomyolysis"],
 	"hazards": [
 		{
 			"type": "FIRE",
-			"position": { "x": 21.0, "y": 0.0, "z": 3.0 },
+			"description": "Fire zone 1 — FireSpawnSmoke",
+			"position": {
+				"x": 5.58,
+				"y": 0.0,
+				"z": 23.91
+			},
 			"radius": 3.0,
-			"spread_rate": 0.2,
-			"max_radius": 8.0,
-			"damage_per_second": 12.0,
-			"initial_active": true
-		},
-		{
-			"type": "FIRE",
-			"position": { "x": 18.0, "y": 0.0, "z": 6.0 },
-			"radius": 3.0,
-			"spread_rate": 0.15,
-			"max_radius": 6.0,
-			"damage_per_second": 10.0,
-			"initial_active": true
-		},
-		{
-			"type": "FIRE",
-			"position": { "x": 23.0, "y": 0.0, "z": 6.0 },
-			"radius": 3.0,
-			"spread_rate": 0.15,
-			"max_radius": 6.0,
-			"damage_per_second": 10.0,
-			"initial_active": true
-		},
-		{
-			"type": "COLLAPSE",
-			"position": { "x": 20.0, "y": 0.0, "z": 4.0 },
-			"radius": 2.5,
 			"spread_rate": 0.0,
-			"initial_active": false
+			"damage_per_second": 10.0,
+			"initial_active": true
+		},
+		{
+			"type": "FIRE",
+			"description": "Fire zone 2 — FireSpawnSmoke2",
+			"position": {
+				"x": 8.76,
+				"y": 0.0,
+				"z": 20.1
+			},
+			"radius": 3.0,
+			"spread_rate": 0.0,
+			"damage_per_second": 10.0,
+			"initial_active": true
+		},
+		{
+			"type": "FIRE",
+			"description": "Fire zone 3 — FireSpawnSmoke3",
+			"position": {
+				"x": 9.65,
+				"y": 0.0,
+				"z": 24.23
+			},
+			"radius": 3.0,
+			"spread_rate": 0.0,
+			"damage_per_second": 10.0,
+			"initial_active": true
 		}
 	],
 	"random_events": [
@@ -337,7 +371,11 @@
 			"trigger_time_min": 180.0,
 			"trigger_time_max": 300.0,
 			"data": {
-				"position": { "x": 5.0, "y": 0.0, "z": 9.0 },
+				"position": {
+					"x": 5.0,
+					"y": 0.0,
+					"z": 9.0
+				},
 				"persona": {
 					"name": "Suda",
 					"age": 45,
@@ -376,11 +414,20 @@
 				"examination_findings": {
 					"head": "No head injury. Confused, responds to voice. Soot around face. Pupils 4mm, reactive.",
 					"neck": "No cervical injury. Trachea midline.",
-					"chest": "Bilateral wheezing. RR 30. SpO2 90%.",
+					"chest": "⚡ Bilateral wheezing. RR 30. SpO2 90%.",
 					"abdomen": "Soft. No tenderness.",
 					"pelvis": "Stable.",
 					"back": "No injuries.",
 					"extremities": "⚠ Deep laceration left thigh — arterial bleeding, severity 2. Tourniquet site identified. Burns to both hands — second degree."
+				},
+				"examination_findings_th": {
+					"head": "ไม่มีบาดเจ็บที่ศีรษะ สับสน ตอบสนองต่อเสียง มีคราบเขม่าที่ใบหน้า รูม่านตา 4mm ตอบสนองต่อแสง",
+					"neck": "ไม่มีบาดเจ็บที่คอ หลอดลมอยู่กึ่งกลาง",
+					"chest": "⚡ มีเสียง wheezing ทั้ง 2 ข้าง RR 30 SpO2 90%",
+					"abdomen": "ท้องนิ่ม ไม่กดเจ็บ",
+					"pelvis": "มั่นคง",
+					"back": "ไม่มีบาดเจ็บ",
+					"extremities": "⚠ แผลฉีกลึกที่ต้นขาซ้าย — เลือดแดงไหล ความรุนแรงระดับ 2 ระบุตำแหน่งรัดห้ามเลือดแล้ว แผลไหม้ที่มือทั้ง 2 ข้าง — ระดับ 2"
 				},
 				"deterioration": {
 					"rate": 1.0,

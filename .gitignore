@@ -20,6 +20,5 @@ desktop.ini
 build/
 export/
 
-# Heavy assets (transfer via AnyDesk, not git)
-# 3D models, textures, audio — 5.8GB total
-Projects/aero-medica/assets/
+# Assets tracked via Git LFS (large binary files)
+# All asset types (.png, .glb, .ttf, etc.) stored in LFS

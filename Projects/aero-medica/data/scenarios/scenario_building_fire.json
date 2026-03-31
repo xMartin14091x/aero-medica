@@ -8,7 +8,11 @@
 	"time_limit_seconds": 540,
 	"patients": [
 		{
-			"position": { "x": 10.0, "y": 0.0, "z": 8.0 },
+			"position": {
+				"x": 10.0,
+				"y": 0.0,
+				"z": 8.0
+			},
 			"persona": {
 				"name": "Anong",
 				"age": 38,
@@ -46,13 +50,22 @@
 				"co_exposure": true
 			},
 			"examination_findings": {
-				"head": "Soot deposits around nostrils and mouth. Singed nasal hairs — sign of inhalation injury. No head trauma. Pupils equal 4mm, reactive. GCS 14 (E4V4M6). Hoarse voice.",
-				"neck": "No cervical injury. Trachea midline. Mild stridor audible on auscultation — upper airway oedema developing. No JVD.",
+				"head": "⚡ Soot deposits around nostrils and mouth. Singed nasal hairs — sign of inhalation injury. No head trauma. Pupils equal 4mm, reactive. GCS 14 (E4V4M6). Hoarse voice.",
+				"neck": "⚡ No cervical injury. Trachea midline. Mild stridor audible on auscultation — upper airway oedema developing. No JVD.",
 				"chest": "⚠ Bilateral wheezing on auscultation. Intercostal recession visible. RR 30 /min — tachypnoea. SpO2 88% — hypoxia. High-flow oxygen required immediately. Note: SpO2 may be falsely elevated due to CO exposure — consider CO-oximetry.",
 				"abdomen": "Soft, non-tender. No trauma. No distension.",
 				"pelvis": "No injury. Stable.",
-				"back": "Superficial burns to posterior shoulders — first degree. No spinal tenderness.",
-				"extremities": "Minor burns to both forearms — first degree, erythematous, no blistering. Distal pulses present. CRT 2.5 sec. No circumferential burns."
+				"back": "⚡ Superficial burns to posterior shoulders — first degree. No spinal tenderness.",
+				"extremities": "⚡ Minor burns to both forearms — first degree, erythematous, no blistering. Distal pulses present. CRT 2.5 sec. No circumferential burns."
+			},
+			"examination_findings_th": {
+				"head": "⚡ มีคราบเขม่าบริเวณรูจมูกและปาก ขนจมูกไหม้ — สัญญาณของการบาดเจ็บจากการสูดดม ไม่มีบาดเจ็บที่ศีรษะ รูม่านตาเท่ากัน 4mm ตอบสนองต่อแสง GCS 14 (E4V4M6) เสียงแหบ",
+				"neck": "⚡ ไม่มีบาดเจ็บที่คอ หลอดลมอยู่กึ่งกลาง ได้ยินเสียง stridor เล็กน้อยเมื่อฟัง — ทางเดินหายใจส่วนบนเริ่มบวม ไม่มีหลอดเลือดดำที่คอโป่ง",
+				"chest": "⚠ มีเสียง wheezing ทั้ง 2 ข้างเมื่อฟังปอด กล้ามเนื้อซี่โครงหดตัวเห็นชัด RR 30 /min — หายใจเร็ว SpO2 88% — ขาดออกซิเจน ต้องให้ออกซิเจนอัตราสูงทันที หมายเหตุ: SpO2 อาจสูงเกินจริงจากการสัมผัส CO — พิจารณาตรวจ CO-oximetry",
+				"abdomen": "ท้องนิ่ม ไม่กดเจ็บ ไม่มีบาดเจ็บ ไม่มีท้องอืด",
+				"pelvis": "ไม่มีบาดเจ็บ มั่นคง",
+				"back": "⚡ แผลไหม้ตื้นบริเวณไหล่ด้านหลัง — ระดับ 1 ไม่มีกดเจ็บกระดูกสันหลัง",
+				"extremities": "⚡ แผลไหม้เล็กน้อยที่แขนทั้ง 2 ข้าง — ระดับ 1 ผิวแดง ไม่มีตุ่มพอง คลำชีพจรปลายมือปลายเท้าได้ CRT 2.5 sec ไม่มีแผลไหม้รอบแขน"
 			},
 			"history": {
 				"symptoms": {
@@ -87,32 +100,57 @@
 				"enabled": true,
 				"bleeding_interval": 0.0
 			},
+			"correct_diagnosis": [
+				"Smoke Inhalation",
+				"Upper Airway Obstruction"
+			],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"call_for_help",
 				"assess_airway",
-				"open_airway",
 				"assess_breathing",
-				"oxygen_mask",
 				"assess_pulse",
-				"reassess"
+				"triage_assign"
 			]
 		}
 	],
 	"bag_tier": "BLS",
 	"equipment": [],
-	"correct_diagnosis": ["Smoke Inhalation", "Respiratory Failure"],
+	"correct_diagnosis": [
+		"Smoke Inhalation",
+		"Respiratory Failure"
+	],
 	"hazards": [
 		{
 			"type": "FIRE",
-			"description": "Active fire in the shophouse — maintain safe distance",
-			"position": { "x": 10.0, "y": 0.0, "z": 2.0 }
+			"description": "Active fire zone 1",
+			"position": {
+				"x": 5.58,
+				"y": 0.0,
+				"z": 23.91
+			},
+			"radius": 3.0
 		},
 		{
-			"type": "SMOKE",
-			"description": "Smoke drifting from the building — stay upwind",
-			"position": { "x": 10.0, "y": 2.0, "z": 4.0 }
+			"type": "FIRE",
+			"description": "Active fire zone 2",
+			"position": {
+				"x": 8.76,
+				"y": 0.0,
+				"z": 20.1
+			},
+			"radius": 3.0
+		},
+		{
+			"type": "FIRE",
+			"description": "Active fire zone 3",
+			"position": {
+				"x": 9.65,
+				"y": 0.0,
+				"z": 24.23
+			},
+			"radius": 3.0
 		}
 	],
 	"random_events": []

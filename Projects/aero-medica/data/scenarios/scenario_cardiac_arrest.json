@@ -47,12 +47,21 @@
 			},
 			"examination_findings": {
 				"head": "⚠ Cyanotic lips and face. Pupils bilaterally dilated 6mm, fixed — consistent with cardiac arrest. No head trauma from fall. GCS 3 (E1V1M1). No response to any stimulus.",
-				"neck": "No carotid pulse palpable. No JVD. Trachea midline. No neck trauma. Airway obstructed — head tilt chin lift required.",
+				"neck": "⚠ No carotid pulse palpable. No JVD. Trachea midline. No neck trauma. Airway obstructed — head tilt chin lift required.",
 				"chest": "⚠ No spontaneous breathing. No chest rise. No breath sounds. AED analysis: Ventricular Fibrillation — shockable rhythm. CPR site: lower half of sternum. Begin 30:2 compressions immediately.",
 				"abdomen": "Soft. No distension. No visible trauma. Not relevant to acute management — focus on CPR/defibrillation.",
 				"pelvis": "No injury. No incontinence noted.",
 				"back": "No visible injuries. Minor abrasion from collapse onto path. Not priority — do not delay CPR.",
 				"extremities": "⚠ Cool, cyanotic, mottled peripherally. No distal pulses palpable. CRT >5 sec. Pill bottle in pocket: Atorvastatin 40mg — cardiovascular history. No medical alert bracelet."
+			},
+			"examination_findings_th": {
+				"head": "⚠ ริมฝีปากและใบหน้าเขียวคล้ำ รูม่านตาขยายทั้ง 2 ข้าง 6mm ไม่ตอบสนองต่อแสง — สอดคล้องกับหัวใจหยุดเต้น ไม่มีบาดเจ็บที่ศีรษะจากการล้ม GCS 3 (E1V1M1) ไม่ตอบสนองต่อสิ่งกระตุ้นใดๆ",
+				"neck": "⚠ คลำชีพจร carotid ไม่ได้ ไม่มีหลอดเลือดดำที่คอโป่ง หลอดลมอยู่กึ่งกลาง ไม่มีบาดเจ็บที่คอ ทางเดินหายใจอุดกั้น — ต้องทำ head tilt chin lift",
+				"chest": "⚠ ไม่หายใจเอง หน้าอกไม่ยกขึ้น ไม่มีเสียงหายใจ AED วิเคราะห์: Ventricular Fibrillation — จังหวะที่ช็อกได้ ตำแหน่ง CPR: ครึ่งล่างของกระดูกหน้าอก เริ่มกดหน้าอก 30:2 ทันที",
+				"abdomen": "ท้องนิ่ม ไม่อืด ไม่มีบาดเจ็บที่มองเห็น ไม่เกี่ยวข้องกับการรักษาเฉียบพลัน — มุ่งเน้น CPR/การช็อกไฟฟ้า",
+				"pelvis": "ไม่มีบาดเจ็บ ไม่พบกลั้นปัสสาวะไม่อยู่",
+				"back": "ไม่มีบาดเจ็บที่มองเห็น มีรอยถลอกเล็กน้อยจากการล้มลงบนทางเดิน ไม่ใช่สิ่งเร่งด่วน — อย่าทำให้ CPR ล่าช้า",
+				"extremities": "⚠ ปลายมือปลายเท้าเย็น เขียว ผิวลาย คลำชีพจรปลายมือปลายเท้าไม่ได้ CRT >5 sec พบขวดยาในกระเป๋า: Atorvastatin 40mg — มีประวัติโรคหลอดเลือดหัวใจ ไม่มีสร้อยข้อมือแจ้งข้อมูลทางการแพทย์"
 			},
 			"history": {
 				"symptoms": {

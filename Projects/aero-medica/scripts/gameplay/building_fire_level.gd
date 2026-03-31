@@ -27,10 +27,11 @@ func _ready() -> void:
 	_sidewalk_scene = load("res://scenes/environments/Sidewalk.tscn")
 
 	#_generate_grid()  # Tiles already placed in BuildingFire.tscn — disabled to prevent overlap
-	_create_building_shell()
-	_create_interior_walls()
-	_place_furniture()
-	_place_fire_effects()
+	#_create_building_shell()  # [MANUAL] Team places Kenney building assets via Godot editor
+	#_create_interior_walls()  # [MANUAL] Team places Kenney building assets via Godot editor
+	#_place_furniture()  # [MANUAL] Team places assets via Godot editor
+	#_place_fire_effects()  # Replaced by marker-based particle system below
+	_spawn_fire_particles()
 	_place_spawn_markers()
 	_setup_navigation()
 	_setup_lighting()
@@ -149,6 +150,7 @@ func _create_wall_segment(pos: Vector3, wall_size: Vector3, color: Color = Color
 	body.add_child(col)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 func _place_furniture() -> void:
 	var bx := 2.0 * TILE_SIZE
 
@@ -177,46 +179,215 @@ func _place_furniture() -> void:
 	_create_prop(Vector3(8.0 * TILE_SIZE, 0.02, 14.0 * TILE_SIZE), Vector3(3.0, 0.04, 2.0), Color(0.2, 0.5, 0.8))
 
 
-func _place_fire_effects() -> void:
-	var bx := 2.0 * TILE_SIZE
+## DISABLED — old hardcoded fire effects replaced by marker-based particle system (_spawn_fire_particles).
+## Hazard damage now comes from scenario JSON hazards array matched to FireSpawnSmoke marker positions.
+#func _place_fire_effects() -> void:
+#	var bx := 2.0 * TILE_SIZE
+#	_fire_zones = [
+#		Vector3(bx + 8.5 * TILE_SIZE, 0.0, 1.5 * TILE_SIZE),
+#		Vector3(bx + 7.0 * TILE_SIZE, 0.0, 3.0 * TILE_SIZE),
+#		Vector3(bx + 9.5 * TILE_SIZE, 0.0, 3.0 * TILE_SIZE),
+#	]
+#	_collapse_zones = [
+#		Vector3(bx + 1.5 * TILE_SIZE, 0.0, 2.0 * TILE_SIZE),
+#	]
+#	for fire_pos in _fire_zones:
+#		var fire_light := OmniLight3D.new()
+#		fire_light.position = fire_pos + Vector3(0, 1.0, 0)
+#		fire_light.light_color = Color(1.0, 0.4, 0.05)
+#		fire_light.light_energy = 3.0
+#		fire_light.omni_range = 5.0
+#		add_child(fire_light)
+#		var glow := OmniLight3D.new()
+#		glow.position = fire_pos + Vector3(0, 0.3, 0)
+#		glow.light_color = Color(1.0, 0.2, 0.0)
+#		glow.light_energy = 1.5
+#		glow.omni_range = 3.0
+#		add_child(glow)
+#	for collapse_pos in _collapse_zones:
+#		var dark := OmniLight3D.new()
+#		dark.position = collapse_pos + Vector3(0, 1.5, 0)
+#		dark.light_color = Color(0.3, 0.25, 0.2)
+#		dark.light_energy = -0.5
+#		dark.omni_range = 4.0
+#		add_child(dark)
 
-	# Fire zone markers — HazardSystem reads these positions
-	_fire_zones = [
-		Vector3(bx + 8.5 * TILE_SIZE, 0.0, 1.5 * TILE_SIZE),  # Room 4 — fire origin
-		Vector3(bx + 7.0 * TILE_SIZE, 0.0, 3.0 * TILE_SIZE),  # Spreading to corridor
-		Vector3(bx + 9.5 * TILE_SIZE, 0.0, 3.0 * TILE_SIZE),  # Spreading east
-	]
 
-	# Collapse zone markers
-	_collapse_zones = [
-		Vector3(bx + 1.5 * TILE_SIZE, 0.0, 2.0 * TILE_SIZE),  # Room 3
-	]
+## Spawn fire and smoke particles at FireSpawnSmoke marker positions.
+## FireSpawnSmoke 1-3: fire particles + smoke + fire circle on ground + orange light
+## FireSpawnSmoke 4-5: smoke only + dim light
+## Also populates _fire_zones for HazardSystem integration.
+func _spawn_fire_particles() -> void:
+	var spawns_node: Node = get_node_or_null("Spawns")
+	if not spawns_node:
+		push_warning("BuildingFireLevel: No Spawns node found — skipping fire particles")
+		return
 
-	# Place visual fire indicators (orange/red point lights)
-	for fire_pos in _fire_zones:
-		var fire_light := OmniLight3D.new()
-		fire_light.position = fire_pos + Vector3(0, 1.0, 0)
-		fire_light.light_color = Color(1.0, 0.4, 0.05)
-		fire_light.light_energy = 3.0
-		fire_light.omni_range = 5.0
-		add_child(fire_light)
+	_fire_zones.clear()
 
-		# Fire glow on ground (warm spotlight down)
-		var glow := OmniLight3D.new()
-		glow.position = fire_pos + Vector3(0, 0.3, 0)
-		glow.light_color = Color(1.0, 0.2, 0.0)
-		glow.light_energy = 1.5
-		glow.omni_range = 3.0
-		add_child(glow)
+	# FireSpawnSmoke 1-3: fire + smoke + fire circle
+	for i in range(1, 4):
+		var marker_name: String = "FireSpawnSmoke" if i == 1 else "FireSpawnSmoke%d" % i
+		var marker: Node3D = spawns_node.get_node_or_null(marker_name)
+		if not marker:
+			continue
+		var pos: Vector3 = marker.global_position
+		_fire_zones.append(pos)
+		_create_fire_and_smoke(pos)
+		_create_fire_circle(pos)
 
-	# Smoke effect — darkened area markers (reduce lighting)
-	for collapse_pos in _collapse_zones:
-		var dark := OmniLight3D.new()
-		dark.position = collapse_pos + Vector3(0, 1.5, 0)
-		dark.light_color = Color(0.3, 0.25, 0.2)
-		dark.light_energy = -0.5  # Negative to darken
-		dark.omni_range = 4.0
-		add_child(dark)
+	# FireSpawnSmoke 4-5: smoke only
+	for i in range(4, 6):
+		var marker_name: String = "FireSpawnSmoke%d" % i
+		var marker: Node3D = spawns_node.get_node_or_null(marker_name)
+		if not marker:
+			continue
+		_create_smoke_only(marker.global_position)
+
+
+## Create fire particles + smoke particles + orange point light at a position.
+func _create_fire_and_smoke(pos: Vector3) -> void:
+	# Fire particles (orange/yellow, rising)
+	var fire := GPUParticles3D.new()
+	fire.position = pos + Vector3(0, 0.5, 0)
+	fire.amount = 40
+	fire.lifetime = 1.2
+	fire.explosiveness = 0.1
+	fire.randomness = 0.3
+
+	var fire_mat := ParticleProcessMaterial.new()
+	fire_mat.direction = Vector3(0, 1, 0)
+	fire_mat.spread = 15.0
+	fire_mat.initial_velocity_min = 1.0
+	fire_mat.initial_velocity_max = 2.5
+	fire_mat.gravity = Vector3(0, 1.0, 0)
+	fire_mat.scale_min = 0.3
+	fire_mat.scale_max = 0.8
+	fire_mat.color = Color(1.0, 0.5, 0.05, 0.85)
+	var fire_gradient := Gradient.new()
+	fire_gradient.add_point(0.0, Color(1.0, 0.8, 0.1, 1.0))
+	fire_gradient.add_point(0.4, Color(1.0, 0.35, 0.0, 0.9))
+	fire_gradient.add_point(1.0, Color(0.3, 0.1, 0.0, 0.0))
+	var fire_color_ramp := GradientTexture1D.new()
+	fire_color_ramp.gradient = fire_gradient
+	fire_mat.color_ramp = fire_color_ramp
+	fire.process_material = fire_mat
+
+	var fire_mesh := QuadMesh.new()
+	fire_mesh.size = Vector2(0.4, 0.4)
+	fire.draw_pass_1 = fire_mesh
+	fire.emitting = true
+	add_child(fire)
+
+	# Smoke particles (dark gray, rising higher)
+	_create_smoke_particles(pos)
+
+	# Orange point light
+	var light := OmniLight3D.new()
+	light.position = pos + Vector3(0, 1.2, 0)
+	light.light_color = Color(1.0, 0.4, 0.05)
+	light.light_energy = 3.0
+	light.omni_range = 5.0
+	add_child(light)
+
+	# Ground glow
+	var glow := OmniLight3D.new()
+	glow.position = pos + Vector3(0, 0.3, 0)
+	glow.light_color = Color(1.0, 0.2, 0.0)
+	glow.light_energy = 1.5
+	glow.omni_range = 3.0
+	add_child(glow)
+
+
+## Create a fire circle ring on the ground (glowing orange/red ring at floor level).
+## Uses a cylinder mesh flattened into a ring shape — visible from isometric camera.
+func _create_fire_circle(pos: Vector3) -> void:
+	var radius: float = 3.0
+
+	# Ring — use a CylinderMesh with very small height as a flat disc outline
+	# Outer disc (slightly larger, orange)
+	var outer := MeshInstance3D.new()
+	outer.position = pos + Vector3(0, 0.03, 0)
+	var outer_cyl := CylinderMesh.new()
+	outer_cyl.top_radius = radius
+	outer_cyl.bottom_radius = radius
+	outer_cyl.height = 0.05
+	outer_cyl.radial_segments = 32
+	outer.mesh = outer_cyl
+	var outer_mat := StandardMaterial3D.new()
+	outer_mat.albedo_color = Color(1.0, 0.25, 0.0, 0.5)
+	outer_mat.emission_enabled = true
+	outer_mat.emission = Color(1.0, 0.3, 0.0)
+	outer_mat.emission_energy_multiplier = 1.5
+	outer_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	outer_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	outer_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	outer.material_override = outer_mat
+	add_child(outer)
+
+	# Inner cutout (slightly smaller, black transparent to create ring effect)
+	var inner := MeshInstance3D.new()
+	inner.position = pos + Vector3(0, 0.06, 0)
+	var inner_cyl := CylinderMesh.new()
+	inner_cyl.top_radius = radius - 0.3
+	inner_cyl.bottom_radius = radius - 0.3
+	inner_cyl.height = 0.05
+	inner_cyl.radial_segments = 32
+	inner.mesh = inner_cyl
+	var inner_mat := StandardMaterial3D.new()
+	inner_mat.albedo_color = Color(0.0, 0.0, 0.0, 0.0)
+	inner_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	inner_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	inner_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	inner.material_override = inner_mat
+	add_child(inner)
+
+
+## Create smoke-only particles + dim ambient light at a position.
+func _create_smoke_only(pos: Vector3) -> void:
+	_create_smoke_particles(pos)
+
+	# Dim warm light (smoke glow, much less intense than fire)
+	var light := OmniLight3D.new()
+	light.position = pos + Vector3(0, 1.0, 0)
+	light.light_color = Color(0.4, 0.3, 0.2)
+	light.light_energy = 0.8
+	light.omni_range = 3.5
+	add_child(light)
+
+
+## Create smoke particles at a position (shared by fire+smoke and smoke-only).
+func _create_smoke_particles(pos: Vector3) -> void:
+	var smoke := GPUParticles3D.new()
+	smoke.position = pos + Vector3(0, 1.0, 0)
+	smoke.amount = 25
+	smoke.lifetime = 2.5
+	smoke.explosiveness = 0.05
+	smoke.randomness = 0.5
+
+	var smoke_mat := ParticleProcessMaterial.new()
+	smoke_mat.direction = Vector3(0, 1, 0)
+	smoke_mat.spread = 25.0
+	smoke_mat.initial_velocity_min = 0.5
+	smoke_mat.initial_velocity_max = 1.5
+	smoke_mat.gravity = Vector3(0, 0.3, 0)
+	smoke_mat.scale_min = 0.5
+	smoke_mat.scale_max = 1.5
+	smoke_mat.color = Color(0.2, 0.2, 0.2, 0.6)
+	var smoke_gradient := Gradient.new()
+	smoke_gradient.add_point(0.0, Color(0.3, 0.3, 0.3, 0.7))
+	smoke_gradient.add_point(0.5, Color(0.2, 0.2, 0.2, 0.4))
+	smoke_gradient.add_point(1.0, Color(0.15, 0.15, 0.15, 0.0))
+	var smoke_color_ramp := GradientTexture1D.new()
+	smoke_color_ramp.gradient = smoke_gradient
+	smoke_mat.color_ramp = smoke_color_ramp
+	smoke.process_material = smoke_mat
+
+	var smoke_mesh := QuadMesh.new()
+	smoke_mesh.size = Vector2(0.6, 0.6)
+	smoke.draw_pass_1 = smoke_mesh
+	smoke.emitting = true
+	add_child(smoke)
 
 
 func _place_spawn_markers() -> void:
@@ -327,6 +498,7 @@ func _set_ambient_audio() -> void:
 			audio_sys.set_ambient(5)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 func _create_prop(pos: Vector3, box_size: Vector3, color: Color) -> void:
 	var body := StaticBody3D.new()
 	body.position = pos

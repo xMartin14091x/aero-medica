@@ -57,6 +57,9 @@ signal modifier_changed(modifier_name: String, old_value: Variant, new_value: Va
 ## Examination findings by body region — populated from scenario JSON (MON-12/MON-15)
 @export var examination_findings: Dictionary = {}
 
+## Thai examination findings — parallel to examination_findings, used when locale is "th"
+@export var examination_findings_th: Dictionary = {}
+
 ## Whether the patient is currently being treated (pauses deterioration).
 var is_being_treated: bool = false
 

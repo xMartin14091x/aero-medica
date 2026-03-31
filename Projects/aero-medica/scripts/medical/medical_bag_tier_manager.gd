@@ -37,10 +37,14 @@ func _load_tier_database() -> void:
 	file.close()
 
 
+## Quantity multiplier for scenarios with many patients (e.g., MCI = 2.5).
+var _quantity_multiplier: float = 1.0
+
 ## Set the active tier for this scenario ("BLS" or "ALS").
 ## Called by ScenarioManager when loading a scenario.
-func set_tier(tier: String) -> void:
+func set_tier(tier: String, multiplier: float = 1.0) -> void:
 	_current_tier = tier
+	_quantity_multiplier = multiplier
 	_build_active_bag()
 
 
@@ -50,26 +54,29 @@ func get_current_tier() -> String:
 
 
 ## Build the active bag contents from tier data (with quantities).
+## Applies _quantity_multiplier (ceili) to all item quantities.
 func _build_active_bag() -> void:
 	_active_bag.clear()
 	var bls_items: Array = _tiers.get("BLS", {}).get("items", [])
 	for item in bls_items:
+		var qty: int = ceili(item["quantity"] * _quantity_multiplier)
 		_active_bag[item["key"]] = {
 			"display": item["display"],
 			"category": item["category"],
-			"quantity": item["quantity"],
-			"max_quantity": item["quantity"],
+			"quantity": qty,
+			"max_quantity": qty,
 			"consumable": item["consumable"],
 			"available": true,
 		}
 	if _current_tier == "ALS":
 		var als_items: Array = _tiers.get("ALS", {}).get("additional_items", [])
 		for item in als_items:
+			var qty: int = ceili(item["quantity"] * _quantity_multiplier)
 			_active_bag[item["key"]] = {
 				"display": item["display"],
 				"category": item["category"],
-				"quantity": item["quantity"],
-				"max_quantity": item["quantity"],
+				"quantity": qty,
+				"max_quantity": qty,
 				"consumable": item["consumable"],
 				"available": true,
 			}

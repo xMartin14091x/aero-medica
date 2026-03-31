@@ -91,7 +91,7 @@ func _toggle_push(interactor: Node) -> void:
 
 ## Process push/pull physics each frame while active.
 func _process_push_pull(_delta: float) -> void:
-	if not _entity is RigidBody3D or not _interacting_player:
+	if not (_entity is RigidBody3D) or not _interacting_player:
 		return
 
 	# Direction from player to debris
@@ -156,7 +156,7 @@ func _handle_stretcher_interact(interactor: Node) -> void:
 
 ## Process stretcher drag — follow player at offset.
 func _process_drag(_delta: float) -> void:
-	if not _interacting_player or not _entity is Node3D:
+	if not _interacting_player or not (_entity is Node3D):
 		return
 
 	# Follow behind the player
