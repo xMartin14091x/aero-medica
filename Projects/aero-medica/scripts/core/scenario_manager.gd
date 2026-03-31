@@ -130,9 +130,10 @@ func load_scenario(path: String) -> void:
 		TelemetryCollector.wire_player_signals(player)
 		# Set the player's medical bag tier from scenario data (MON-17 integration)
 		var bag_tier: String = current_scenario.get("bag_tier", "BLS")
+		var equip_multiplier: float = current_scenario.get("equipment_multiplier", 1.0)
 		var bag_manager: Node = player.get_node_or_null("MedicalBagTierManager")
 		if bag_manager and bag_manager.has_method("set_tier"):
-			bag_manager.set_tier(bag_tier)
+			bag_manager.set_tier(bag_tier, equip_multiplier)
 
 	scenario_loaded.emit(current_scenario)
 
@@ -269,6 +270,12 @@ func _spawn_entities() -> void:
 				deterioration_comp.unconscious_to_cardiac = det_data["unconscious_to_cardiac"]
 			if det_data.has("cardiac_to_dead"):
 				deterioration_comp.cardiac_to_dead = det_data["cardiac_to_dead"]
+
+		# Store per-patient correct diagnosis from scenario JSON (if present).
+		# Used by patient_interaction_ui for per-patient DDx scoring.
+		var patient_correct_ddx: Array = patient_def.get("correct_diagnosis", [])
+		if not patient_correct_ddx.is_empty():
+			patient.set_meta("correct_diagnosis", patient_correct_ddx)
 
 		# Store the INITIAL triage priority at spawn time — used for triage correctness
 		# evaluation. This captures the presenting condition before any deterioration.
@@ -491,6 +498,10 @@ func _build_patient_summaries() -> Array:
 			summary["diagnoses"] = entity.get_meta("player_diagnoses")
 		if entity.has_meta("diagnosis_matches"):
 			summary["diagnosis_matches"] = entity.get_meta("diagnosis_matches")
+
+		# Include per-patient correct diagnosis for debrief display
+		if entity.has_meta("correct_diagnosis"):
+			summary["correct_diagnosis"] = entity.get_meta("correct_diagnosis")
 
 		# Read deterioration budget timing for AI reviewer
 		var deterioration: Node = entity.get_node_or_null("DeteriorationSystem")

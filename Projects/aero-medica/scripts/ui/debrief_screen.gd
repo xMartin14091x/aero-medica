@@ -12,6 +12,14 @@ var _title_label: Label = null
 var _stats_vbox: VBoxContainer = null
 ## (removed _patients_scroll — patient summary cards auto-fit without scroll)
 var _patients_vbox: VBoxContainer = null
+
+## Patient card navigation — single card at a time with arrows.
+var _patient_cards: Array = []  # All built patient card nodes
+var _current_patient_idx: int = 0
+var _patient_nav_label: Label = null
+var _patient_prev_btn: Button = null
+var _patient_next_btn: Button = null
+var _patient_card_container: VBoxContainer = null  # Holds the single visible card
 var _review_status_label: Label = null
 var _review_text_label: RichTextLabel = null
 var _review_scroll: ScrollContainer = null
@@ -130,16 +138,43 @@ func _build_ui() -> void:
 	_timeline_vbox.add_theme_constant_override("separation", 4)
 	timeline_scroll.add_child(_timeline_vbox)
 
-	# Patient Summary cards (below timeline — no scroll, auto-fit)
+	# Patient Summary — single card with navigation arrows
 	var patients_header := Label.new()
 	patients_header.text = tr("DEBRIEF_PATIENTS_HEADER")
 	T.style_label(patients_header, "subtitle", "text_primary")
 	left_col.add_child(patients_header)
 
-	_patients_vbox = VBoxContainer.new()
-	_patients_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_patients_vbox.add_theme_constant_override("separation", 8)
-	left_col.add_child(_patients_vbox)
+	var nav_row := HBoxContainer.new()
+	nav_row.add_theme_constant_override("separation", 8)
+	nav_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	left_col.add_child(nav_row)
+
+	_patient_prev_btn = Button.new()
+	_patient_prev_btn.text = "<"
+	_patient_prev_btn.custom_minimum_size = Vector2(36, 30)
+	_patient_prev_btn.pressed.connect(_on_patient_prev)
+	T.style_button(_patient_prev_btn, "small")
+	nav_row.add_child(_patient_prev_btn)
+
+	_patient_nav_label = Label.new()
+	_patient_nav_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_patient_nav_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	T.style_label(_patient_nav_label, "body", "text_secondary")
+	nav_row.add_child(_patient_nav_label)
+
+	_patient_next_btn = Button.new()
+	_patient_next_btn.text = ">"
+	_patient_next_btn.custom_minimum_size = Vector2(36, 30)
+	_patient_next_btn.pressed.connect(_on_patient_next)
+	T.style_button(_patient_next_btn, "small")
+	nav_row.add_child(_patient_next_btn)
+
+	_patient_card_container = VBoxContainer.new()
+	_patient_card_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left_col.add_child(_patient_card_container)
+
+	# Keep _patients_vbox pointing to _patient_card_container for backwards compatibility
+	_patients_vbox = _patient_card_container
 
 	# ── RIGHT COLUMN (3/4 width) — AI Review ──
 	var right_col := VBoxContainer.new()
@@ -324,18 +359,25 @@ func _populate_stats(results: Dictionary) -> void:
 	_add_stat(stats_grid, "Actions Performed", str(action_count))
 
 
-## Populate per-patient summary cards.
+## Populate per-patient summary cards — builds all cards, shows one at a time.
 func _populate_patient_cards(results: Dictionary) -> void:
-	for child in _patients_vbox.get_children():
+	_patient_cards.clear()
+	_current_patient_idx = 0
+
+	# Clear container
+	for child in _patient_card_container.get_children():
 		child.queue_free()
 
 	var patient_summaries: Array = results.get("patient_summaries", [])
 	if patient_summaries.is_empty():
-		# Build from available data
 		patient_summaries = _build_patient_summaries_from_events(results)
 
+	# Build all cards but don't add to tree yet
 	for summary: Dictionary in patient_summaries:
-		_add_patient_card(summary)
+		var card := _build_patient_card(summary)
+		_patient_cards.append(card)
+
+	_show_patient_card(_current_patient_idx)
 
 
 ## Build patient summaries from telemetry events if not provided directly.
@@ -361,8 +403,8 @@ func _build_patient_summaries_from_events(results: Dictionary) -> Array:
 	return summaries
 
 
-## Add a patient summary card.
-func _add_patient_card(summary: Dictionary) -> void:
+## Build a patient summary card and return it (not added to tree).
+func _build_patient_card(summary: Dictionary) -> PanelContainer:
 	var T := ThemeMedical
 
 	# Determine card severity from final state
@@ -439,7 +481,56 @@ func _add_patient_card(summary: Dictionary) -> void:
 		diag_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vbox.add_child(diag_lbl)
 
-	_patients_vbox.add_child(card)
+	# Show per-patient correct diagnosis (from patient-level data)
+	var patient_correct_ddx: Array = summary.get("correct_diagnosis", [])
+	if not patient_correct_ddx.is_empty():
+		var correct_lbl := Label.new()
+		correct_lbl.text = "Correct: %s" % ", ".join(PackedStringArray(patient_correct_ddx))
+		T.style_label(correct_lbl, "body_small", "accent_blue")
+		correct_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(correct_lbl)
+
+	return card
+
+
+## Show a single patient card by index, update nav label and arrow states.
+func _show_patient_card(idx: int) -> void:
+	# Remove current card from container (don't free — we reuse cards)
+	for child in _patient_card_container.get_children():
+		_patient_card_container.remove_child(child)
+
+	if _patient_cards.is_empty():
+		_patient_nav_label.text = ""
+		_patient_prev_btn.visible = false
+		_patient_next_btn.visible = false
+		return
+
+	idx = clampi(idx, 0, _patient_cards.size() - 1)
+	_current_patient_idx = idx
+
+	var card: Control = _patient_cards[idx]
+	_patient_card_container.add_child(card)
+
+	# Update nav label and button states
+	_patient_nav_label.text = "%d / %d" % [idx + 1, _patient_cards.size()]
+	_patient_prev_btn.disabled = (idx == 0)
+	_patient_next_btn.disabled = (idx >= _patient_cards.size() - 1)
+
+	# Hide arrows entirely if only 1 patient
+	var show_nav: bool = _patient_cards.size() > 1
+	_patient_prev_btn.visible = show_nav
+	_patient_next_btn.visible = show_nav
+	_patient_nav_label.visible = show_nav
+
+
+func _on_patient_prev() -> void:
+	if _current_patient_idx > 0:
+		_show_patient_card(_current_patient_idx - 1)
+
+
+func _on_patient_next() -> void:
+	if _current_patient_idx < _patient_cards.size() - 1:
+		_show_patient_card(_current_patient_idx + 1)
 
 
 ## Add a stat label pair to the grid.

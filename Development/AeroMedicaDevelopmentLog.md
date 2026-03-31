@@ -2,8 +2,8 @@
 
 > Complete development history extracted from RoundTable daily session logs.
 > Project: AeroMedica — Emergency Medical Training Simulation (Godot 4.6)
-> Development period: 07-03-2026 to 27-03-2026
-> Competition deadline: 31-03-2026
+> Development period: 07-03-2026 to 31-03-2026
+> Competition deadline: 02-04-2026
 > Team: RoundTable (Overseer, Monolith, Syndicate, Arcade) + Medica (Clinical Consultant)
 
 ---
@@ -2058,8 +2058,60 @@ Reviewed `PrototypeDevelopmentProcess_TH_4Pages.md` for competition submission. 
 
 ---
 
+## 30-03-2026
+*Source: 30-03-2026 session (context-resumed)*
+
+## Session 1 AeroMedica — Per-Patient Differential Diagnosis Implementation
+Medica clinical consultation for all 13 patients across 7 scenarios. Added `correct_diagnosis` arrays to each patient object in scenario JSONs (previously only scenario-level). Updated `scenario_manager.gd` to store per-patient DDx as meta on spawned entities. Updated `patient_interaction_ui.gd` DDx scoring to read per-patient meta first, fall back to scenario-level. Updated `debrief_screen.gd` patient cards to show per-patient correct DDx in accent blue.
+
+## Session 2 AeroMedica — Deterioration Timer Rebalancing
+Players reported patients dying within 1-2 minutes. Extended all deterioration transition timers across RTA and MCI scenarios. RTA: Somchai a2u 240s, Nanthida a2u 180s u2c 180s, Prasert u2c 240s c2d 120s. MCI: all missing timers filled, rates capped at 0.8. Patients now survive 3-5+ minutes per deterioration stage.
+
+## Session 3 AeroMedica — Auto-Spawn Prop Removal (All Scenes)
+Commented out auto-spawned code props across all gameplay levels per Chief Manager Martin directive. RTA: `_place_vehicles`, `_place_debris`, `_place_emergency_vehicles`, `_setup_traffic_hazard_zone`. MCI: `_place_props`. Cardiac: `_place_furniture`. BuildingFire: old fire effects. All tagged `[MANUAL]` for editor-placed Kenney assets.
+
+## Session 4 AeroMedica — Building Fire Particle System (GPUParticles3D)
+Replaced old fire system with GPUParticles3D spawned from marker nodes. FireSpawnSmoke 1-3: fire + smoke particles with HazardZone Area3D for damage. FireSpawn 4-5: smoke only (no damage). Populated `_fire_zones` array from marker positions before `_load_scenario` for HazardSystem integration.
+
+## Session 5 AeroMedica — Scoring Calibration (Triage Speed + Protocol Accuracy)
+Changed `BENCHMARK_FIRST_TRIAGE` from 30s to 60s (full marks under 1 minute). Changed `BENCHMARK_MAX_TRIAGE` to 300s. Fixed Protocol Accuracy = 0 bug: telemetry step mapping didn't match UI button event names. Updated `protocol_adherence_tracker.gd` mapping and `correct_protocol_sequence` in all scenario JSONs.
+
+## Session 6 AeroMedica — Cached Reviews Consolidation (Export Fix)
+Individual `.txt` cached review files weren't exported by Godot. Consolidated all 70 reviews (7 scenarios × 5 tiers × 2 languages) into single `data/cached_reviews.json`. Rewrote `ai_demo_fallback.gd` to read from JSON instead of individual files.
+
+## Session 7 AeroMedica — GDScript Parse Error Fixes (Export Build)
+Fixed `physics_interactable.gd`: `not _entity is RigidBody3D` → `not (_entity is RigidBody3D)`. Fixed `ai_test_runner.gd`: `load().new()` → `Node.new(); set_script(load())` pattern for Node-extending scripts.
+
+## Session 8 AeroMedica — Equipment Removal from Scenario JSONs
+Removed auto-spawned stretcher equipment from RTA, MCI, and Fire scenario JSONs. Equipment arrays set to `[]`.
+
+## Session 9 AeroMedica — Development Folder Documentation Overhaul
+Created/updated 14+ Development documents: `AeroMedica_Features.md` (9 systems), `AeroMedica_SubFeatures.md` (30+ sub-features), `AeroMedica_InstallGuide.md`, `QA_PatientCheatSheet.md` (per-patient DDx for all 13 patients), TechnicalDebt entries (DEBT-04 InstructorDashboard dead code, DEBT-05 scenario JSON variants). Updated `AeroMedicaDevelopmentLog.md`. Created `CONTRIBUTION.md` (AI tools disclosure).
+
+## Session 10 AeroMedica — Instructor Web Dashboard Plan
+Created full plan document for B2B instructor dashboard: FastAPI + SQLite + WebSocket server, browser UI, Godot InstructorReporter autoload. 8 implementation tickets (MON-WD-01 to MON-WD-03, ARC-WD-01 to ARC-WD-04, SYN-WD-01). Offline queue spec at `user://pending_telemetry/`. Approved by Chief Manager Martin.
+
+---
+
+## 31-03-2026
+*Source: 31-03-2026 session (context-resumed)*
+
+## Session 1 AeroMedica — MCI Equipment ×2.5 Multiplier System
+Added `equipment_multiplier` field to scenario JSON (MCI set to 2.5). Modified `MedicalBagTierManager.set_tier()` to accept multiplier parameter. `_build_active_bag()` now applies `ceili(quantity * multiplier)` to all item quantities. `scenario_manager.gd` reads multiplier from JSON and passes to bag manager. MCI consumables now: Bandage 10, Tourniquet 5, Pressure Dressing 8, IV Cannula 10, Triage Tags 25. Other scenarios unaffected (default 1.0).
+
+## Session 2 AeroMedica — MCI Random Event Patient Fix (Anong — Missing Data)
+Random event patient Anong (19F, GREEN) was missing `history` (SAMPLE) section and had incomplete deterioration timers. Added Medica-verified SAMPLE history data. Set appropriate GREEN-patient deterioration timers (bleeding_interval: 300s, a2u: 1200s, u2c: 600s, c2d: 180s, rate: 0.2).
+
+## Session 3 AeroMedica — Random Event System: Full Patient Data Loading
+Critical code fix in `random_event_system.gd`. Previously only loaded basic modifiers and persona for random event patients — missing: SAMPLE history, vitals, examination findings (Head-to-Toe), examination findings Thai, and deterioration timers. Added full data loading matching `scenario_manager.gd` pattern. Random event patients now have complete clinical data in-game.
+
+## Session 4 AeroMedica — Competition Script Drafting Support
+Provided structured information for game introduction script (6 phases: Greeting, Brief Introduction, Gameplay Explanation, Case Example, Debrief, Ending). Refined Tutorial case example walkthrough into 5 labeled steps (Primary Survey, Head-to-Toe, SAMPLE History, Treatment, Triage+Diagnosis). Corrected misleading "Offline-first ทุกห้องเรียน" claim — rewritten to accurately describe AI as optional with automatic cached fallback. Refined script statement about Metaverse — replaced with evidence-based alternatives.
+
+---
+
 ## Development Summary
 
-- **Total AeroMedica sessions extracted:** 72
+- **Total AeroMedica sessions extracted:** 86
 - **Source files scanned:** 19
-- **Development period:** 07-03-2026 to 29-03-2026 (23 days)
+- **Development period:** 07-03-2026 to 31-03-2026 (25 days)

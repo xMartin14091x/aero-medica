@@ -95,6 +95,7 @@
 				"enabled": true,
 				"bleeding_interval": 60.0
 			},
+			"correct_diagnosis": ["Minor Bleeding / Laceration", "Soft Tissue Injury"],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
@@ -102,8 +103,7 @@
 				"assess_airway",
 				"assess_breathing",
 				"assess_pulse",
-				"control_bleeding",
-				"reassess"
+				"triage_assign"
 			]
 		}
 	],

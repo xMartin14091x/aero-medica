@@ -15,9 +15,9 @@ extends Node
 
 ## Benchmark times (seconds) for triage speed scoring.
 const BENCHMARK_FIRST_ASSESSMENT := 15.0  # Excellent if under 15s
-const BENCHMARK_FIRST_TRIAGE := 30.0      # Excellent if under 30s
+const BENCHMARK_FIRST_TRIAGE := 60.0      # Excellent if under 30s
 const BENCHMARK_MAX_ASSESSMENT := 60.0    # Zero score if over 60s
-const BENCHMARK_MAX_TRIAGE := 120.0       # Zero score if over 120s
+const BENCHMARK_MAX_TRIAGE := 180.0       # Zero score if over 120s
 
 
 ## Calculate all 5 axis scores from session data.
@@ -62,41 +62,48 @@ func calculate_scores(session_data: Dictionary, protocol_analysis: Dictionary = 
 	return scores
 
 
-## Triage Speed (0-100): Based on time-to-first-assessment and time-to-triage.
+## Triage Speed (0-100): Based on total scenario completion time.
+## Under 60s = 100 (full mark). Then gradual degradation.
+## Uses the EARLIER of first_triage and scenario duration as the reference time.
 func _score_triage_speed(protocol_analysis: Dictionary) -> float:
 	var timing: Dictionary = protocol_analysis.get("timing", {})
 	var first_assessment: float = timing.get("time_to_first_assessment", -1.0)
 	var first_triage: float = timing.get("time_to_first_triage", -1.0)
+	var duration: float = protocol_analysis.get("duration_seconds", 0.0)
 
-	var assessment_score := 0.0
-	var triage_score := 0.0
+	# Use the best available timing reference
+	var reference_time: float = -1.0
+	if first_triage >= 0:
+		reference_time = first_triage
+	elif first_assessment >= 0:
+		reference_time = first_assessment
+	elif duration > 0:
+		reference_time = duration
 
-	# Assessment speed (50% of axis)
-	if first_assessment < 0:
-		assessment_score = 0.0  # Never assessed
-	elif first_assessment <= BENCHMARK_FIRST_ASSESSMENT:
-		assessment_score = 100.0
-	elif first_assessment >= BENCHMARK_MAX_ASSESSMENT:
-		assessment_score = 0.0
+	if reference_time < 0:
+		return 0.0  # No interaction at all
+
+	# Scoring curve:
+	# 0-60s = 100 (full mark)
+	# 60-120s = gradual decline (100 -> 60)
+	# 120-180s = steeper decline (60 -> 20)
+	# 180s+ = 20 -> 0 (over 300s = 0)
+	if reference_time <= 60.0:
+		return 100.0
+	elif reference_time <= 120.0:
+		# 60-120s: linear 100 -> 60
+		var t: float = (reference_time - 60.0) / 60.0
+		return lerpf(100.0, 60.0, t)
+	elif reference_time <= 180.0:
+		# 120-180s: linear 60 -> 20
+		var t: float = (reference_time - 120.0) / 60.0
+		return lerpf(60.0, 20.0, t)
+	elif reference_time <= 300.0:
+		# 180-300s: linear 20 -> 0
+		var t: float = (reference_time - 180.0) / 120.0
+		return lerpf(20.0, 0.0, t)
 	else:
-		# Linear interpolation between benchmark and max
-		var range_total := BENCHMARK_MAX_ASSESSMENT - BENCHMARK_FIRST_ASSESSMENT
-		var elapsed_past := first_assessment - BENCHMARK_FIRST_ASSESSMENT
-		assessment_score = (1.0 - elapsed_past / range_total) * 100.0
-
-	# Triage speed (50% of axis)
-	if first_triage < 0:
-		triage_score = 0.0  # Never triaged
-	elif first_triage <= BENCHMARK_FIRST_TRIAGE:
-		triage_score = 100.0
-	elif first_triage >= BENCHMARK_MAX_TRIAGE:
-		triage_score = 0.0
-	else:
-		var range_total := BENCHMARK_MAX_TRIAGE - BENCHMARK_FIRST_TRIAGE
-		var elapsed_past := first_triage - BENCHMARK_FIRST_TRIAGE
-		triage_score = (1.0 - elapsed_past / range_total) * 100.0
-
-	return clampf(assessment_score * 0.5 + triage_score * 0.5, 0.0, 100.0)
+		return 0.0
 
 
 ## Protocol Accuracy (0-100): Based on protocol adherence percentage, penalised by wrong-order.
@@ -186,11 +193,15 @@ func _score_patient_outcome(session_data: Dictionary, protocol_analysis: Diction
 			patient_states[target] = event.get("details", {}).get("new_state", "CONSCIOUS")
 
 	if patient_states.is_empty():
-		# No patient state changes recorded — check if any patients were assessed
+		# No state CHANGES recorded — patients may have stayed in their initial state.
+		# If we have patient reports (meaning the player interacted), assume patients
+		# are alive (CONSCIOUS) unless evidence otherwise. This handles the common case
+		# where a Tutorial patient stays CONSCIOUS throughout.
 		var patient_reports: Array = protocol_analysis.get("patient_reports", [])
 		if patient_reports.is_empty():
 			return 0.0  # No patients interacted with
-		return 50.0  # Interacted but no state change data
+		# Player interacted and no patients deteriorated — best outcome
+		return 100.0
 
 	var total_patients := patient_states.size()
 	var outcome_score := 0.0

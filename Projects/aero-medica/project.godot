@@ -31,11 +31,6 @@ ThemeMedical="*res://scripts/core/theme_medical.gd"
 AIDemoFallback="*res://scripts/ai/reviewer/ai_demo_fallback.gd"
 HistoryManager="*res://scripts/dashboard/history_manager.gd"
 
-[internationalization]
-
-locale/translations=PackedStringArray("res://data/translations/translations.en.translation", "res://data/translations/translations.th.translation")
-locale/locale_filter_mode=0
-
 [display]
 
 window/size/viewport_width=1920
@@ -82,6 +77,11 @@ drop={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":81,"key_label":0,"unicode":113,"location":0,"echo":false,"script":null)
 ]
 }
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://data/translations/translations.en.translation", "res://data/translations/translations.th.translation")
+locale/locale_filter_mode=0
 
 [physics]
 

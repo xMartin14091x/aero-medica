@@ -110,6 +110,10 @@ var _selected_chips_hbox: HBoxContainer = null
 ## Action cooldown system — tracks active cooldowns per group.
 ## Key = group name, Value = number of actions currently cooling down.
 var _cooldown_active: Dictionary = {}  # group → int (active count)
+
+## Cooldown queue — maps group name → Array of queued entries.
+## Each entry: {"btn": Button, "group": String, "on_complete": Callable, "circle": _CooldownCircle, "original_text": String}
+var _cooldown_queue: Dictionary = {}  # group → Array[Dictionary]
 const COOLDOWN_CONFIG := {
 	"drs":       {"delay": 0.5, "max_concurrent": 1},
 	"abcde":     {"delay": 2.0, "max_concurrent": 1},
@@ -210,18 +214,18 @@ func _ready() -> void:
 
 ## Start a cooldown on a button with circular progress overlay.
 ## Callback fires AFTER delay with result.
-## Returns false if group is at max concurrent (shows warning).
+## If group is at max concurrent, queues the action instead of rejecting.
+## Returns true always (action either started or queued).
 func _start_cooldown(btn: Button, group: String, on_complete: Callable = Callable()) -> bool:
 	var config: Dictionary = COOLDOWN_CONFIG.get(group, {"delay": 1.0, "max_concurrent": 1})
 	var active: int = _cooldown_active.get(group, 0)
+
 	if active >= config["max_concurrent"]:
-		_flash_button_rejected(btn)
-		if _drug_feedback_label:
-			_drug_feedback_label.text = tr("COOLDOWN_MAX_CONCURRENT")
-			var tm := _get_theme_medical()
-			if tm:
-				_drug_feedback_label.add_theme_color_override("font_color", tm.c("accent_red"))
-		return false
+		# Queue the action instead of rejecting
+		_queue_cooldown(btn, group, on_complete)
+		return true  # Queued, not rejected
+
+	# Start immediately
 	_cooldown_active[group] = active + 1
 	btn.disabled = true
 	var delay: float = config["delay"]
@@ -236,6 +240,8 @@ func _start_cooldown(btn: Button, group: String, on_complete: Callable = Callabl
 			btn.modulate.a = 1.0
 		if on_complete.is_valid():
 			on_complete.call()
+		# Process next queued action for this group
+		_process_queue(group)
 	btn.add_child(progress)
 	btn.modulate.a = 0.7
 	# Hide button text during cooldown — circle is the visual
@@ -245,6 +251,129 @@ func _start_cooldown(btn: Button, group: String, on_complete: Callable = Callabl
 		if is_instance_valid(btn):
 			btn.text = original_text
 	return true
+
+
+## Queue a cooldown action when the group is at max concurrent.
+## Shows a static 0% circle with queue position number. Click again to cancel.
+func _queue_cooldown(btn: Button, group: String, on_complete: Callable) -> void:
+	if group not in _cooldown_queue:
+		_cooldown_queue[group] = []
+
+	var queue: Array = _cooldown_queue[group]
+	var queue_pos: int = queue.size() + 1  # 1-based position for display
+
+	# Create a static (non-progressing) circle overlay showing queue position
+	var circle := _CooldownCircle.new()
+	circle.duration = 99999.0  # Won't progress — effectively frozen
+	circle.queued = true
+	circle.queue_position = queue_pos + _cooldown_active.get(group, 0)
+	btn.add_child(circle)
+	btn.modulate.a = 0.5
+
+	var original_text: String = btn.text
+	btn.text = ""
+
+	var entry: Dictionary = {
+		"btn": btn,
+		"group": group,
+		"on_complete": on_complete,
+		"circle": circle,
+		"original_text": original_text,
+	}
+	queue.append(entry)
+
+	# Allow clicking again to cancel while queued
+	circle.on_cancel = func():
+		_cancel_queued(group, entry)
+
+	# Connect button press to cancel (only while queued)
+	var cancel_callable := func():
+		if is_instance_valid(circle) and circle.queued:
+			_cancel_queued(group, entry)
+	btn.pressed.connect(cancel_callable, CONNECT_ONE_SHOT)
+
+
+## Cancel a queued cooldown action — removes overlay and restores button.
+func _cancel_queued(group: String, entry: Dictionary) -> void:
+	if group in _cooldown_queue:
+		_cooldown_queue[group].erase(entry)
+		# Update queue positions for remaining entries
+		_update_queue_positions(group)
+
+	var btn: Button = entry.get("btn")
+	var circle: Control = entry.get("circle")
+	var original_text: String = entry.get("original_text", "")
+
+	if is_instance_valid(circle):
+		circle.queue_free()
+	if is_instance_valid(btn):
+		btn.disabled = false
+		btn.modulate.a = 1.0
+		btn.text = original_text
+
+
+## Process the next queued action when a cooldown slot opens.
+func _process_queue(group: String) -> void:
+	if group not in _cooldown_queue:
+		return
+	var queue: Array = _cooldown_queue[group]
+	if queue.is_empty():
+		return
+
+	var config: Dictionary = COOLDOWN_CONFIG.get(group, {"delay": 1.0, "max_concurrent": 1})
+	var active: int = _cooldown_active.get(group, 0)
+	if active >= config["max_concurrent"]:
+		return  # Still full
+
+	# Pop next entry and start it
+	var entry: Dictionary = queue.pop_front()
+	_update_queue_positions(group)
+
+	var btn: Button = entry.get("btn")
+	var old_circle: Control = entry.get("circle")
+	var on_complete: Callable = entry.get("on_complete", Callable())
+	var original_text: String = entry.get("original_text", "")
+
+	# Remove the static queued circle
+	if is_instance_valid(old_circle):
+		old_circle.queue_free()
+
+	if not is_instance_valid(btn):
+		return
+
+	# Start the real cooldown
+	_cooldown_active[group] = active + 1
+	btn.disabled = true
+	var delay: float = config["delay"]
+
+	var progress := _CooldownCircle.new()
+	progress.duration = delay
+	progress.on_complete = func():
+		_cooldown_active[group] = maxi(0, _cooldown_active.get(group, 1) - 1)
+		if is_instance_valid(btn):
+			btn.disabled = false
+			btn.modulate.a = 1.0
+			btn.text = original_text
+		if on_complete.is_valid():
+			on_complete.call()
+		_process_queue(group)
+	btn.add_child(progress)
+	btn.modulate.a = 0.7
+	btn.text = ""
+
+
+## Update displayed queue position numbers after a cancel or dequeue.
+func _update_queue_positions(group: String) -> void:
+	if group not in _cooldown_queue:
+		return
+	var queue: Array = _cooldown_queue[group]
+	var active: int = _cooldown_active.get(group, 0)
+	for i in queue.size():
+		var entry: Dictionary = queue[i]
+		var circle: Control = entry.get("circle")
+		if is_instance_valid(circle) and circle is _CooldownCircle:
+			circle.queue_position = i + 1 + active
+			circle.queue_redraw()
 
 
 ## Flash a button red briefly when rejected (max concurrent reached).
@@ -261,11 +390,15 @@ func _flash_button_rejected(btn: Button) -> void:
 
 
 ## Inner class: circular progress overlay drawn on top of a button.
+## Supports queue mode: when `queued` is true, progress stays at 0% and shows position number.
 class _CooldownCircle extends Control:
 	var duration: float = 1.0
 	var elapsed: float = 0.0
 	var on_complete: Callable = Callable()
 	var on_text_restore: Callable = Callable()
+	var on_cancel: Callable = Callable()
+	var queued: bool = false
+	var queue_position: int = 0
 	var _ring_color: Color = Color(0.298, 0.604, 1.0, 0.8)
 	var _bg_color: Color = Color(0.0, 0.0, 0.0, 0.3)
 	var _done: bool = false
@@ -279,6 +412,8 @@ class _CooldownCircle extends Control:
 	func _process(delta: float) -> void:
 		if _done:
 			return
+		if queued:
+			return  # Don't progress while queued — stay at 0%
 		elapsed += delta
 		queue_redraw()
 		if elapsed >= duration:
@@ -292,7 +427,7 @@ class _CooldownCircle extends Control:
 	func _draw() -> void:
 		var center := size / 2.0
 		var radius := minf(size.x, size.y) * 0.3
-		var progress := clampf(elapsed / duration, 0.0, 1.0)
+		var progress := 0.0 if queued else clampf(elapsed / duration, 0.0, 1.0)
 
 		# Background dim
 		draw_rect(Rect2(Vector2.ZERO, size), _bg_color)
@@ -300,15 +435,23 @@ class _CooldownCircle extends Control:
 		# Background circle (track)
 		draw_arc(center, radius, 0, TAU, 32, Color(0.3, 0.3, 0.4, 0.4), 3.0)
 
-		# Progress arc — clockwise from top
+		# Progress arc (only when not queued)
 		if progress > 0.0:
 			var start_angle := -PI / 2.0  # 12 o'clock
 			var end_angle := start_angle + TAU * progress
 			draw_arc(center, radius, start_angle, end_angle, 32, _ring_color, 4.0)
 
-		# Center percentage text
-		var pct := int(progress * 100.0)
-		draw_string(ThemeDB.fallback_font, center + Vector2(-10, 5), "%d%%" % pct, HORIZONTAL_ALIGNMENT_CENTER, -1, 12, Color.WHITE)
+		if queued:
+			# Show queue position number at top-left of circle
+			var pos_text := str(queue_position)
+			var font := ThemeDB.fallback_font
+			draw_string(font, Vector2(6, 16), pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1.0, 0.85, 0.2, 0.9))
+			# Show 0% in center
+			draw_string(font, center + Vector2(-10, 5), "0%", HORIZONTAL_ALIGNMENT_CENTER, -1, 12, Color(0.7, 0.7, 0.7, 0.6))
+		else:
+			# Center percentage text
+			var pct := int(progress * 100.0)
+			draw_string(ThemeDB.fallback_font, center + Vector2(-10, 5), "%d%%" % pct, HORIZONTAL_ALIGNMENT_CENTER, -1, 12, Color.WHITE)
 
 
 ## Check if a cooldown group can accept another action.
@@ -2641,6 +2784,23 @@ func _do_exam_action(action_name: String) -> void:
 	_check_cpr_visibility()
 	assessment_action.emit(action_name)
 
+	# Log to telemetry — map UI action names to protocol-standard names
+	var telemetry_name: String = _map_exam_to_telemetry(action_name)
+	if telemetry_name != "":
+		var telemetry: Node = get_node_or_null("/root/TelemetryCollector")
+		if telemetry and telemetry.has_method("record_event"):
+			var ts: float = 0.0
+			if telemetry.get("_session_start_msec") != null and telemetry._session_start_msec > 0:
+				ts = (Time.get_ticks_msec() - telemetry._session_start_msec) / 1000.0
+			var patient_name: String = _patient.name if _patient else ""
+			telemetry.record_event({
+				"type": telemetry_name,
+				"target": patient_name,
+				"timestamp": ts,
+				"player_position": {"x": 0, "y": 0, "z": 0},
+				"details": result,
+			})
+
 
 # ==============================================================================
 # ARC-13: HANDLERS — Vital Signs
@@ -3523,11 +3683,14 @@ func _on_submit_diagnosis_pressed() -> void:
 	for diag in _selected_diagnoses:
 		diagnosis_selected.emit(diag)
 
-	# Score against correct diagnoses from scenario data
+	# Score against correct diagnoses — per-patient DDx (preferred) with scenario-level fallback
 	var correct_list: Array = []
-	var scenario_mgr: Node = get_node_or_null("/root/ScenarioManager")
-	if scenario_mgr and scenario_mgr.current_scenario:
-		correct_list = scenario_mgr.current_scenario.get("correct_diagnosis", [])
+	if _patient and _patient.has_meta("correct_diagnosis"):
+		correct_list = _patient.get_meta("correct_diagnosis")
+	if correct_list.is_empty():
+		var scenario_mgr: Node = get_node_or_null("/root/ScenarioManager")
+		if scenario_mgr and scenario_mgr.current_scenario:
+			correct_list = scenario_mgr.current_scenario.get("correct_diagnosis", [])
 
 	# Calculate match score
 	var matches: int = 0
@@ -3691,6 +3854,28 @@ func _get_scripted_response(category: String) -> String:
 # ==============================================================================
 
 ## Builds a patient-specific finding dict for DRSABCDE primary survey steps.
+## Map UI exam action names to protocol-standard telemetry event names.
+func _map_exam_to_telemetry(action_name: String) -> String:
+	match action_name:
+		"check_danger":
+			return "scene_safety_check"
+		"check_response":
+			return "assess_consciousness"
+		"send_help":
+			return "call_for_help"
+		"check_airway":
+			return "assess_airway"
+		"check_breathing":
+			return "assess_breathing"
+		"check_circulation":
+			return "assess_pulse"
+		"check_disability":
+			return "assess_disability"
+		"check_exposure":
+			return "assess_exposure"
+	return ""
+
+
 ## AssessmentManager only handles vital sign enums — DRSABCDE steps (check_danger,
 ## check_response, check_airway, check_breathing, check_circulation, check_disability,
 ## check_exposure) are resolved here from MedicalStateComponent and PatientPersona.
