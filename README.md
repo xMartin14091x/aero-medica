@@ -118,7 +118,7 @@ assets/         Textures, 3D models, audio
 
 ## AI Tools Disclosure
 
-See [CONTRIBUTION.md](CONTRIBUTION.md) for details on AI tools used in development.
+See [CONTRIBUTION.md](Projects/aero-medica/CONTRIBUTION.md) for details on AI tools used in development.
 
 ## License
 
