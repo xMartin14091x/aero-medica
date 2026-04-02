@@ -26,14 +26,34 @@ The fastest way to play AeroMedica. No Godot Engine required.
 
 ### Quick Start (Windows Build)
 
-1. Download the `AeroMedica_WinBuild/` folder from Google Drive
-2. Extract if compressed
-3. Run **`AeroMedica.exe`** to play
-4. Alternative: Run `AeroMedica.console.exe` to play with a debug console window
+1. Open the `AeroMedica_WinBuild/` folder on Google Drive
+2. **Download each file individually** (right-click > Download for each file) -- do NOT download the folder as zip (see note below)
+3. Place all 3 files in the same folder on your computer
+4. **Verify the `.pck` file** is named exactly `AeroMedica.pck` (see Troubleshooting below)
+5. Run **`AeroMedica.exe`** to play
+6. Alternative: Run `AeroMedica.console.exe` to play with a debug console window
 
 **System requirements:** Windows 10/11. No additional software needed.
 
-> **Note:** The build includes `AeroMedica.pck` (game data) alongside the executables. Keep all files in the same folder.
+> **Why not download as zip?** Google Drive has a file size limit for zip packaging. When downloading the folder as zip, the large `.pck` file (game data) may be excluded from the zip and downloaded separately -- or not at all. Downloading files individually avoids this problem.
+
+### Troubleshooting: .pck File
+
+The game requires `AeroMedica.pck` in the same folder as the `.exe` files. The `.exe` will crash or show a black screen if the `.pck` is missing or named incorrectly.
+
+**After downloading, check that your folder contains exactly these files:**
+```
+AeroMedica_WinBuild/
+  AeroMedica.exe
+  AeroMedica.console.exe
+  AeroMedica.pck          <-- this file is required
+```
+
+**Common issues:**
+- **File downloaded as `AeroMedica-001.pck` or similar:** Google Drive sometimes appends numbers to avoid filename conflicts. Rename it to exactly `AeroMedica.pck`.
+- **Downloaded folder as zip but `.pck` is missing from the zip:** Google Drive excludes large files from zip downloads. The `.pck` may have downloaded as a separate file outside the zip, or not at all. Check your Downloads folder for a standalone `.pck` file -- move it into the same folder as the `.exe` files and rename if needed.
+- **File missing entirely:** Re-download `AeroMedica.pck` individually from the Google Drive folder.
+- **File size is 0 bytes or very small:** The download was interrupted. Re-download the `.pck` file.
 
 ---
 
