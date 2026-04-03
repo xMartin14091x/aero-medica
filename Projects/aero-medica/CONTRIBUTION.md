@@ -84,5 +84,5 @@ The project source code is available at: github.com/xMartin14091x/aero-medica (b
 |------|----------|-------------|
 | Ollama llama3.1:8b | In-game AI | Patient dialogue + AI reviewer (runtime feature) |
 | Claude Opus 4.6 | Dev assistant | Code writing + documentation (under team direction) |
-| Gemini 2.5 Pro | Visual/ideation | Banner image + poster draft + brainstorming |
+| Gemini 3.1 Pro | Visual/ideation | Banner image + poster draft + brainstorming |
 | Human team | Everything else | Architecture, medical protocols, game design, scenarios, testing, business model |
