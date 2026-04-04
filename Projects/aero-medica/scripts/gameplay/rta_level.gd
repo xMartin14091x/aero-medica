@@ -50,11 +50,11 @@ func _ready() -> void:
 	else:
 		# Legacy procedural generation path.
 		#_generate_grid()  # Tiles already placed in RoadTrafficAccident.tscn — disabled to prevent overlap
-		_place_vehicles()
-		_place_debris()
+		#_place_vehicles()  # [MANUAL] Team places assets via Godot editor
+		#_place_debris()  # [MANUAL] Team places assets via Godot editor
 		_place_spawn_markers()
-		_place_emergency_vehicles()
-		_setup_traffic_hazard_zone()
+		#_place_emergency_vehicles()  # [MANUAL] Team places assets via Godot editor
+		#_setup_traffic_hazard_zone()  # [MANUAL] Team places assets via Godot editor
 
 	# Bake navmesh after all static geometry is placed (both V1 and V2).
 	nav_region.bake_navigation_mesh()
@@ -119,6 +119,7 @@ func _pick_tile(x: int, z: int) -> PackedScene:
 	return grass_scene
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 ## Place placeholder vehicle props (grey boxes representing crashed cars).
 func _place_vehicles() -> void:
 	# Vehicle 1: sedan on horizontal road, slightly off-center (as if swerved)
@@ -144,6 +145,7 @@ func _place_vehicles() -> void:
 	)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 ## Create a single vehicle placeholder box.
 func _create_vehicle_box(pos: Vector3, box_size: Vector3, angle_deg: float, color: Color) -> void:
 	var body := StaticBody3D.new()
@@ -192,6 +194,7 @@ func _add_marker(parent: Node3D, marker_name: String, pos: Vector3) -> void:
 	parent.add_child(marker)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 ## Place scattered debris around the crash site.
 func _place_debris() -> void:
 	var debris_items := [
@@ -207,6 +210,7 @@ func _place_debris() -> void:
 		_create_debris_box(item[0], item[1], item[2])
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 func _create_debris_box(pos: Vector3, box_size: Vector3, color: Color) -> void:
 	var body := StaticBody3D.new()
 	body.position = pos
@@ -231,6 +235,7 @@ func _create_debris_box(pos: Vector3, box_size: Vector3, color: Color) -> void:
 	body.add_child(col_shape)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 ## Place emergency vehicles with flashing lights.
 func _place_emergency_vehicles() -> void:
 	# Ambulance — parked on sidewalk (white box)
@@ -275,6 +280,7 @@ func _place_emergency_vehicles() -> void:
 	_emergency_lights.append(red_r)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 ## Create traffic hazard zone (danger area around crash site).
 func _setup_traffic_hazard_zone() -> void:
 	# Traffic cones marking hazard perimeter (small orange cylinders)
@@ -290,6 +296,7 @@ func _setup_traffic_hazard_zone() -> void:
 		_create_traffic_cone(pos)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 func _create_traffic_cone(pos: Vector3) -> void:
 	var cone := MeshInstance3D.new()
 	var mesh := CylinderMesh.new()

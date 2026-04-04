@@ -28,12 +28,18 @@ GCSAssessmentManager="*res://scripts/medical/gcs_assessment_manager.gd"
 SecondarySurveyManager="*res://scripts/medical/secondary_survey_manager.gd"
 TriageSystem="*res://scripts/medical/triage_system.gd"
 ThemeMedical="*res://scripts/core/theme_medical.gd"
+AIDemoFallback="*res://scripts/ai/reviewer/ai_demo_fallback.gd"
+HistoryManager="*res://scripts/dashboard/history_manager.gd"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
+
+[gui]
+
+theme/custom_font="res://assets/fonts/Kanit-Regular.ttf"
 
 [input]
 
@@ -72,13 +78,14 @@ drop={
 ]
 }
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://data/translations/translations.en.translation", "res://data/translations/translations.th.translation")
+locale/locale_filter_mode=0
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
-
-[gui]
-
-theme/custom_font="res://assets/fonts/Kanit-Regular.ttf"
 
 [rendering]
 

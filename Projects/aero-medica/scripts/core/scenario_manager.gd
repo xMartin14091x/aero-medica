@@ -57,10 +57,33 @@ func _process(delta: float) -> void:
 
 
 ## Load a scenario from a JSON file path. Spawns entities into the current scene.
+var _loading: bool = false
+
+
+func _cleanup_previous() -> void:
+	_spawned_entities.clear()
+	_elapsed_time = 0.0
+	current_scenario = {}
+	if _hazard_system and is_instance_valid(_hazard_system):
+		_hazard_system.cleanup()
+		_hazard_system = null
+	if _random_event_system and is_instance_valid(_random_event_system):
+		_random_event_system = null
+
+
 func load_scenario(path: String) -> void:
+	# Prevent concurrent loads (old scene's deferred call + new scene's _ready)
+	if _loading:
+		return
+	_loading = true
+
+	# Clean up any previous scenario state
+	_cleanup_previous()
+
 	var file := FileAccess.open(path, FileAccess.READ)
 	if not file:
 		push_error("ScenarioManager: Cannot open scenario file: %s" % path)
+		_loading = false
 		return
 
 	var json := JSON.new()
@@ -91,7 +114,14 @@ func load_scenario(path: String) -> void:
 		# One more frame to let _ready() run on all nodes
 		await get_tree().process_frame
 
+	# Verify scene is still valid before spawning
+	if not get_tree() or not get_tree().current_scene:
+		push_warning("ScenarioManager: Scene freed during load — aborting spawn")
+		_loading = false
+		return
+
 	_spawn_entities()
+	_loading = false
 
 	# Wire telemetry signals and medical bag tier after entities are spawned
 	var scene_root: Node = get_tree().current_scene
@@ -100,9 +130,10 @@ func load_scenario(path: String) -> void:
 		TelemetryCollector.wire_player_signals(player)
 		# Set the player's medical bag tier from scenario data (MON-17 integration)
 		var bag_tier: String = current_scenario.get("bag_tier", "BLS")
+		var equip_multiplier: float = current_scenario.get("equipment_multiplier", 1.0)
 		var bag_manager: Node = player.get_node_or_null("MedicalBagTierManager")
 		if bag_manager and bag_manager.has_method("set_tier"):
-			bag_manager.set_tier(bag_tier)
+			bag_manager.set_tier(bag_tier, equip_multiplier)
 
 	scenario_loaded.emit(current_scenario)
 
@@ -239,6 +270,12 @@ func _spawn_entities() -> void:
 				deterioration_comp.unconscious_to_cardiac = det_data["unconscious_to_cardiac"]
 			if det_data.has("cardiac_to_dead"):
 				deterioration_comp.cardiac_to_dead = det_data["cardiac_to_dead"]
+
+		# Store per-patient correct diagnosis from scenario JSON (if present).
+		# Used by patient_interaction_ui for per-patient DDx scoring.
+		var patient_correct_ddx: Array = patient_def.get("correct_diagnosis", [])
+		if not patient_correct_ddx.is_empty():
+			patient.set_meta("correct_diagnosis", patient_correct_ddx)
 
 		# Store the INITIAL triage priority at spawn time — used for triage correctness
 		# evaluation. This captures the presenting condition before any deterioration.
@@ -395,6 +432,8 @@ func end_scenario() -> void:
 	# Save results for dashboard access
 	_last_results = results
 
+	_save_session_to_history(results)
+
 
 ## Last completed scenario results (for dashboard to read).
 var _last_results: Dictionary = {}
@@ -459,6 +498,10 @@ func _build_patient_summaries() -> Array:
 			summary["diagnoses"] = entity.get_meta("player_diagnoses")
 		if entity.has_meta("diagnosis_matches"):
 			summary["diagnosis_matches"] = entity.get_meta("diagnosis_matches")
+
+		# Include per-patient correct diagnosis for debrief display
+		if entity.has_meta("correct_diagnosis"):
+			summary["correct_diagnosis"] = entity.get_meta("correct_diagnosis")
 
 		# Read deterioration budget timing for AI reviewer
 		var deterioration: Node = entity.get_node_or_null("DeteriorationSystem")
@@ -551,3 +594,104 @@ func get_hazard_system() -> Node:
 ## Get the RandomEventSystem instance (for external systems to query).
 func get_random_event_system() -> Node:
 	return _random_event_system
+
+
+## ── Score + Save Pipeline ───────────────────────────────────────────
+## Computes 5-axis scores via ScoringEngine, then persists to HistoryManager.
+## Called automatically when a scenario ends.
+func _save_session_to_history(results: Dictionary) -> void:
+	var hm: Node = get_node_or_null("/root/HistoryManager")
+	if not hm or not hm.has_method("save_session_scores"):
+		push_warning("ScenarioManager: HistoryManager not available — session not saved")
+		return
+
+	var session_data: Dictionary = results.get("session_data", {})
+	var scenario_id: String = results.get("scenario_id", "unknown")
+
+	# Compute 5-axis scores via ScoringEngine
+	var scores: Dictionary = {}
+	var scoring_script: Resource = load("res://scripts/dashboard/scoring_engine.gd")
+	if scoring_script:
+		var engine: Node = Node.new()
+		engine.set_script(scoring_script)
+
+		# Run protocol adherence analysis if available
+		var protocol_analysis: Dictionary = {}
+		var adherence_script: Resource = load("res://scripts/telemetry/protocol_adherence_tracker.gd")
+		if adherence_script:
+			var tracker: Node = Node.new()
+			tracker.set_script(adherence_script)
+			if tracker.has_method("analyse_session"):
+				protocol_analysis = tracker.analyse_session(session_data)
+			tracker.free()
+
+		scores = engine.calculate_scores(session_data, protocol_analysis)
+		engine.free()
+	else:
+		# Fallback: basic scoring from raw results
+		var duration: float = results.get("duration_seconds", 0.0)
+		var time_limit: float = results.get("time_limit", 0.0)
+		var patient_count: int = results.get("patient_count", 0)
+		var events: Array = results.get("events", [])
+		var diag_data: Dictionary = results.get("diagnosis_summary", {})
+		var summaries: Array = results.get("patient_summaries", [])
+
+		var triage_speed_score: float = 0.0
+		if time_limit > 0.0 and duration > 0.0:
+			triage_speed_score = clampf((1.0 - duration / time_limit) * 100.0, 10.0, 95.0)
+		elif duration > 0.0:
+			triage_speed_score = clampf(80.0 - duration / 10.0, 20.0, 90.0)
+
+		var protocol_score: float = 50.0
+		var action_count: int = 0
+		for event: Dictionary in events:
+			var etype: String = event.get("type", "")
+			if etype.begins_with("assess_") or etype == "treatment_applied":
+				action_count += 1
+		if action_count > 0:
+			protocol_score = clampf(float(action_count) / float(maxi(patient_count * 5, 1)) * 100.0, 20.0, 95.0)
+
+		var decision_score: float = 50.0
+		if diag_data.get("patients_diagnosed", 0) > 0:
+			decision_score = clampf(float(diag_data.get("total_matches", 0)) / float(maxi(diag_data.get("patients_diagnosed", 1), 1)) * 100.0, 10.0, 95.0)
+
+		var equipment_score: float = 50.0
+		var total_equip: int = 0
+		for s: Dictionary in summaries:
+			total_equip += s.get("deployed_equipment", []).size()
+		if total_equip > 0:
+			equipment_score = clampf(float(total_equip) / float(maxi(patient_count * 3, 1)) * 100.0, 20.0, 95.0)
+
+		var outcome_score: float = 50.0
+		var alive_count: int = 0
+		for s: Dictionary in summaries:
+			if s.get("final_state", "") in ["CONSCIOUS", "UNCONSCIOUS"]:
+				alive_count += 1
+		if patient_count > 0:
+			outcome_score = clampf(float(alive_count) / float(patient_count) * 100.0, 10.0, 95.0)
+
+		var total: float = triage_speed_score * 0.20 + protocol_score * 0.25 + decision_score * 0.20 + equipment_score * 0.15 + outcome_score * 0.20
+		scores = {
+			"triage_speed": snappedf(triage_speed_score, 0.1),
+			"protocol_accuracy": snappedf(protocol_score, 0.1),
+			"decision_quality": snappedf(decision_score, 0.1),
+			"equipment_handling": snappedf(equipment_score, 0.1),
+			"patient_outcome": snappedf(outcome_score, 0.1),
+			"overall": snappedf(total, 0.1),
+			"pass_fail": {
+				"triage_speed": triage_speed_score >= 60.0,
+				"protocol_accuracy": protocol_score >= 60.0,
+				"decision_quality": decision_score >= 60.0,
+				"equipment_handling": equipment_score >= 60.0,
+				"patient_outcome": outcome_score >= 60.0,
+				"overall": total >= 60.0,
+			},
+		}
+
+	# Persist to HistoryManager
+	var ai_summary: String = ""
+	var saved_path: String = hm.save_session_scores(scenario_id, scores, 0.0, ai_summary)
+	if saved_path != "":
+		print("[Dashboard] Session saved: %s — overall: %.1f%%" % [scenario_id, scores.get("overall", 0.0)])
+	else:
+		push_warning("ScenarioManager: Failed to save session to HistoryManager")

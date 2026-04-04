@@ -8,7 +8,11 @@
 	"time_limit_seconds": 540,
 	"patients": [
 		{
-			"position": { "x": 10.0, "y": 0.0, "z": 8.0 },
+			"position": {
+				"x": 10.0,
+				"y": 0.0,
+				"z": 8.0
+			},
 			"persona": {
 				"name": "Anong",
 				"age": 38,
@@ -96,32 +100,57 @@
 				"enabled": true,
 				"bleeding_interval": 0.0
 			},
+			"correct_diagnosis": [
+				"Smoke Inhalation",
+				"Upper Airway Obstruction"
+			],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"call_for_help",
 				"assess_airway",
-				"open_airway",
 				"assess_breathing",
-				"oxygen_mask",
 				"assess_pulse",
-				"reassess"
+				"triage_assign"
 			]
 		}
 	],
 	"bag_tier": "BLS",
 	"equipment": [],
-	"correct_diagnosis": ["Smoke Inhalation", "Respiratory Failure"],
+	"correct_diagnosis": [
+		"Smoke Inhalation",
+		"Respiratory Failure"
+	],
 	"hazards": [
 		{
 			"type": "FIRE",
-			"description": "Active fire in the shophouse — maintain safe distance",
-			"position": { "x": 10.0, "y": 0.0, "z": 2.0 }
+			"description": "Active fire zone 1",
+			"position": {
+				"x": 5.58,
+				"y": 0.0,
+				"z": 23.91
+			},
+			"radius": 3.0
 		},
 		{
-			"type": "SMOKE",
-			"description": "Smoke drifting from the building — stay upwind",
-			"position": { "x": 10.0, "y": 2.0, "z": 4.0 }
+			"type": "FIRE",
+			"description": "Active fire zone 2",
+			"position": {
+				"x": 8.76,
+				"y": 0.0,
+				"z": 20.1
+			},
+			"radius": 3.0
+		},
+		{
+			"type": "FIRE",
+			"description": "Active fire zone 3",
+			"position": {
+				"x": 9.65,
+				"y": 0.0,
+				"z": 24.23
+			},
+			"radius": 3.0
 		}
 	],
 	"random_events": []

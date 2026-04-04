@@ -108,9 +108,9 @@ func export_json(path: String, scenario_id: String = "") -> void:
 	for sid: String in scenario_ids:
 		if scenario_id != "" and sid != scenario_id:
 			continue
-		var best := _history_manager.get_best_score(sid)
-		var count := _history_manager.get_session_count(sid)
-		var improvements := _history_manager.get_all_improvements(sid)
+		var best: Dictionary = _history_manager.get_best_score(sid)
+		var count: int = _history_manager.get_session_count(sid)
+		var improvements: Dictionary = _history_manager.get_all_improvements(sid)
 		summaries.append({
 			"scenario_id": sid,
 			"total_sessions": count,

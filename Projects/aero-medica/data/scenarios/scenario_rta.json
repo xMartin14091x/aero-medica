@@ -8,7 +8,11 @@
 	"time_limit_seconds": 900,
 	"patients": [
 		{
-			"position": { "x": 3.96, "y": 0.0, "z": 2.81 },
+			"position": {
+				"x": 3.96,
+				"y": 0.0,
+				"z": 2.81
+			},
 			"persona": {
 				"name": "Somchai",
 				"age": 35,
@@ -99,23 +103,33 @@
 				"extremities": "⚠ แผลฉีกขนาดใหญ่ที่ขาซ้ายส่วนล่าง — เลือดแดงไหล ความรุนแรงระดับ 2 มองเห็นเศษแก้ว ระบุตำแหน่งรัดห้ามเลือด 2-3 นิ้วเหนือแผล ขาขวาปกติ คลำชีพจรปลายเท้าได้ทั้ง 2 ข้าง"
 			},
 			"deterioration": {
-				"rate": 0.8,
+				"rate": 0.5,
 				"enabled": true,
-				"bleeding_interval": 30.0
+				"bleeding_interval": 60.0,
+				"airway_to_unconscious": 240.0,
+				"unconscious_to_cardiac": 180.0,
+				"cardiac_to_dead": 120.0
 			},
+			"correct_diagnosis": [
+				"Trauma -- Multi-system",
+				"Haemorrhagic Shock",
+				"Internal Bleeding"
+			],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"assess_airway",
 				"assess_breathing",
 				"assess_pulse",
-				"control_bleeding",
-				"triage_assign",
-				"reassess"
+				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": 7.96, "y": 0.0, "z": -1.19 },
+			"position": {
+				"x": 7.96,
+				"y": 0.0,
+				"z": -1.19
+			},
 			"persona": {
 				"name": "Nanthida",
 				"age": 28,
@@ -206,24 +220,32 @@
 				"extremities": "⚡ รอยช้ำเล็กน้อยที่แขนทั้ง 2 ข้างจากแรงกระแทก คลำไม่พบกระดูกหัก คลำชีพจรปลายมือปลายเท้าได้ รับประทานยาคุมกำเนิด (เพิ่มความเสี่ยง DVT)"
 			},
 			"deterioration": {
-				"rate": 1.0,
+				"rate": 0.5,
 				"enabled": true,
-				"bleeding_interval": 40.0,
-				"airway_to_unconscious": 35.0
+				"bleeding_interval": 60.0,
+				"airway_to_unconscious": 180.0,
+				"unconscious_to_cardiac": 180.0,
+				"cardiac_to_dead": 120.0
 			},
+			"correct_diagnosis": [
+				"Tension Pneumothorax",
+				"Spinal Injury"
+			],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"assess_airway",
-				"head_tilt_chin_lift",
 				"assess_breathing",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": -0.04, "y": 0.0, "z": -3.19 },
+			"position": {
+				"x": -0.04,
+				"y": 0.0,
+				"z": -3.19
+			},
 			"persona": {
 				"name": "Prasert",
 				"age": 52,
@@ -314,40 +336,43 @@
 				"extremities": "⚠ สร้อยข้อมือ: WARFARIN — ยาต้านการแข็งตัวของเลือด การห้ามเลือดบกพร่องอย่างวิกฤต เลือดไหลเวียนปลายมือปลายเท้าไม่ดี CRT 5 sec มีรอยถลอกหลายแห่ง ไม่พบกระดูกยาวหักชัดเจน"
 			},
 			"deterioration": {
-				"rate": 1.2,
+				"rate": 0.6,
 				"enabled": true,
-				"bleeding_interval": 20.0,
-				"airway_to_unconscious": 30.0,
-				"unconscious_to_cardiac": 45.0,
-				"cardiac_to_dead": 25.0
+				"bleeding_interval": 40.0,
+				"airway_to_unconscious": 60.0,
+				"unconscious_to_cardiac": 240.0,
+				"cardiac_to_dead": 120.0
 			},
+			"correct_diagnosis": [
+				"Head Injury / TBI",
+				"Haemorrhagic Shock",
+				"Internal Bleeding"
+			],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"assess_airway",
-				"jaw_thrust",
 				"assess_breathing",
-				"bag_valve_mask",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		}
 	],
 	"bag_tier": "ALS",
-	"equipment": [
-		{
-			"type": "STRETCHER",
-			"name": "Stretcher",
-			"use_label": "Load Patient",
-			"position": { "x": -6.0, "y": 0.0, "z": -2.0 }
-		}
+	"equipment": [],
+	"correct_diagnosis": [
+		"Trauma — Multi-system",
+		"Spinal Injury",
+		"Haemorrhagic Shock"
 	],
-	"correct_diagnosis": ["Trauma — Multi-system", "Spinal Injury", "Haemorrhagic Shock"],
 	"hazards": [
 		{
 			"type": "FIRE",
-			"position": { "x": 10.0, "y": 0.0, "z": 4.0 },
+			"position": {
+				"x": 10.0,
+				"y": 0.0,
+				"z": 4.0
+			},
 			"radius": 2.5,
 			"spread_rate": 0.1,
 			"max_radius": 4.0,

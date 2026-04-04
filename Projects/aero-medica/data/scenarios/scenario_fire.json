@@ -8,7 +8,11 @@
 	"time_limit_seconds": 720,
 	"patients": [
 		{
-			"position": { "x": 21.3, "y": 0.0, "z": 26.0 },
+			"position": {
+				"x": 21.3,
+				"y": 0.0,
+				"z": 26.0
+			},
 			"persona": {
 				"name": "Niran",
 				"age": 30,
@@ -100,14 +104,16 @@
 				"assess_consciousness",
 				"assess_airway",
 				"assess_breathing",
-				"oxygen_mask",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": 20.0, "y": 0.0, "z": 26.0 },
+			"position": {
+				"x": 20.0,
+				"y": 0.0,
+				"z": 26.0
+			},
 			"persona": {
 				"name": "Ploy",
 				"age": 25,
@@ -191,24 +197,26 @@
 				}
 			},
 			"deterioration": {
-				"rate": 1.0,
+				"rate": 0.7,
 				"enabled": true,
-				"airway_to_unconscious": 40.0,
-				"unconscious_to_cardiac": 50.0
+				"airway_to_unconscious": 120.0,
+				"unconscious_to_cardiac": 150.0
 			},
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"assess_airway",
-				"head_tilt_chin_lift",
 				"assess_breathing",
-				"oxygen_mask",
 				"assess_pulse",
 				"triage_assign"
 			]
 		},
 		{
-			"position": { "x": 22.5, "y": 0.0, "z": 26.0 },
+			"position": {
+				"x": 22.5,
+				"y": 0.0,
+				"z": 26.0
+			},
 			"persona": {
 				"name": "Arthit",
 				"age": 60,
@@ -292,70 +300,69 @@
 				}
 			},
 			"deterioration": {
-				"rate": 1.3,
+				"rate": 0.8,
 				"enabled": true,
 				"bleeding_interval": 25.0,
 				"airway_to_unconscious": 25.0,
-				"unconscious_to_cardiac": 40.0,
-				"cardiac_to_dead": 25.0
+				"unconscious_to_cardiac": 120.0,
+				"cardiac_to_dead": 90.0
 			},
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
 				"assess_airway",
-				"jaw_thrust",
 				"assess_breathing",
-				"bag_valve_mask",
 				"assess_pulse",
-				"control_bleeding",
 				"triage_assign"
 			]
 		}
 	],
 	"bag_tier": "ALS",
-	"equipment": [
-		{
-			"type": "STRETCHER",
-			"name": "Stretcher",
-			"use_label": "Load Patient",
-			"position": { "x": 0.0, "y": 0.0, "z": 5.0 }
-		}
+	"equipment": [],
+	"correct_diagnosis": [
+		"Smoke Inhalation",
+		"Burns (Thermal)",
+		"Crush Injury / Rhabdomyolysis"
 	],
-	"correct_diagnosis": ["Smoke Inhalation", "Burns (Thermal)", "Crush Injury / Rhabdomyolysis"],
 	"hazards": [
 		{
 			"type": "FIRE",
-			"position": { "x": 21.0, "y": 0.0, "z": 3.0 },
+			"description": "Fire zone 1 — FireSpawnSmoke",
+			"position": {
+				"x": 5.58,
+				"y": 0.0,
+				"z": 23.91
+			},
 			"radius": 3.0,
-			"spread_rate": 0.2,
-			"max_radius": 8.0,
-			"damage_per_second": 12.0,
-			"initial_active": true
-		},
-		{
-			"type": "FIRE",
-			"position": { "x": 18.0, "y": 0.0, "z": 6.0 },
-			"radius": 3.0,
-			"spread_rate": 0.15,
-			"max_radius": 6.0,
-			"damage_per_second": 10.0,
-			"initial_active": true
-		},
-		{
-			"type": "FIRE",
-			"position": { "x": 23.0, "y": 0.0, "z": 6.0 },
-			"radius": 3.0,
-			"spread_rate": 0.15,
-			"max_radius": 6.0,
-			"damage_per_second": 10.0,
-			"initial_active": true
-		},
-		{
-			"type": "COLLAPSE",
-			"position": { "x": 20.0, "y": 0.0, "z": 4.0 },
-			"radius": 2.5,
 			"spread_rate": 0.0,
-			"initial_active": false
+			"damage_per_second": 10.0,
+			"initial_active": true
+		},
+		{
+			"type": "FIRE",
+			"description": "Fire zone 2 — FireSpawnSmoke2",
+			"position": {
+				"x": 8.76,
+				"y": 0.0,
+				"z": 20.1
+			},
+			"radius": 3.0,
+			"spread_rate": 0.0,
+			"damage_per_second": 10.0,
+			"initial_active": true
+		},
+		{
+			"type": "FIRE",
+			"description": "Fire zone 3 — FireSpawnSmoke3",
+			"position": {
+				"x": 9.65,
+				"y": 0.0,
+				"z": 24.23
+			},
+			"radius": 3.0,
+			"spread_rate": 0.0,
+			"damage_per_second": 10.0,
+			"initial_active": true
 		}
 	],
 	"random_events": [
@@ -364,7 +371,11 @@
 			"trigger_time_min": 180.0,
 			"trigger_time_max": 300.0,
 			"data": {
-				"position": { "x": 5.0, "y": 0.0, "z": 9.0 },
+				"position": {
+					"x": 5.0,
+					"y": 0.0,
+					"z": 9.0
+				},
 				"persona": {
 					"name": "Suda",
 					"age": 45,

@@ -19,7 +19,7 @@ func _ready() -> void:
 	_grass_scene = load("res://scenes/environments/Grass.tscn")
 
 	#_generate_grid()  # Tiles already placed in MassCasualty.tscn — disabled to prevent overlap
-	_place_props()
+	#_place_props()  # [MANUAL] Team places assets via Godot editor
 	_place_spawn_markers()
 	_setup_navigation()
 	_setup_lighting()
@@ -53,6 +53,7 @@ func _pick_tile(x: int, z: int) -> PackedScene:
 	return _grass_scene
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 func _place_props() -> void:
 	# Park benches along paths
 	_create_prop(Vector3(5 * TILE_SIZE, 0.25, 10 * TILE_SIZE), Vector3(1.2, 0.5, 0.4), Color(0.45, 0.3, 0.15))
@@ -140,6 +141,7 @@ func _place_spawn_markers() -> void:
 		add_child(spawn)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 func _create_tree(pos: Vector3) -> void:
 	var tree := StaticBody3D.new()
 	tree.position = pos
@@ -237,6 +239,7 @@ func _set_ambient_audio() -> void:
 			audio_sys.set_ambient(4)
 
 
+## DISABLED -- team places Kenney assets manually in Godot editor
 func _create_prop(pos: Vector3, box_size: Vector3, color: Color) -> void:
 	var body := StaticBody3D.new()
 	body.position = pos

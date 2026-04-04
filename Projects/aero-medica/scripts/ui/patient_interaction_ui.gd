@@ -92,6 +92,36 @@ var _chat_input: LineEdit = null
 var _talk_button: Button = null
 var _patient_info_label: RichTextLabel = null
 var _ai_status_label: Label = null
+var _patient_info_card: PanelContainer = null
+var _patient_name_label: Label = null
+var _patient_state_label: Label = null
+var _patient_detail_label: Label = null
+
+## Responsive grid tracking.
+var _responsive_grids: Array[Dictionary] = []
+
+## Differential tab — search + categories.
+var _ddx_search_input: LineEdit = null
+var _ddx_category_containers: Dictionary = {}
+var _ddx_category_grids: Dictionary = {}
+var _ddx_category_collapsed: Dictionary = {}
+var _selected_chips_hbox: HBoxContainer = null
+
+## Action cooldown system — tracks active cooldowns per group.
+## Key = group name, Value = number of actions currently cooling down.
+var _cooldown_active: Dictionary = {}  # group → int (active count)
+
+## Cooldown queue — maps group name → Array of queued entries.
+## Each entry: {"btn": Button, "group": String, "on_complete": Callable, "circle": _CooldownCircle, "original_text": String}
+var _cooldown_queue: Dictionary = {}  # group → Array[Dictionary]
+const COOLDOWN_CONFIG := {
+	"drs":       {"delay": 0.5, "max_concurrent": 1},
+	"abcde":     {"delay": 2.0, "max_concurrent": 1},
+	"vitals":    {"delay": 1.5, "max_concurrent": 2},
+	"secondary": {"delay": 2.0, "max_concurrent": 1},
+	"equipment": {"delay": 3.0, "max_concurrent": 2},
+	"drug":      {"delay": 5.0, "max_concurrent": 1},
+}
 
 ## Ollama dialogue client reference.
 var _dialogue_client: Node = null
@@ -137,6 +167,8 @@ var _drug_dose_btn: OptionButton = null
 var _drug_feedback_label: Label = null
 var _drug_log_vbox: VBoxContainer = null
 var _drug_admin_manager: Node = null
+var _drug_admin_btn: Button = null
+var _triage_feedback_label: Label = null
 var _current_drug_data: Dictionary = {}  # loaded drugs.json
 
 ## ARC-18: Medical bag tier UI.
@@ -153,6 +185,16 @@ var _cpr_active: bool = false
 ## Close button reference for theme re-application.
 var _close_btn: Button = null
 
+## Exam sub-tab system.
+var _exam_sub_tabs: Dictionary = {}  # name -> VBoxContainer
+var _exam_sub_tab_btns: Dictionary = {}  # name -> Button
+var _current_exam_sub: String = "primary"
+
+## Stabilize sub-tab system.
+var _stab_sub_tabs: Dictionary = {}  # name -> VBoxContainer
+var _stab_sub_tab_btns: Dictionary = {}  # name -> Button
+var _current_stab_sub: String = "equipment"
+
 
 func _ready() -> void:
 	visible = false
@@ -166,6 +208,267 @@ func _ready() -> void:
 	if theme_mgr:
 		if not theme_mgr.theme_changed.is_connected(_on_theme_changed):
 			theme_mgr.theme_changed.connect(_on_theme_changed)
+	# Disconnect autoload signals on scene exit
+	tree_exiting.connect(_disconnect_autoload_signals_piu)
+
+
+## Start a cooldown on a button with circular progress overlay.
+## Callback fires AFTER delay with result.
+## If group is at max concurrent, queues the action instead of rejecting.
+## Returns true always (action either started or queued).
+func _start_cooldown(btn: Button, group: String, on_complete: Callable = Callable()) -> bool:
+	var config: Dictionary = COOLDOWN_CONFIG.get(group, {"delay": 1.0, "max_concurrent": 1})
+	var active: int = _cooldown_active.get(group, 0)
+
+	if active >= config["max_concurrent"]:
+		# Queue the action instead of rejecting
+		_queue_cooldown(btn, group, on_complete)
+		return true  # Queued, not rejected
+
+	# Start immediately
+	_cooldown_active[group] = active + 1
+	btn.disabled = true
+	var delay: float = config["delay"]
+
+	# Create circular progress overlay on the button
+	var progress := _CooldownCircle.new()
+	progress.duration = delay
+	progress.on_complete = func():
+		_cooldown_active[group] = maxi(0, _cooldown_active.get(group, 1) - 1)
+		if is_instance_valid(btn):
+			btn.disabled = false
+			btn.modulate.a = 1.0
+		if on_complete.is_valid():
+			on_complete.call()
+		# Process next queued action for this group
+		_process_queue(group)
+	btn.add_child(progress)
+	btn.modulate.a = 0.7
+	# Hide button text during cooldown — circle is the visual
+	var original_text: String = btn.text
+	btn.text = ""
+	progress.on_text_restore = func():
+		if is_instance_valid(btn):
+			btn.text = original_text
+	return true
+
+
+## Queue a cooldown action when the group is at max concurrent.
+## Shows a static 0% circle with queue position number. Click again to cancel.
+func _queue_cooldown(btn: Button, group: String, on_complete: Callable) -> void:
+	if group not in _cooldown_queue:
+		_cooldown_queue[group] = []
+
+	var queue: Array = _cooldown_queue[group]
+	var queue_pos: int = queue.size() + 1  # 1-based position for display
+
+	# Create a static (non-progressing) circle overlay showing queue position
+	var circle := _CooldownCircle.new()
+	circle.duration = 99999.0  # Won't progress — effectively frozen
+	circle.queued = true
+	circle.queue_position = queue_pos + _cooldown_active.get(group, 0)
+	btn.add_child(circle)
+	btn.modulate.a = 0.5
+
+	var original_text: String = btn.text
+	btn.text = ""
+
+	var entry: Dictionary = {
+		"btn": btn,
+		"group": group,
+		"on_complete": on_complete,
+		"circle": circle,
+		"original_text": original_text,
+	}
+	queue.append(entry)
+
+	# Allow clicking again to cancel while queued
+	circle.on_cancel = func():
+		_cancel_queued(group, entry)
+
+	# Connect button press to cancel (only while queued)
+	var cancel_callable := func():
+		if is_instance_valid(circle) and circle.queued:
+			_cancel_queued(group, entry)
+	btn.pressed.connect(cancel_callable, CONNECT_ONE_SHOT)
+
+
+## Cancel a queued cooldown action — removes overlay and restores button.
+func _cancel_queued(group: String, entry: Dictionary) -> void:
+	if group in _cooldown_queue:
+		_cooldown_queue[group].erase(entry)
+		# Update queue positions for remaining entries
+		_update_queue_positions(group)
+
+	var btn: Button = entry.get("btn")
+	var circle: Control = entry.get("circle")
+	var original_text: String = entry.get("original_text", "")
+
+	if is_instance_valid(circle):
+		circle.queue_free()
+	if is_instance_valid(btn):
+		btn.disabled = false
+		btn.modulate.a = 1.0
+		btn.text = original_text
+
+
+## Process the next queued action when a cooldown slot opens.
+func _process_queue(group: String) -> void:
+	if group not in _cooldown_queue:
+		return
+	var queue: Array = _cooldown_queue[group]
+	if queue.is_empty():
+		return
+
+	var config: Dictionary = COOLDOWN_CONFIG.get(group, {"delay": 1.0, "max_concurrent": 1})
+	var active: int = _cooldown_active.get(group, 0)
+	if active >= config["max_concurrent"]:
+		return  # Still full
+
+	# Pop next entry and start it
+	var entry: Dictionary = queue.pop_front()
+	_update_queue_positions(group)
+
+	var btn: Button = entry.get("btn")
+	var old_circle: Control = entry.get("circle")
+	var on_complete: Callable = entry.get("on_complete", Callable())
+	var original_text: String = entry.get("original_text", "")
+
+	# Remove the static queued circle
+	if is_instance_valid(old_circle):
+		old_circle.queue_free()
+
+	if not is_instance_valid(btn):
+		return
+
+	# Start the real cooldown
+	_cooldown_active[group] = active + 1
+	btn.disabled = true
+	var delay: float = config["delay"]
+
+	var progress := _CooldownCircle.new()
+	progress.duration = delay
+	progress.on_complete = func():
+		_cooldown_active[group] = maxi(0, _cooldown_active.get(group, 1) - 1)
+		if is_instance_valid(btn):
+			btn.disabled = false
+			btn.modulate.a = 1.0
+			btn.text = original_text
+		if on_complete.is_valid():
+			on_complete.call()
+		_process_queue(group)
+	btn.add_child(progress)
+	btn.modulate.a = 0.7
+	btn.text = ""
+
+
+## Update displayed queue position numbers after a cancel or dequeue.
+func _update_queue_positions(group: String) -> void:
+	if group not in _cooldown_queue:
+		return
+	var queue: Array = _cooldown_queue[group]
+	var active: int = _cooldown_active.get(group, 0)
+	for i in queue.size():
+		var entry: Dictionary = queue[i]
+		var circle: Control = entry.get("circle")
+		if is_instance_valid(circle) and circle is _CooldownCircle:
+			circle.queue_position = i + 1 + active
+			circle.queue_redraw()
+
+
+## Flash a button red briefly when rejected (max concurrent reached).
+## Always resets to white — prevents stacking from rapid clicks.
+func _flash_button_rejected(btn: Button) -> void:
+	if not is_instance_valid(btn):
+		return
+	btn.modulate = Color(1.0, 0.3, 0.3, 1.0)
+	var flash_timer := get_tree().create_timer(0.3)
+	flash_timer.timeout.connect(func():
+		if is_instance_valid(btn):
+			btn.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	)
+
+
+## Inner class: circular progress overlay drawn on top of a button.
+## Supports queue mode: when `queued` is true, progress stays at 0% and shows position number.
+class _CooldownCircle extends Control:
+	var duration: float = 1.0
+	var elapsed: float = 0.0
+	var on_complete: Callable = Callable()
+	var on_text_restore: Callable = Callable()
+	var on_cancel: Callable = Callable()
+	var queued: bool = false
+	var queue_position: int = 0
+	var _ring_color: Color = Color(0.298, 0.604, 1.0, 0.8)
+	var _bg_color: Color = Color(0.0, 0.0, 0.0, 0.3)
+	var _done: bool = false
+
+	func _ready() -> void:
+		# Cover the entire button
+		set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		z_index = 10
+
+	func _process(delta: float) -> void:
+		if _done:
+			return
+		if queued:
+			return  # Don't progress while queued — stay at 0%
+		elapsed += delta
+		queue_redraw()
+		if elapsed >= duration:
+			_done = true
+			if on_text_restore.is_valid():
+				on_text_restore.call()
+			if on_complete.is_valid():
+				on_complete.call()
+			queue_free()
+
+	func _draw() -> void:
+		var center := size / 2.0
+		var radius := minf(size.x, size.y) * 0.3
+		var progress := 0.0 if queued else clampf(elapsed / duration, 0.0, 1.0)
+
+		# Background dim
+		draw_rect(Rect2(Vector2.ZERO, size), _bg_color)
+
+		# Background circle (track)
+		draw_arc(center, radius, 0, TAU, 32, Color(0.3, 0.3, 0.4, 0.4), 3.0)
+
+		# Progress arc (only when not queued)
+		if progress > 0.0:
+			var start_angle := -PI / 2.0  # 12 o'clock
+			var end_angle := start_angle + TAU * progress
+			draw_arc(center, radius, start_angle, end_angle, 32, _ring_color, 4.0)
+
+		if queued:
+			# Show queue position number at top-left of circle
+			var pos_text := str(queue_position)
+			var font := ThemeDB.fallback_font
+			draw_string(font, Vector2(6, 16), pos_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(1.0, 0.85, 0.2, 0.9))
+			# Show 0% in center
+			draw_string(font, center + Vector2(-10, 5), "0%", HORIZONTAL_ALIGNMENT_CENTER, -1, 12, Color(0.7, 0.7, 0.7, 0.6))
+		else:
+			# Center percentage text
+			var pct := int(progress * 100.0)
+			draw_string(ThemeDB.fallback_font, center + Vector2(-10, 5), "%d%%" % pct, HORIZONTAL_ALIGNMENT_CENTER, -1, 12, Color.WHITE)
+
+
+## Check if a cooldown group can accept another action.
+func _can_start_cooldown(group: String) -> bool:
+	var config: Dictionary = COOLDOWN_CONFIG.get(group, {"delay": 1.0, "max_concurrent": 1})
+	return _cooldown_active.get(group, 0) < config["max_concurrent"]
+
+
+func _disconnect_autoload_signals_piu() -> void:
+	var tm := _get_theme_medical()
+	if tm and tm.has_signal("theme_changed") and tm.theme_changed.is_connected(_on_theme_changed):
+		tm.theme_changed.disconnect(_on_theme_changed)
+	if _dialogue_client:
+		if _dialogue_client.has_signal("dialogue_response_received") and _dialogue_client.dialogue_response_received.is_connected(_on_ai_response):
+			_dialogue_client.dialogue_response_received.disconnect(_on_ai_response)
+		if _dialogue_client.has_signal("dialogue_failed") and _dialogue_client.dialogue_failed.is_connected(_on_ai_failed):
+			_dialogue_client.dialogue_failed.disconnect(_on_ai_failed)
 
 
 func _get_theme_medical() -> Node:
@@ -174,6 +477,28 @@ func _get_theme_medical() -> Node:
 
 func _on_theme_changed(_mode: String) -> void:
 	_apply_theme()
+
+
+## Responsive column calculator — returns optimal column count for available width.
+func _get_responsive_columns(container_width: float, item_min_width: float, max_cols: int) -> int:
+	var cols := int(container_width / item_min_width)
+	return clampi(cols, 2, max_cols)
+
+
+## Register a GridContainer for responsive column recalculation.
+func _register_responsive_grid(grid: GridContainer, min_width: float, max_cols: int, resize_source: Control) -> void:
+	_responsive_grids.append({"grid": grid, "min_width": min_width, "max_cols": max_cols, "source": resize_source})
+	if not resize_source.resized.is_connected(_on_responsive_resize):
+		resize_source.resized.connect(_on_responsive_resize)
+
+
+## Recalculate all registered responsive grids on resize.
+func _on_responsive_resize() -> void:
+	for entry in _responsive_grids:
+		var grid: GridContainer = entry["grid"]
+		var source: Control = entry["source"]
+		if is_instance_valid(grid) and is_instance_valid(source):
+			grid.columns = _get_responsive_columns(source.size.x, entry["min_width"], entry["max_cols"])
 
 
 func _find_systems() -> void:
@@ -230,6 +555,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Open the interaction UI for a patient.
 func open_ui(patient: Node, player: Node) -> void:
+	# Block if scenario has ended
+	var sm: Node = get_node_or_null("/root/ScenarioManager")
+	if sm and "_scenario_running" in sm and not sm._scenario_running:
+		return
 	_patient = patient
 	_player = player
 	_current_tab = Tab.PATIENT
@@ -304,10 +633,10 @@ func open_ui(patient: Node, player: Node) -> void:
 	if _ai_status_label:
 		var tm := _get_theme_medical()
 		if _dialogue_client and _dialogue_client.ollama_available:
-			_ai_status_label.text = "AI Dialogue Active"
+			_ai_status_label.text = tr("PATIENT_AI_ACTIVE")
 			_ai_status_label.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.3, 0.9, 0.4))
 		else:
-			_ai_status_label.text = "Scripted Responses (Ollama Offline)"
+			_ai_status_label.text = tr("PATIENT_SCRIPTED_RESPONSES")
 			_ai_status_label.add_theme_color_override("font_color", tm.c("accent_yellow") if tm else Color(0.9, 0.7, 0.3))
 
 	# ARC-17: connect drug administered signal if available
@@ -417,7 +746,7 @@ func _build_ui() -> void:
 	tab_strip.add_child(spacer)
 
 	_close_btn = Button.new()
-	_close_btn.text = "[Esc]\nClose"
+	_close_btn.text = tr("PATIENT_CLOSE_BUTTON")
 	_close_btn.custom_minimum_size = Vector2(110, 50)
 	_close_btn.focus_mode = Control.FOCUS_NONE
 	_close_btn.pressed.connect(close_ui)
@@ -449,6 +778,30 @@ func _switch_tab(tab: Tab) -> void:
 				btn.add_theme_color_override("font_disabled_color", tm.c("text_secondary"))
 
 
+func _switch_exam_sub(sub_name: String) -> void:
+	_current_exam_sub = sub_name
+	var tm: Node = _get_theme_medical()
+	for key in _exam_sub_tabs:
+		_exam_sub_tabs[key].visible = (key == sub_name)
+		if tm:
+			if key == sub_name:
+				_exam_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_active())
+			else:
+				_exam_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_inactive())
+
+
+func _switch_stab_sub(sub_name: String) -> void:
+	_current_stab_sub = sub_name
+	var tm: Node = _get_theme_medical()
+	for key in _stab_sub_tabs:
+		_stab_sub_tabs[key].visible = (key == sub_name)
+		if tm:
+			if key == sub_name:
+				_stab_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_active())
+			else:
+				_stab_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_inactive())
+
+
 # ==============================================================================
 # TAB BUILD — Patient
 # ==============================================================================
@@ -461,65 +814,82 @@ func _build_patient_tab() -> Control:
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_theme_constant_override("separation", 8)
 
-	var title := Label.new()
-	title.text = "Patient"
+	# ── Patient Info Card (compact 2-line card at top) ──
+	_patient_info_card = PanelContainer.new()
+	_patient_info_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if tm:
-		tm.style_label(title, "title", "text_primary")
-	else:
-		title.add_theme_font_size_override("font_size", 22)
-	root.add_child(title)
+		tm.style_panel(_patient_info_card)
+	root.add_child(_patient_info_card)
 
-	# Patient info
+	var info_vbox := VBoxContainer.new()
+	info_vbox.add_theme_constant_override("separation", 4)
+	_patient_info_card.add_child(info_vbox)
+
+	# Top row: Name + State badge
+	var info_top := HBoxContainer.new()
+	info_vbox.add_child(info_top)
+
+	_patient_name_label = Label.new()
+	_patient_name_label.text = "Patient"
+	_patient_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if tm:
+		tm.style_label(_patient_name_label, "subtitle", "text_primary")
+	else:
+		_patient_name_label.add_theme_font_size_override("font_size", 18)
+	info_top.add_child(_patient_name_label)
+
+	_patient_state_label = Label.new()
+	_patient_state_label.text = ""
+	if tm:
+		tm.style_label(_patient_state_label, "body", "accent_green")
+	info_top.add_child(_patient_state_label)
+
+	# Detail row: Pain | Panic | Clarity
+	_patient_detail_label = Label.new()
+	_patient_detail_label.text = ""
+	if tm:
+		tm.style_label(_patient_detail_label, "body_small", "text_secondary")
+	else:
+		_patient_detail_label.add_theme_font_size_override("font_size", 13)
+	info_vbox.add_child(_patient_detail_label)
+
+	# Keep RichTextLabel for backward compat (populate functions write to it)
 	_patient_info_label = RichTextLabel.new()
 	_patient_info_label.bbcode_enabled = true
-	_patient_info_label.custom_minimum_size = Vector2(0, 100)
-	_patient_info_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	if tm:
-		tm.style_rich_label(_patient_info_label, "body")
+	_patient_info_label.visible = false  # Hidden — using card labels instead
 	root.add_child(_patient_info_label)
 
-	root.add_child(HSeparator.new())
-
-	# SAMPLE history categories
-	var sample_title := Label.new()
-	sample_title.text = "SAMPLE History"
-	if tm:
-		tm.style_label(sample_title, "subtitle", "accent_blue")
-	else:
-		sample_title.add_theme_font_size_override("font_size", 17)
-	root.add_child(sample_title)
-
-	var sample_grid := GridContainer.new()
-	sample_grid.columns = 2
-	sample_grid.add_theme_constant_override("h_separation", 8)
-	sample_grid.add_theme_constant_override("v_separation", 6)
-	root.add_child(sample_grid)
+	# ── SAMPLE History (horizontal pill buttons) ──
+	var sample_flow := HFlowContainer.new()
+	sample_flow.add_theme_constant_override("h_separation", 6)
+	sample_flow.add_theme_constant_override("v_separation", 6)
+	root.add_child(sample_flow)
 
 	var sample_categories := [
-		["S - Signs & Symptoms", "signs_symptoms"],
-		["A - Allergies", "allergies"],
-		["M - Medications", "medications"],
-		["P - Past History", "past_history"],
-		["L - Last Oral Intake", "last_oral_intake"],
-		["E - Events Leading To", "events"],
+		["S", "signs_symptoms"],
+		["A", "allergies"],
+		["M", "medications"],
+		["P", "past_history"],
+		["L", "last_oral_intake"],
+		["E", "events"],
 	]
 
 	for cat in sample_categories:
 		var btn := Button.new()
 		btn.text = cat[0]
-		btn.custom_minimum_size = Vector2(180, 36)
+		btn.custom_minimum_size = Vector2(48, 32)
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_on_sample_category_pressed.bind(cat[1]))
 		if tm:
 			tm.style_button(btn, "small")
 		else:
 			btn.add_theme_font_size_override("font_size", 13)
-		sample_grid.add_child(btn)
+		sample_flow.add_child(btn)
 
-	## ARC-12: OPQRST category button (amber colour, pain auto-suggest)
+	## OPQRST button (accent yellow)
 	_opqrst_btn = Button.new()
-	_opqrst_btn.text = "O - OPQRST (Pain)"
-	_opqrst_btn.custom_minimum_size = Vector2(180, 36)
+	_opqrst_btn.text = "OPQRST"
+	_opqrst_btn.custom_minimum_size = Vector2(72, 32)
 	_opqrst_btn.focus_mode = Control.FOCUS_NONE
 	_opqrst_btn.pressed.connect(_on_sample_category_pressed.bind("opqrst"))
 	if tm:
@@ -528,37 +898,27 @@ func _build_patient_tab() -> Control:
 	else:
 		_opqrst_btn.add_theme_font_size_override("font_size", 13)
 		_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2))
-	sample_grid.add_child(_opqrst_btn)
+	sample_flow.add_child(_opqrst_btn)
 
-	root.add_child(HSeparator.new())
-
-	# AI status
-	_ai_status_label = Label.new()
-	if tm:
-		tm.style_label(_ai_status_label, "caption", "text_secondary")
-	else:
-		_ai_status_label.add_theme_font_size_override("font_size", 12)
-	root.add_child(_ai_status_label)
-
-	# Chat scroll
+	# ── Chat Area (primary focus — takes remaining space) ──
 	_chat_scroll = ScrollContainer.new()
 	_chat_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_chat_scroll.custom_minimum_size = Vector2(0, 200)
+	_chat_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.add_child(_chat_scroll)
 
 	_chat_container = VBoxContainer.new()
 	_chat_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_chat_container.add_theme_constant_override("separation", 6)
+	_chat_container.add_theme_constant_override("separation", 8)
 	_chat_scroll.add_child(_chat_container)
 
-	# Chat input row
+	# ── Chat Input Row ──
 	var input_row := HBoxContainer.new()
 	input_row.add_theme_constant_override("separation", 8)
 	root.add_child(input_row)
 
 	_chat_input = LineEdit.new()
 	_chat_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_chat_input.placeholder_text = "Ask the patient..."
+	_chat_input.placeholder_text = tr("PATIENT_CHAT_PLACEHOLDER")
 	_chat_input.text_submitted.connect(_on_chat_submitted)
 	if tm:
 		tm.style_input(_chat_input)
@@ -571,6 +931,15 @@ func _build_patient_tab() -> Control:
 	if tm:
 		tm.style_button(_talk_button)
 	input_row.add_child(_talk_button)
+
+	# ── AI Status (subtle, bottom-right) ──
+	_ai_status_label = Label.new()
+	_ai_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	if tm:
+		tm.style_label(_ai_status_label, "caption", "text_muted")
+	else:
+		_ai_status_label.add_theme_font_size_override("font_size", 11)
+	root.add_child(_ai_status_label)
 
 	return root
 
@@ -585,39 +954,72 @@ func _build_exam_tab() -> Control:
 	var root := VBoxContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_theme_constant_override("separation", 6)
+	root.add_theme_constant_override("separation", 8)
+
+	# ── Sub-tab pill strip ──
+	var pill_strip := HBoxContainer.new()
+	pill_strip.add_theme_constant_override("separation", 4)
+	root.add_child(pill_strip)
+
+	var exam_sub_defs: Array = [
+		["primary", tr("SUB_PRIMARY")],
+		["vitals", tr("SUB_VITALS")],
+		["gcs", tr("SUB_GCS")],
+		["head_to_toe", tr("SUB_HEAD_TO_TOE")],
+	]
+
+	for sub_def in exam_sub_defs:
+		var sub_key: String = sub_def[0]
+		var sub_label: String = sub_def[1]
+		var pill_btn := Button.new()
+		pill_btn.text = sub_label
+		pill_btn.custom_minimum_size = Vector2(80, 32)
+		pill_btn.focus_mode = Control.FOCUS_NONE
+		pill_btn.pressed.connect(_switch_exam_sub.bind(sub_key))
+		if tm:
+			tm.style_button(pill_btn, "small")
+			if sub_key == _current_exam_sub:
+				pill_btn.add_theme_stylebox_override("normal", tm.make_tab_active())
+			else:
+				pill_btn.add_theme_stylebox_override("normal", tm.make_tab_inactive())
+		pill_strip.add_child(pill_btn)
+		_exam_sub_tab_btns[sub_key] = pill_btn
+
+	# ── Sub-tab content panels (only one visible at a time) ──
+	var sub_container := Control.new()
+	sub_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sub_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(sub_container)
+
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "primary" — DRSABCDE
+	# ════════════════════════════════════════════════════════════
+	var primary_scroll := ScrollContainer.new()
+	primary_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	primary_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	primary_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sub_container.add_child(primary_scroll)
+	_exam_sub_tabs["primary"] = primary_scroll
+
+	var primary_vbox := VBoxContainer.new()
+	primary_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	primary_vbox.add_theme_constant_override("separation", 8)
+	primary_scroll.add_child(primary_vbox)
 
 	var title_row := HBoxContainer.new()
-	root.add_child(title_row)
-
+	primary_vbox.add_child(title_row)
 	var title := Label.new()
 	title.text = tr("EXAM_PRIMARY_SURVEY")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if tm:
-		tm.style_label(title, "title", "text_primary")
-	else:
-		title.add_theme_font_size_override("font_size", 22)
+		tm.style_label(title, "subtitle", "text_primary")
 	title_row.add_child(title)
-
 	_exam_counter_label = Label.new()
 	_exam_counter_label.text = "0/8"
 	if tm:
-		tm.style_label(_exam_counter_label, "subtitle", "accent_blue")
-	else:
-		_exam_counter_label.add_theme_font_size_override("font_size", 16)
+		tm.style_label(_exam_counter_label, "body", "accent_blue")
 	title_row.add_child(_exam_counter_label)
 
-	# Scrollable exam area
-	var exam_scroll := ScrollContainer.new()
-	exam_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_child(exam_scroll)
-
-	var exam_vbox := VBoxContainer.new()
-	exam_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	exam_vbox.add_theme_constant_override("separation", 8)
-	exam_scroll.add_child(exam_vbox)
-
-	# DRSABCDE steps
 	var drs_steps := [
 		[tr("EXAM_DANGER"), "check_danger"],
 		[tr("EXAM_RESPONSE"), "check_response"],
@@ -630,13 +1032,14 @@ func _build_exam_tab() -> Control:
 	]
 
 	var steps_grid := GridContainer.new()
-	steps_grid.columns = 2
-	steps_grid.add_theme_constant_override("h_separation", 8)
-	steps_grid.add_theme_constant_override("v_separation", 6)
-	exam_vbox.add_child(steps_grid)
+	steps_grid.columns = 4
+	steps_grid.add_theme_constant_override("h_separation", 6)
+	steps_grid.add_theme_constant_override("v_separation", 4)
+	primary_vbox.add_child(steps_grid)
 
 	for step in drs_steps:
 		var step_panel := PanelContainer.new()
+		step_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if tm:
 			tm.style_panel(step_panel)
 		steps_grid.add_child(step_panel)
@@ -647,7 +1050,8 @@ func _build_exam_tab() -> Control:
 
 		var btn := Button.new()
 		btn.text = step[0]
-		btn.custom_minimum_size = Vector2(180, 60)
+		btn.custom_minimum_size = Vector2(0, 50)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.pressed.connect(_on_exam_action_pressed.bind(step[1]))
 		if tm:
@@ -665,9 +1069,21 @@ func _build_exam_tab() -> Control:
 		step_vbox.add_child(result_lbl)
 		_exam_results[step[1]] = result_lbl
 
-	## ARC-13: Vital Signs Assessment section
-	var vitals_sep := HSeparator.new()
-	exam_vbox.add_child(vitals_sep)
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "vitals" — Vital Signs + ECG
+	# ════════════════════════════════════════════════════════════
+	var vitals_scroll := ScrollContainer.new()
+	vitals_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vitals_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vitals_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	vitals_scroll.visible = false
+	sub_container.add_child(vitals_scroll)
+	_exam_sub_tabs["vitals"] = vitals_scroll
+
+	var vitals_vbox := VBoxContainer.new()
+	vitals_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vitals_vbox.add_theme_constant_override("separation", 8)
+	vitals_scroll.add_child(vitals_vbox)
 
 	var vitals_title := Label.new()
 	vitals_title.text = tr("VITAL_SIGNS_TITLE") if tr("VITAL_SIGNS_TITLE") != "VITAL_SIGNS_TITLE" else "Vital Signs Assessment"
@@ -675,14 +1091,13 @@ func _build_exam_tab() -> Control:
 		tm.style_label(vitals_title, "subtitle", "accent_blue")
 	else:
 		vitals_title.add_theme_font_size_override("font_size", 17)
-		vitals_title.add_theme_color_override("font_color", tm.c("accent_blue") if tm else Color(0.4, 0.8, 1.0))
-	exam_vbox.add_child(vitals_title)
+	vitals_vbox.add_child(vitals_title)
 
 	var vitals_grid := GridContainer.new()
 	vitals_grid.columns = 4
-	vitals_grid.add_theme_constant_override("h_separation", 8)
-	vitals_grid.add_theme_constant_override("v_separation", 6)
-	exam_vbox.add_child(vitals_grid)
+	vitals_grid.add_theme_constant_override("h_separation", 6)
+	vitals_grid.add_theme_constant_override("v_separation", 4)
+	vitals_vbox.add_child(vitals_grid)
 
 	# Enum values from AssessmentManager.AssessmentAction:
 	# CHECK_HEART_RATE=5, CHECK_BLOOD_PRESSURE=6, CHECK_SPO2=7,
@@ -701,6 +1116,7 @@ func _build_exam_tab() -> Control:
 
 	for vd in vital_defs:
 		var v_panel := PanelContainer.new()
+		v_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if tm:
 			tm.style_panel(v_panel)
 		vitals_grid.add_child(v_panel)
@@ -711,11 +1127,13 @@ func _build_exam_tab() -> Control:
 
 		var v_btn := Button.new()
 		v_btn.text = vd[0]
-		v_btn.custom_minimum_size = Vector2(140, 44)
+		v_btn.custom_minimum_size = Vector2(0, 40)
+		v_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		v_btn.focus_mode = Control.FOCUS_NONE
 		v_btn.pressed.connect(_on_vital_pressed.bind(vd[1], vd[2]))
 		if tm:
 			tm.style_button(v_btn, "small")
+		v_btn.add_theme_color_override("font_color", tm.c("text_primary") if tm else Color(0.1, 0.1, 0.2))
 		v_vbox.add_child(v_btn)
 		_vital_buttons[vd[1]] = v_btn
 
@@ -729,34 +1147,27 @@ func _build_exam_tab() -> Control:
 		v_vbox.add_child(v_result)
 		_vital_results[vd[1]] = v_result
 
-	## ARC-14: ECG Monitor section
-	var ecg_sep := HSeparator.new()
-	exam_vbox.add_child(ecg_sep)
-
+	# ── ECG Section (below vitals grid) ──
 	var ecg_title := Label.new()
 	ecg_title.text = "ECG / Cardiac Monitor"
 	if tm:
 		tm.style_label(ecg_title, "subtitle", "accent_green")
-	else:
-		ecg_title.add_theme_font_size_override("font_size", 17)
-		ecg_title.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.3, 1.0, 0.6))
-	exam_vbox.add_child(ecg_title)
+	vitals_vbox.add_child(ecg_title)
 
 	_ecg_mode_label = Label.new()
-	_ecg_mode_label.text = "No monitor deployed"
+	_ecg_mode_label.text = ""
+	_ecg_mode_label.visible = false
 	if tm:
 		tm.style_label(_ecg_mode_label, "label", "text_muted")
-	else:
-		_ecg_mode_label.add_theme_font_size_override("font_size", 13)
-		_ecg_mode_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-	exam_vbox.add_child(_ecg_mode_label)
+	vitals_vbox.add_child(_ecg_mode_label)
 
 	_ecg_panel = PanelContainer.new()
-	_ecg_panel.custom_minimum_size = Vector2(400, 110)
+	_ecg_panel.custom_minimum_size = Vector2(0, 110)
+	_ecg_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_ecg_panel.visible = false
 	if tm:
 		tm.style_panel(_ecg_panel, "info")
-	exam_vbox.add_child(_ecg_panel)
+	vitals_vbox.add_child(_ecg_panel)
 
 	var ecg_inner := VBoxContainer.new()
 	_ecg_panel.add_child(ecg_inner)
@@ -774,23 +1185,36 @@ func _build_exam_tab() -> Control:
 		tm.style_label(_ecg_rhythm_label, "label", "text_secondary")
 	else:
 		_ecg_rhythm_label.add_theme_font_size_override("font_size", 13)
-	exam_vbox.add_child(_ecg_rhythm_label)
+	vitals_vbox.add_child(_ecg_rhythm_label)
 
 	var ecg_identify_btn := Button.new()
 	ecg_identify_btn.text = "Identify Rhythm"
-	ecg_identify_btn.custom_minimum_size = Vector2(160, 36)
+	ecg_identify_btn.custom_minimum_size = Vector2(0, 36)
+	ecg_identify_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ecg_identify_btn.focus_mode = Control.FOCUS_NONE
 	ecg_identify_btn.pressed.connect(_on_ecg_identify_pressed)
 	if tm:
 		tm.style_button(ecg_identify_btn)
-	exam_vbox.add_child(ecg_identify_btn)
+	vitals_vbox.add_child(ecg_identify_btn)
 
-	## ARC-15: GCS Assessment
-	var gcs_sep := HSeparator.new()
-	exam_vbox.add_child(gcs_sep)
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "gcs" — Glasgow Coma Scale
+	# ════════════════════════════════════════════════════════════
+	var gcs_scroll := ScrollContainer.new()
+	gcs_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gcs_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	gcs_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	gcs_scroll.visible = false
+	sub_container.add_child(gcs_scroll)
+	_exam_sub_tabs["gcs"] = gcs_scroll
+
+	var gcs_vbox := VBoxContainer.new()
+	gcs_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gcs_vbox.add_theme_constant_override("separation", 6)
+	gcs_scroll.add_child(gcs_vbox)
 
 	var gcs_title_hbox := HBoxContainer.new()
-	exam_vbox.add_child(gcs_title_hbox)
+	gcs_vbox.add_child(gcs_title_hbox)
 
 	var gcs_title := Label.new()
 	gcs_title.text = "GCS -- Glasgow Coma Scale"
@@ -816,7 +1240,7 @@ func _build_exam_tab() -> Control:
 		tm.style_label(_gcs_severity_label, "label", "text_secondary")
 	else:
 		_gcs_severity_label.add_theme_font_size_override("font_size", 13)
-	exam_vbox.add_child(_gcs_severity_label)
+	gcs_vbox.add_child(_gcs_severity_label)
 
 	# GCS sub-sections — Eye, Verbal, Motor
 	var gcs_defs := [
@@ -843,11 +1267,11 @@ func _build_exam_tab() -> Control:
 			tm.style_label(comp_title, "body_small", "text_secondary")
 		else:
 			comp_title.add_theme_font_size_override("font_size", 14)
-		exam_vbox.add_child(comp_title)
+		gcs_vbox.add_child(comp_title)
 
 		var comp_hbox := HBoxContainer.new()
 		comp_hbox.add_theme_constant_override("separation", 4)
-		exam_vbox.add_child(comp_hbox)
+		gcs_vbox.add_child(comp_hbox)
 
 		for i in range(comp_labels.size()):
 			var gcs_btn := Button.new()
@@ -858,6 +1282,7 @@ func _build_exam_tab() -> Control:
 			gcs_btn.pressed.connect(_on_gcs_value_selected.bind(comp_key, comp_values[i]))
 			if tm:
 				tm.style_button(gcs_btn, "small")
+			gcs_btn.add_theme_color_override("font_color", tm.c("text_primary") if tm else Color(0.1, 0.1, 0.2))
 			comp_hbox.add_child(gcs_btn)
 			_gcs_component_btns[comp_key + "_" + str(comp_values[i])] = gcs_btn
 
@@ -868,14 +1293,26 @@ func _build_exam_tab() -> Control:
 	gcs_read_btn.pressed.connect(_on_gcs_read_patient)
 	if tm:
 		tm.style_button(gcs_read_btn, "small")
-	exam_vbox.add_child(gcs_read_btn)
+	gcs_vbox.add_child(gcs_read_btn)
 
-	## ARC-16: Secondary Survey
-	var ss_sep := HSeparator.new()
-	exam_vbox.add_child(ss_sep)
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "head_to_toe" — Secondary Survey
+	# ════════════════════════════════════════════════════════════
+	var ss_scroll := ScrollContainer.new()
+	ss_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ss_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	ss_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ss_scroll.visible = false
+	sub_container.add_child(ss_scroll)
+	_exam_sub_tabs["head_to_toe"] = ss_scroll
+
+	var ss_vbox := VBoxContainer.new()
+	ss_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ss_vbox.add_theme_constant_override("separation", 6)
+	ss_scroll.add_child(ss_vbox)
 
 	var ss_title_hbox := HBoxContainer.new()
-	exam_vbox.add_child(ss_title_hbox)
+	ss_vbox.add_child(ss_title_hbox)
 
 	var ss_title := Label.new()
 	ss_title.text = tr("SECONDARY_SURVEY_TITLE") if tr("SECONDARY_SURVEY_TITLE") != "SECONDARY_SURVEY_TITLE" else "Secondary Survey -- Head-to-Toe"
@@ -897,9 +1334,9 @@ func _build_exam_tab() -> Control:
 
 	var ss_grid := GridContainer.new()
 	ss_grid.columns = 2
-	ss_grid.add_theme_constant_override("h_separation", 8)
-	ss_grid.add_theme_constant_override("v_separation", 6)
-	exam_vbox.add_child(ss_grid)
+	ss_grid.add_theme_constant_override("h_separation", 6)
+	ss_grid.add_theme_constant_override("v_separation", 4)
+	ss_vbox.add_child(ss_grid)
 
 	var ss_regions := ["head", "neck", "chest", "abdomen", "pelvis", "back", "extremities"]
 	var ss_tr_keys := {
@@ -910,6 +1347,7 @@ func _build_exam_tab() -> Control:
 
 	for region in ss_regions:
 		var r_panel := PanelContainer.new()
+		r_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if tm:
 			tm.style_panel(r_panel)
 		ss_grid.add_child(r_panel)
@@ -920,11 +1358,13 @@ func _build_exam_tab() -> Control:
 
 		var r_btn := Button.new()
 		r_btn.text = tr(ss_tr_keys.get(region, region.capitalize()))
-		r_btn.custom_minimum_size = Vector2(180, 44)
+		r_btn.custom_minimum_size = Vector2(0, 40)
+		r_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		r_btn.focus_mode = Control.FOCUS_NONE
 		r_btn.pressed.connect(_on_secondary_region_pressed.bind(region))
 		if tm:
 			tm.style_button(r_btn)
+		r_btn.add_theme_color_override("font_color", tm.c("text_primary") if tm else Color(0.1, 0.1, 0.2))
 		r_vbox.add_child(r_btn)
 		_secondary_buttons[region] = r_btn
 
@@ -948,22 +1388,59 @@ func _build_exam_tab() -> Control:
 func _build_stabilize_tab() -> Control:
 	var tm := _get_theme_medical()
 
-	var root := ScrollContainer.new()
+	var root := VBoxContainer.new()
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_theme_constant_override("separation", 8)
 
-	var container := VBoxContainer.new()
-	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	container.add_theme_constant_override("separation", 8)
-	root.add_child(container)
+	# ── Sub-tab pill strip ──
+	var pill_strip := HBoxContainer.new()
+	pill_strip.add_theme_constant_override("separation", 4)
+	root.add_child(pill_strip)
 
-	var title := Label.new()
-	title.text = tr("TAB_STABILIZE")
-	if tm:
-		tm.style_label(title, "title", "text_primary")
-	else:
-		title.add_theme_font_size_override("font_size", 22)
-	container.add_child(title)
+	var stab_sub_defs: Array = [
+		["equipment", tr("SUB_EQUIPMENT")],
+		["drug_admin", tr("SUB_DRUG_ADMIN")],
+		["triage", tr("SUB_TRIAGE")],
+	]
+
+	for sub_def in stab_sub_defs:
+		var sub_key: String = sub_def[0]
+		var sub_label: String = sub_def[1]
+		var pill_btn := Button.new()
+		pill_btn.text = sub_label
+		pill_btn.custom_minimum_size = Vector2(80, 32)
+		pill_btn.focus_mode = Control.FOCUS_NONE
+		pill_btn.pressed.connect(_switch_stab_sub.bind(sub_key))
+		if tm:
+			tm.style_button(pill_btn, "small")
+			if sub_key == _current_stab_sub:
+				pill_btn.add_theme_stylebox_override("normal", tm.make_tab_active())
+			else:
+				pill_btn.add_theme_stylebox_override("normal", tm.make_tab_inactive())
+		pill_strip.add_child(pill_btn)
+		_stab_sub_tab_btns[sub_key] = pill_btn
+
+	# ── Sub-tab content panels (only one visible at a time) ──
+	var sub_container := Control.new()
+	sub_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sub_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(sub_container)
+
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "equipment" — CPR + Diagnostic + Treatment
+	# ════════════════════════════════════════════════════════════
+	var equip_scroll := ScrollContainer.new()
+	equip_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	equip_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	equip_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sub_container.add_child(equip_scroll)
+	_stab_sub_tabs["equipment"] = equip_scroll
+
+	var equip_vbox := VBoxContainer.new()
+	equip_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	equip_vbox.add_theme_constant_override("separation", 12)
+	equip_scroll.add_child(equip_vbox)
 
 	# CPR action — visible only during cardiac arrest, prominent red button
 	_cpr_button = Button.new()
@@ -975,7 +1452,6 @@ func _build_stabilize_tab() -> Control:
 	_cpr_button.visible = false  # Shown only when patient is in cardiac arrest
 	if tm:
 		tm.style_button(_cpr_button, "large")
-		# Override with red styling for CPR urgency
 		var cpr_normal: StyleBoxFlat = tm.make_btn_normal()
 		cpr_normal.bg_color = tm.c("accent_red")
 		_cpr_button.add_theme_stylebox_override("normal", cpr_normal)
@@ -987,7 +1463,7 @@ func _build_stabilize_tab() -> Control:
 	else:
 		_cpr_button.add_theme_font_size_override("font_size", 18)
 		_cpr_button.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
-	container.add_child(_cpr_button)
+	equip_vbox.add_child(_cpr_button)
 
 	_cpr_status_label = Label.new()
 	_cpr_status_label.text = ""
@@ -996,14 +1472,12 @@ func _build_stabilize_tab() -> Control:
 		tm.style_label(_cpr_status_label, "body_small", "text_secondary")
 	else:
 		_cpr_status_label.add_theme_font_size_override("font_size", 14)
-	container.add_child(_cpr_status_label)
+	equip_vbox.add_child(_cpr_status_label)
 
-	container.add_child(HSeparator.new())
-
-	## ARC-18: Medical Bag Tier Indicator (at TOP, before equipment grid)
+	## ARC-18: Medical Bag Tier Indicator
 	var tier_hbox := HBoxContainer.new()
 	tier_hbox.add_theme_constant_override("separation", 8)
-	container.add_child(tier_hbox)
+	equip_vbox.add_child(tier_hbox)
 
 	var tier_label_title := Label.new()
 	tier_label_title.text = "Medical Bag Tier: "
@@ -1019,156 +1493,205 @@ func _build_stabilize_tab() -> Control:
 		tm.style_label(_bag_tier_label, "body", "accent_green")
 	else:
 		_bag_tier_label.add_theme_font_size_override("font_size", 15)
-		_bag_tier_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+		_bag_tier_label.add_theme_color_override("font_color", tm.c("accent_green") if tm else Color(0.3, 0.9, 0.4))
 	tier_hbox.add_child(_bag_tier_label)
 
-	container.add_child(HSeparator.new())
+	# ── Equipment Row: Diagnostic (left) | Treatment (right) ──
+	var equip_row := HBoxContainer.new()
+	equip_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	equip_row.add_theme_constant_override("separation", 12)
+	equip_vbox.add_child(equip_row)
 
-	# Equipment grid
-	var equip_title := Label.new()
-	equip_title.text = "Equipment"
+	# Left: Diagnostic Equipment
+	var diag_col := VBoxContainer.new()
+	diag_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	diag_col.add_theme_constant_override("separation", 6)
+	equip_row.add_child(diag_col)
+
+	var diag_title := Label.new()
+	diag_title.text = "Diagnostic"
 	if tm:
-		tm.style_label(equip_title, "subtitle", "accent_blue")
+		tm.style_label(diag_title, "subtitle", "accent_blue")
 	else:
-		equip_title.add_theme_font_size_override("font_size", 17)
-	container.add_child(equip_title)
+		diag_title.add_theme_font_size_override("font_size", 17)
+	diag_col.add_child(diag_title)
 
-	var equip_grid := GridContainer.new()
-	equip_grid.columns = 3
-	equip_grid.add_theme_constant_override("h_separation", 8)
-	equip_grid.add_theme_constant_override("v_separation", 6)
-	container.add_child(equip_grid)
+	var diag_grid := GridContainer.new()
+	diag_grid.columns = 2
+	diag_grid.add_theme_constant_override("h_separation", 6)
+	diag_grid.add_theme_constant_override("v_separation", 4)
+	diag_col.add_child(diag_grid)
 
-	var equipment_defs := [
-		# Treatment equipment
-		["O2 Mask", "oxygen_mask"],
-		["BVM", "bvm"],
-		["AED", "aed"],
-		["IV Access", "iv_access"],
-		["C-Collar", "c_collar"],
-		["Tourniquet", "tourniquet"],
-		["Bandage", "bandage"],
-		["Splint", "splint"],
-		["Stretcher", "stretcher"],
-		# Diagnostic equipment (required for vital sign gating)
-		["Pulse Oximeter", "pulse_oximeter"],
-		["BP Cuff", "bp_cuff"],
-		["Penlight", "penlight"],
-		["Thermometer", "thermometer"],
-		["Glucometer", "glucometer"],
+	var diagnostic_defs := [
+		[tr("EQUIP_PULSE_OXIMETER"), "pulse_oximeter"],
+		[tr("EQUIP_BP_CUFF"), "bp_cuff"],
+		[tr("EQUIP_PENLIGHT"), "penlight"],
+		[tr("EQUIP_THERMOMETER"), "thermometer"],
+		[tr("EQUIP_GLUCOMETER"), "glucometer"],
 	]
 
-	for eq in equipment_defs:
+	for eq in diagnostic_defs:
 		var eq_panel := PanelContainer.new()
+		eq_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if tm:
 			tm.style_panel(eq_panel)
-		equip_grid.add_child(eq_panel)
-
+		diag_grid.add_child(eq_panel)
 		var eq_btn := Button.new()
 		eq_btn.text = eq[0]
-		eq_btn.custom_minimum_size = Vector2(110, 40)
+		eq_btn.custom_minimum_size = Vector2(0, 40)
+		eq_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		eq_btn.focus_mode = Control.FOCUS_NONE
 		eq_btn.pressed.connect(_on_equipment_pressed.bind(eq[1]))
 		if tm:
 			tm.style_button(eq_btn, "small")
+		eq_btn.add_theme_color_override("font_color", tm.c("text_primary") if tm else Color(0.1, 0.1, 0.2))
 		eq_panel.add_child(eq_btn)
 		_equipment_buttons[eq[1]] = eq_btn
 
-	## ARC-18: Bag Contents section
-	container.add_child(HSeparator.new())
+	# Right: Treatment Equipment
+	var treat_col := VBoxContainer.new()
+	treat_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	treat_col.add_theme_constant_override("separation", 6)
+	equip_row.add_child(treat_col)
 
-	var bag_contents_title := Label.new()
-	bag_contents_title.text = "Bag Contents"
+	var treat_title := Label.new()
+	treat_title.text = "Treatment"
 	if tm:
-		tm.style_label(bag_contents_title, "subtitle", "accent_green")
+		tm.style_label(treat_title, "subtitle", "accent_green")
 	else:
-		bag_contents_title.add_theme_font_size_override("font_size", 17)
-		bag_contents_title.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
-	container.add_child(bag_contents_title)
+		treat_title.add_theme_font_size_override("font_size", 17)
+	treat_col.add_child(treat_title)
 
-	var bag_scroll := ScrollContainer.new()
-	bag_scroll.custom_minimum_size = Vector2(0, 180)
-	bag_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	container.add_child(bag_scroll)
+	var treat_grid := GridContainer.new()
+	treat_grid.columns = 2
+	treat_grid.add_theme_constant_override("h_separation", 6)
+	treat_grid.add_theme_constant_override("v_separation", 4)
+	treat_col.add_child(treat_grid)
 
+	var treatment_defs := [
+		[tr("EQUIP_OXYGEN_MASK"), "oxygen_mask"],
+		[tr("EQUIP_BVM"), "bvm"],
+		[tr("EQUIP_AED"), "aed"],
+		[tr("EQUIP_IV_ACCESS"), "iv_access"],
+		[tr("EQUIP_C_COLLAR"), "c_collar"],
+		[tr("EQUIP_TOURNIQUET"), "tourniquet"],
+		[tr("EQUIP_BANDAGE"), "bandage"],
+		[tr("EQUIP_SPLINT"), "splint"],
+		[tr("EQUIP_STRETCHER"), "stretcher"],
+	]
+
+	for eq in treatment_defs:
+		var eq_panel := PanelContainer.new()
+		eq_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		if tm:
+			tm.style_panel(eq_panel)
+		treat_grid.add_child(eq_panel)
+		var eq_btn := Button.new()
+		eq_btn.text = eq[0]
+		eq_btn.custom_minimum_size = Vector2(0, 40)
+		eq_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		eq_btn.focus_mode = Control.FOCUS_NONE
+		eq_btn.pressed.connect(_on_equipment_pressed.bind(eq[1]))
+		if tm:
+			tm.style_button(eq_btn, "small")
+		eq_btn.add_theme_color_override("font_color", tm.c("text_primary") if tm else Color(0.1, 0.1, 0.2))
+		eq_panel.add_child(eq_btn)
+		_equipment_buttons[eq[1]] = eq_btn
+
+	## Bag Contents — hidden container (populate functions still write to _bag_items_vbox)
 	_bag_items_vbox = VBoxContainer.new()
-	_bag_items_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_bag_items_vbox.add_theme_constant_override("separation", 4)
-	bag_scroll.add_child(_bag_items_vbox)
+	_bag_items_vbox.visible = false
+	equip_vbox.add_child(_bag_items_vbox)
 
-	## ARC-17: Drug Administration section
-	var drug_sep := HSeparator.new()
-	container.add_child(drug_sep)
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "drug_admin" — Drug Administration
+	# ════════════════════════════════════════════════════════════
+	var drug_scroll := ScrollContainer.new()
+	drug_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drug_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	drug_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	drug_scroll.visible = false
+	sub_container.add_child(drug_scroll)
+	_stab_sub_tabs["drug_admin"] = drug_scroll
+
+	var drug_outer := VBoxContainer.new()
+	drug_outer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drug_outer.add_theme_constant_override("separation", 8)
+	drug_scroll.add_child(drug_outer)
 
 	var drug_title := Label.new()
-	drug_title.text = "Drug Administration"
-	drug_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	drug_title.text = tr("STABILIZE_DRUG_ADMIN")
 	if tm:
 		tm.style_label(drug_title, "subtitle", "accent_blue")
 	else:
 		drug_title.add_theme_font_size_override("font_size", 18)
-	container.add_child(drug_title)
+	drug_outer.add_child(drug_title)
 
-	# Drug form inside a card
-	var drug_card := PanelContainer.new()
-	if tm:
-		tm.style_panel(drug_card)
-	container.add_child(drug_card)
+	var drug_row := HBoxContainer.new()
+	drug_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drug_row.add_theme_constant_override("separation", 16)
+	drug_outer.add_child(drug_row)
 
-	var drug_form_grid := GridContainer.new()
-	drug_form_grid.columns = 2
-	drug_form_grid.add_theme_constant_override("h_separation", 12)
-	drug_form_grid.add_theme_constant_override("v_separation", 8)
-	drug_card.add_child(drug_form_grid)
+	# Left: Drug selection + Administer (1/4)
+	var drug_left := VBoxContainer.new()
+	drug_left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drug_left.size_flags_stretch_ratio = 1.0
+	drug_left.add_theme_constant_override("separation", 8)
+	drug_row.add_child(drug_left)
 
 	var drug_name_label := Label.new()
-	drug_name_label.text = "Drug:"
+	drug_name_label.text = tr("STABILIZE_DRUG") + ":"
 	if tm:
-		tm.style_label(drug_name_label, "body", "text_secondary")
-	drug_form_grid.add_child(drug_name_label)
+		tm.style_label(drug_name_label, "body_small", "text_secondary")
+	drug_left.add_child(drug_name_label)
 
 	_drug_name_btn = OptionButton.new()
-	_drug_name_btn.custom_minimum_size = Vector2(200, 32)
+	_drug_name_btn.custom_minimum_size = Vector2(0, 38)
+	_drug_name_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_drug_name_btn.focus_mode = Control.FOCUS_NONE
 	_drug_name_btn.item_selected.connect(_on_drug_name_changed)
 	if tm:
 		tm.style_option_button(_drug_name_btn)
-	drug_form_grid.add_child(_drug_name_btn)
+	drug_left.add_child(_drug_name_btn)
 
 	var drug_route_label := Label.new()
-	drug_route_label.text = "Route:"
+	drug_route_label.text = tr("STABILIZE_ROUTE") + ":"
 	if tm:
-		tm.style_label(drug_route_label, "body", "text_secondary")
-	drug_form_grid.add_child(drug_route_label)
+		tm.style_label(drug_route_label, "body_small", "text_secondary")
+	drug_left.add_child(drug_route_label)
 
 	_drug_route_btn = OptionButton.new()
-	_drug_route_btn.custom_minimum_size = Vector2(200, 32)
+	_drug_route_btn.custom_minimum_size = Vector2(0, 38)
+	_drug_route_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_drug_route_btn.focus_mode = Control.FOCUS_NONE
 	if tm:
 		tm.style_option_button(_drug_route_btn)
-	drug_form_grid.add_child(_drug_route_btn)
+	drug_left.add_child(_drug_route_btn)
 
 	var drug_dose_label := Label.new()
-	drug_dose_label.text = "Dose:"
+	drug_dose_label.text = tr("STABILIZE_DOSE") + ":"
 	if tm:
-		tm.style_label(drug_dose_label, "body", "text_secondary")
-	drug_form_grid.add_child(drug_dose_label)
+		tm.style_label(drug_dose_label, "body_small", "text_secondary")
+	drug_left.add_child(drug_dose_label)
 
 	_drug_dose_btn = OptionButton.new()
-	_drug_dose_btn.custom_minimum_size = Vector2(200, 32)
+	_drug_dose_btn.custom_minimum_size = Vector2(0, 38)
+	_drug_dose_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_drug_dose_btn.focus_mode = Control.FOCUS_NONE
 	if tm:
 		tm.style_option_button(_drug_dose_btn)
-	drug_form_grid.add_child(_drug_dose_btn)
+	drug_left.add_child(_drug_dose_btn)
 
-	var admin_btn := Button.new()
-	admin_btn.text = "Administer Drug"
-	admin_btn.custom_minimum_size = Vector2(200, 44)
+	_drug_admin_btn = Button.new()
+	var admin_btn := _drug_admin_btn
+	admin_btn.text = tr("STABILIZE_ADMINISTER")
+	admin_btn.custom_minimum_size = Vector2(0, 44)
+	admin_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	admin_btn.focus_mode = Control.FOCUS_NONE
 	admin_btn.pressed.connect(_on_administer_drug_pressed)
 	if tm:
 		tm.style_button(admin_btn)
-	container.add_child(admin_btn)
+	drug_left.add_child(admin_btn)
 
 	_drug_feedback_label = Label.new()
 	_drug_feedback_label.text = ""
@@ -1177,20 +1700,95 @@ func _build_stabilize_tab() -> Control:
 		tm.style_label(_drug_feedback_label, "label", "text_secondary")
 	else:
 		_drug_feedback_label.add_theme_font_size_override("font_size", 13)
-	container.add_child(_drug_feedback_label)
+	drug_left.add_child(_drug_feedback_label)
+
+	# Right: Administration Log (3/4)
+	var drug_right := VBoxContainer.new()
+	drug_right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	drug_right.size_flags_stretch_ratio = 3.0
+	drug_right.add_theme_constant_override("separation", 4)
+	drug_row.add_child(drug_right)
 
 	var drug_log_title := Label.new()
-	drug_log_title.text = "Administration Log:"
+	drug_log_title.text = tr("ADMIN_LOG_TITLE")
 	if tm:
-		tm.style_label(drug_log_title, "label", "text_muted")
+		tm.style_label(drug_log_title, "body", "text_primary")
 	else:
-		drug_log_title.add_theme_font_size_override("font_size", 13)
-	container.add_child(drug_log_title)
+		drug_log_title.add_theme_font_size_override("font_size", 14)
+	drug_right.add_child(drug_log_title)
+
+	var log_scroll := ScrollContainer.new()
+	log_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	log_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	log_scroll.custom_minimum_size = Vector2(0, 150)
+	drug_right.add_child(log_scroll)
 
 	_drug_log_vbox = VBoxContainer.new()
 	_drug_log_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_drug_log_vbox.add_theme_constant_override("separation", 2)
-	container.add_child(_drug_log_vbox)
+	_drug_log_vbox.add_theme_constant_override("separation", 4)
+	log_scroll.add_child(_drug_log_vbox)
+
+	# ════════════════════════════════════════════════════════════
+	# SUB-TAB: "triage" — Triage Tags
+	# ════════════════════════════════════════════════════════════
+	var triage_panel := VBoxContainer.new()
+	triage_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	triage_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	triage_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	triage_panel.visible = false
+	triage_panel.add_theme_constant_override("separation", 16)
+	sub_container.add_child(triage_panel)
+	_stab_sub_tabs["triage"] = triage_panel
+
+	var triage_title := Label.new()
+	triage_title.text = "Assign Triage Tag"
+	if tm:
+		tm.style_label(triage_title, "subtitle", "accent_purple")
+	triage_panel.add_child(triage_title)
+
+	var triage_row := HBoxContainer.new()
+	triage_row.add_theme_constant_override("separation", 8)
+	triage_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	triage_panel.add_child(triage_row)
+
+	var triage_defs := [
+		["GREEN", "Minor", Color(0.2, 0.7, 0.2)],
+		["YELLOW", "Delayed", Color(0.9, 0.8, 0.1)],
+		["RED", "Immediate", Color(0.8, 0.2, 0.2)],
+		["BLACK", "Deceased", Color(0.15, 0.15, 0.15)],
+	]
+
+	for td in triage_defs:
+		var t_btn := Button.new()
+		t_btn.text = td[0]
+		t_btn.tooltip_text = td[1]
+		t_btn.custom_minimum_size = Vector2(0, 64)
+		t_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		t_btn.focus_mode = Control.FOCUS_NONE
+		t_btn.pressed.connect(_on_triage_direct_pressed.bind(td[0]))
+		if tm:
+			tm.style_button(t_btn, "large")
+		# Apply background color to the button
+		var t_style: StyleBoxFlat = tm.make_btn_normal() if tm else StyleBoxFlat.new()
+		t_style.bg_color = td[2]
+		t_style.corner_radius_top_left = 8
+		t_style.corner_radius_top_right = 8
+		t_style.corner_radius_bottom_left = 8
+		t_style.corner_radius_bottom_right = 8
+		t_btn.add_theme_stylebox_override("normal", t_style)
+		var t_hover: StyleBoxFlat = t_style.duplicate()
+		t_hover.bg_color = td[2].lightened(0.15)
+		t_btn.add_theme_stylebox_override("hover", t_hover)
+		# WHITE text for all triage buttons (BLACK tag needs white text for contrast)
+		t_btn.add_theme_color_override("font_color", Color.WHITE)
+		t_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+		triage_row.add_child(t_btn)
+
+	_triage_feedback_label = Label.new()
+	_triage_feedback_label.text = ""
+	if tm:
+		tm.style_label(_triage_feedback_label, "body", "text_secondary")
+	triage_panel.add_child(_triage_feedback_label)
 
 	return root
 
@@ -1207,25 +1805,36 @@ func _build_differential_tab() -> Control:
 	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_theme_constant_override("separation", 8)
 
+	# Title
 	var title := Label.new()
-	title.text = "Differential Diagnosis"
+	title.text = tr("TAB_DIFFERENTIAL")
 	if tm:
 		tm.style_label(title, "title", "text_primary")
 	else:
 		title.add_theme_font_size_override("font_size", 22)
 	root.add_child(title)
 
-	var instructions := Label.new()
-	instructions.text = "Select up to 3 diagnoses in order of likelihood, then submit."
-	instructions.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# Search bar
+	_ddx_search_input = LineEdit.new()
+	_ddx_search_input.placeholder_text = "Search diagnoses..."
+	_ddx_search_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_ddx_search_input.text_changed.connect(_on_ddx_search_changed)
 	if tm:
-		tm.style_label(instructions, "body", "text_secondary")
-	else:
-		instructions.add_theme_font_size_override("font_size", 13)
-	root.add_child(instructions)
+		tm.style_input(_ddx_search_input)
+	root.add_child(_ddx_search_input)
 
-	root.add_child(HSeparator.new())
+	# Scrollable area for categories
+	var diag_scroll := ScrollContainer.new()
+	diag_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(diag_scroll)
 
+	var diag_vbox := VBoxContainer.new()
+	diag_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	diag_vbox.name = "DiagVBox"
+	diag_vbox.add_theme_constant_override("separation", 6)
+	diag_scroll.add_child(diag_vbox)
+
+	# Selected diagnoses display
 	_diagnosis_rank_label = Label.new()
 	_diagnosis_rank_label.text = "Selected: (none)"
 	if tm:
@@ -1234,18 +1843,9 @@ func _build_differential_tab() -> Control:
 		_diagnosis_rank_label.add_theme_font_size_override("font_size", 13)
 	root.add_child(_diagnosis_rank_label)
 
-	var diag_scroll := ScrollContainer.new()
-	diag_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_child(diag_scroll)
-
-	var diag_vbox := VBoxContainer.new()
-	diag_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	diag_vbox.name = "DiagVBox"
-	diag_vbox.add_theme_constant_override("separation", 4)
-	diag_scroll.add_child(diag_vbox)
-
+	# Submit button — full width, accent blue
 	_submit_diagnosis_btn = Button.new()
-	_submit_diagnosis_btn.text = "Submit Diagnosis"
+	_submit_diagnosis_btn.text = tr("DDX_SUBMIT")
 	_submit_diagnosis_btn.custom_minimum_size = Vector2(0, 52)
 	_submit_diagnosis_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_submit_diagnosis_btn.focus_mode = Control.FOCUS_NONE
@@ -1253,7 +1853,6 @@ func _build_differential_tab() -> Control:
 	_submit_diagnosis_btn.disabled = true
 	if tm:
 		tm.style_button(_submit_diagnosis_btn, "large")
-		# Override with accent_blue for submit prominence
 		var submit_normal: StyleBoxFlat = tm.make_btn_normal()
 		submit_normal.bg_color = tm.c("accent_blue")
 		_submit_diagnosis_btn.add_theme_stylebox_override("normal", submit_normal)
@@ -1265,6 +1864,37 @@ func _build_differential_tab() -> Control:
 	root.add_child(_submit_diagnosis_btn)
 
 	return root
+
+
+## Toggle a DDx category open/closed.
+func _on_ddx_category_toggle(cat_name: String, header_btn: Button) -> void:
+	var is_collapsed: bool = _ddx_category_collapsed.get(cat_name, false)
+	_ddx_category_collapsed[cat_name] = not is_collapsed
+	var grid: GridContainer = _ddx_category_grids.get(cat_name)
+	if grid:
+		grid.visible = is_collapsed  # Was collapsed → now open
+	header_btn.text = ("▼ " if is_collapsed else "▶ ") + cat_name
+
+
+## Search filter for differential diagnoses.
+func _on_ddx_search_changed(text: String) -> void:
+	var query := text.strip_edges().to_lower()
+	for btn in _diagnosis_buttons:
+		if is_instance_valid(btn):
+			btn.visible = query == "" or query in btn.text.to_lower()
+	# Show/hide category headers based on whether they have visible buttons
+	for cat_name in _ddx_category_containers:
+		var cat_wrapper: Control = _ddx_category_containers[cat_name]
+		if not is_instance_valid(cat_wrapper):
+			continue
+		var has_visible := false
+		var grid: GridContainer = _ddx_category_grids.get(cat_name)
+		if grid:
+			for child in grid.get_children():
+				if child is Button and child.visible:
+					has_visible = true
+					break
+		cat_wrapper.visible = has_visible or query == ""
 
 
 # ==============================================================================
@@ -1311,6 +1941,22 @@ func _apply_theme() -> void:
 		tm.style_input(_chat_input)
 	if _talk_button:
 		tm.style_button(_talk_button)
+
+	# Exam sub-tab pills
+	for key in _exam_sub_tab_btns:
+		tm.style_button(_exam_sub_tab_btns[key], "small")
+		if key == _current_exam_sub:
+			_exam_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_active())
+		else:
+			_exam_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_inactive())
+
+	# Stabilize sub-tab pills
+	for key in _stab_sub_tab_btns:
+		tm.style_button(_stab_sub_tab_btns[key], "small")
+		if key == _current_stab_sub:
+			_stab_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_active())
+		else:
+			_stab_sub_tab_btns[key].add_theme_stylebox_override("normal", tm.make_tab_inactive())
 
 	# Exam tab — DRSABCDE buttons
 	for key in _exam_buttons:
@@ -1447,21 +2093,21 @@ func _populate_patient_tab() -> void:
 		if consciousness_level == "UNRESPONSIVE":
 			_opqrst_btn.disabled = true
 			_opqrst_btn.tooltip_text = "Patient is unresponsive — cannot describe pain"
-			_opqrst_btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+			# Disabled color handled by theme (text_muted)
 		else:
 			_opqrst_btn.disabled = false
 			_opqrst_btn.tooltip_text = ""
+			var _tmo := _get_theme_medical()
 
 			var pain_level: int = 0
 			if medical_state:
 				pain_level = medical_state.get("pain_level") if medical_state.get("pain_level") else 0
 
 			if pain_level > 0:
-				# Bright amber for pain present
-				_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
+				_opqrst_btn.add_theme_color_override("font_color", _tmo.c("accent_yellow") if _tmo else Color(1.0, 0.85, 0.0))
 				_opqrst_btn.text = "O - OPQRST (Pain %d/10)" % pain_level
 			else:
-				_opqrst_btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.2))
+				_opqrst_btn.add_theme_color_override("font_color", _tmo.c("accent_yellow") if _tmo else Color(1.0, 0.75, 0.2))
 				_opqrst_btn.text = "O - OPQRST (Pain)"
 
 	# Clear chat on open
@@ -1477,11 +2123,15 @@ func _populate_patient_tab() -> void:
 func _populate_exam_tab() -> void:
 	# Reset DRSABCDE
 	_exam_completed = 0
+	var _tm := _get_theme_medical()
 	for key in _exam_results:
 		_exam_results[key].text = ""
-		_exam_results[key].add_theme_color_override("font_color", Color(1, 1, 1))
+		if _tm:
+			_exam_results[key].add_theme_color_override("font_color", _tm.c("text_secondary"))
 	for key in _exam_buttons:
 		_exam_buttons[key].disabled = false
+		if _tm:
+			_tm.style_button(_exam_buttons[key])
 
 	if _exam_counter_label:
 		_exam_counter_label.text = "0/%d" % _exam_total
@@ -1496,8 +2146,10 @@ func _populate_exam_tab() -> void:
 
 	# Reset ECG — clear texture so previous patient's strip doesn't bleed through
 	if _ecg_mode_label:
-		_ecg_mode_label.text = "No monitor deployed"
-		_ecg_mode_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+		_ecg_mode_label.text = ""
+		var _tm2 := _get_theme_medical()
+		if _tm2:
+			_ecg_mode_label.add_theme_color_override("font_color", _tm2.c("text_muted"))
 	if _ecg_panel:
 		_ecg_panel.visible = false
 	if _ecg_texture_rect:
@@ -1564,7 +2216,6 @@ func _populate_stabilize_tab() -> void:
 			var bag_key: String = EQUIP_TO_BAG_KEY.get(key, key.to_upper())
 			if not _bag_tier_manager.is_available(bag_key):
 				_equipment_buttons[key].disabled = true
-				_equipment_buttons[key].add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 
 	# Re-mark already applied equipment with checkmarks
 	for eq in _applied_equipment:
@@ -1587,11 +2238,20 @@ func _populate_differential_tab() -> void:
 	if not diag_vbox:
 		return
 
-	# Clear existing buttons (but NOT _selected_diagnoses — preserved from open_ui)
+	# Clear existing buttons AND category containers
 	for b in _diagnosis_buttons:
 		if is_instance_valid(b):
 			b.queue_free()
 	_diagnosis_buttons.clear()
+
+	# Clear old category containers from the tree
+	for cat_name in _ddx_category_containers:
+		var cat_wrapper: Control = _ddx_category_containers[cat_name]
+		if is_instance_valid(cat_wrapper):
+			cat_wrapper.queue_free()
+	_ddx_category_containers.clear()
+	_ddx_category_grids.clear()
+	_ddx_category_collapsed.clear()
 
 	var tm := _get_theme_medical()
 
@@ -1602,7 +2262,8 @@ func _populate_differential_tab() -> void:
 			for d in _selected_diagnoses:
 				parts.append(d)
 			_diagnosis_rank_label.text = "Submitted: " + ", ".join(parts)
-			_diagnosis_rank_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.4))
+			var _tm_rank := _get_theme_medical()
+			_diagnosis_rank_label.add_theme_color_override("font_color", _tm_rank.c("accent_green") if _tm_rank else Color(0.3, 0.9, 0.4))
 		if _submit_diagnosis_btn:
 			_submit_diagnosis_btn.disabled = true
 			_submit_diagnosis_btn.text = "Diagnosis Submitted"
@@ -1613,50 +2274,93 @@ func _populate_differential_tab() -> void:
 			_submit_diagnosis_btn.disabled = true
 			_submit_diagnosis_btn.text = "Submit Diagnosis"
 
-	# Comprehensive differential diagnosis list for EMS assessment
-	var diagnoses := [
-		# Cardiac
-		"Cardiac Arrest", "Myocardial Infarction (STEMI)", "Myocardial Infarction (NSTEMI)",
-		"Unstable Angina", "Ventricular Fibrillation", "Ventricular Tachycardia",
-		"Bradycardia", "SVT / Tachyarrhythmia", "Heart Failure / Pulmonary Oedema",
-		"Cardiac Tamponade", "Aortic Dissection",
-		# Respiratory
-		"Pneumothorax", "Tension Pneumothorax", "Asthma (Acute)",
-		"COPD Exacerbation", "Pulmonary Embolism", "Respiratory Failure",
-		"Smoke Inhalation", "Upper Airway Obstruction",
-		# Neurological
-		"Stroke (Ischaemic)", "Stroke (Haemorrhagic)", "Seizure / Status Epilepticus",
-		"Head Injury / TBI", "Spinal Injury",
-		# Trauma
-		"Trauma -- Multi-system", "Haemorrhagic Shock", "Internal Bleeding",
-		"Crush Injury / Rhabdomyolysis", "Burns (Thermal)", "Blast Injury",
-		"Penetrating Trauma", "Fracture -- Open", "Fracture -- Closed",
-		# Medical
-		"Anaphylaxis", "Hypoglycaemia", "Diabetic Ketoacidosis",
-		"Sepsis / Septic Shock", "Opioid Overdose", "Drug Overdose (Other)",
-		"Poisoning / Toxic Exposure", "CO Poisoning",
-		"Hypothermia", "Hyperthermia / Heat Stroke",
-		# Other
-		"Minor Bleeding / Laceration", "Soft Tissue Injury",
-		"Acute Abdomen", "Ectopic Pregnancy",
-	]
+	# Categorized differential diagnosis list
+	var ddx_categories := {
+		"Cardiac": [
+			"Cardiac Arrest", "Myocardial Infarction (STEMI)", "Myocardial Infarction (NSTEMI)",
+			"Unstable Angina", "Ventricular Fibrillation", "Ventricular Tachycardia",
+			"Bradycardia", "SVT / Tachyarrhythmia", "Heart Failure / Pulmonary Oedema",
+			"Cardiac Tamponade", "Aortic Dissection",
+		],
+		"Respiratory": [
+			"Pneumothorax", "Tension Pneumothorax", "Asthma (Acute)",
+			"COPD Exacerbation", "Pulmonary Embolism", "Respiratory Failure",
+			"Smoke Inhalation", "Upper Airway Obstruction",
+		],
+		"Trauma": [
+			"Trauma -- Multi-system", "Haemorrhagic Shock", "Internal Bleeding",
+			"Crush Injury / Rhabdomyolysis", "Burns (Thermal)", "Blast Injury",
+			"Penetrating Trauma", "Fracture -- Open", "Fracture -- Closed",
+		],
+		"Neurological": [
+			"Stroke (Ischaemic)", "Stroke (Haemorrhagic)", "Seizure / Status Epilepticus",
+			"Head Injury / TBI", "Spinal Injury",
+		],
+		"Medical": [
+			"Anaphylaxis", "Hypoglycaemia", "Diabetic Ketoacidosis",
+			"Sepsis / Septic Shock", "Opioid Overdose", "Drug Overdose (Other)",
+			"Poisoning / Toxic Exposure", "CO Poisoning",
+			"Hypothermia", "Hyperthermia / Heat Stroke",
+		],
+		"Other": [
+			"Minor Bleeding / Laceration", "Soft Tissue Injury",
+			"Acute Abdomen", "Ectopic Pregnancy",
+		],
+	}
 
-	for diag in diagnoses:
-		var btn := Button.new()
-		btn.text = diag
-		btn.custom_minimum_size = Vector2(0, 36)
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.focus_mode = Control.FOCUS_NONE
-		btn.pressed.connect(_on_diagnosis_button_pressed.bind(diag))
+	_ddx_category_containers.clear()
+	_ddx_category_grids.clear()
+	_ddx_category_collapsed.clear()
+
+	var cat_index := 0
+	for cat_name in ddx_categories:
+		var cat_wrapper := VBoxContainer.new()
+		cat_wrapper.add_theme_constant_override("separation", 4)
+		diag_vbox.add_child(cat_wrapper)
+		_ddx_category_containers[cat_name] = cat_wrapper
+
+		# Category header — collapsible toggle
+		var header_btn := Button.new()
+		var is_open: bool = cat_index < 2  # First 2 categories open by default
+		header_btn.text = ("▼ " if is_open else "▶ ") + cat_name
+		header_btn.custom_minimum_size = Vector2(0, 32)
+		header_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		header_btn.focus_mode = Control.FOCUS_NONE
+		header_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		if tm:
-			tm.style_button(btn, "small")
-		# If already diagnosed, lock all buttons and highlight selected ones
-		if _diagnosis_submitted:
-			btn.disabled = true
-			if diag in _selected_diagnoses:
-				btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3))
-		diag_vbox.add_child(btn)
-		_diagnosis_buttons.append(btn)
+			tm.style_button(header_btn, "small")
+			header_btn.add_theme_color_override("font_color", tm.c("accent_blue"))
+		header_btn.pressed.connect(_on_ddx_category_toggle.bind(cat_name, header_btn))
+		cat_wrapper.add_child(header_btn)
+
+		# Category grid
+		var cat_grid := GridContainer.new()
+		cat_grid.columns = 3
+		cat_grid.add_theme_constant_override("h_separation", 6)
+		cat_grid.add_theme_constant_override("v_separation", 4)
+		cat_grid.visible = is_open
+		cat_wrapper.add_child(cat_grid)
+		_ddx_category_grids[cat_name] = cat_grid
+		_ddx_category_collapsed[cat_name] = not is_open
+
+		for diag in ddx_categories[cat_name]:
+			var btn := Button.new()
+			btn.text = diag
+			btn.custom_minimum_size = Vector2(0, 36)
+			btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			btn.focus_mode = Control.FOCUS_NONE
+			btn.pressed.connect(_on_diagnosis_button_pressed.bind(diag))
+			if tm:
+				tm.style_button(btn, "small")
+			if _diagnosis_submitted:
+				btn.disabled = true
+				if diag in _selected_diagnoses:
+					var _tm_d := _get_theme_medical()
+					btn.add_theme_color_override("font_color", _tm_d.c("accent_green") if _tm_d else Color(0.2, 1.0, 0.3))
+			cat_grid.add_child(btn)
+			_diagnosis_buttons.append(btn)
+
+		cat_index += 1
 
 
 # ==============================================================================
@@ -1973,7 +2677,7 @@ func _on_talk_button_pressed() -> void:
 
 func _on_ai_response(response: String) -> void:
 	if _ai_status_label:
-		_ai_status_label.text = "AI Dialogue Active"
+		_ai_status_label.text = tr("PATIENT_AI_ACTIVE")
 	_add_chat_bubble(response, false)
 
 
@@ -1995,8 +2699,12 @@ func _add_chat_bubble(text: String, is_player: bool) -> void:
 		if is_player:
 			# Player bubble: accent_blue tinted card
 			var player_style: StyleBoxFlat = tm.make_card()
-			player_style.bg_color = tm.c("accent_blue").darkened(0.7)
-			player_style.border_color = tm.c("accent_blue").darkened(0.4)
+			if tm.current_mode == "dark":
+				player_style.bg_color = tm.c("accent_blue").darkened(0.6)
+				player_style.border_color = tm.c("accent_blue").darkened(0.3)
+			else:
+				player_style.bg_color = tm.c("accent_blue").lightened(0.8)
+				player_style.border_color = tm.c("accent_blue").lightened(0.4)
 			bubble_panel.add_theme_stylebox_override("panel", player_style)
 		else:
 			# Patient bubble: standard bg_card
@@ -2035,29 +2743,39 @@ func _on_exam_action_pressed(action_name: String) -> void:
 	if not _assessment_manager:
 		_exam_results[action_name].text = "No assessment manager."
 		return
+	# Cooldown: DRS = 0.5s, ABCDE = 2s. Result appears AFTER delay.
+	var drs_actions := ["check_danger", "check_response", "send_help"]
+	var group := "drs" if action_name in drs_actions else "abcde"
+	var btn: Button = _exam_buttons.get(action_name)
+	if not btn:
+		return
+	if not _start_cooldown(btn, group, _do_exam_action.bind(action_name)):
+		return
 
+
+## Deferred exam action — runs after cooldown completes.
+func _do_exam_action(action_name: String) -> void:
+	if not _assessment_manager:
+		return
 	var result: Dictionary = {}
 	if _assessment_manager.has_method("perform_assessment_by_name"):
 		result = _assessment_manager.perform_assessment_by_name(action_name)
 	elif _assessment_manager.has_method("perform_assessment"):
 		result = _assessment_manager.perform_assessment(action_name)
 
-	# AssessmentManager handles vital signs but not DRSABCDE steps —
-	# build patient-specific findings from MedicalStateComponent directly.
 	if result.is_empty():
 		result = _build_drsabcde_finding(action_name)
 
 	var result_text := _format_assessment_result(result, action_name)
-	_exam_results[action_name].text = result_text
-	# Force readable color on result text based on current theme
-	var tm := _get_theme_medical()
-	if tm:
-		_exam_results[action_name].add_theme_color_override("font_color", tm.c("text_primary"))
-	# Keep button enabled for re-assessment — mark visually as completed instead
-	if tm:
-		_exam_buttons[action_name].add_theme_color_override("font_color", tm.c("accent_green"))
-	else:
-		_exam_buttons[action_name].add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
+	if _exam_results.has(action_name):
+		_exam_results[action_name].text = result_text
+		var tm := _get_theme_medical()
+		if tm:
+			_exam_results[action_name].add_theme_color_override("font_color", tm.c("text_primary"))
+	if _exam_buttons.has(action_name):
+		var tm2 := _get_theme_medical()
+		if tm2:
+			_exam_buttons[action_name].add_theme_color_override("font_color", tm2.c("accent_green"))
 
 	_exam_completed += 1
 	if _exam_counter_label:
@@ -2065,6 +2783,23 @@ func _on_exam_action_pressed(action_name: String) -> void:
 
 	_check_cpr_visibility()
 	assessment_action.emit(action_name)
+
+	# Log to telemetry — map UI action names to protocol-standard names
+	var telemetry_name: String = _map_exam_to_telemetry(action_name)
+	if telemetry_name != "":
+		var telemetry: Node = get_node_or_null("/root/TelemetryCollector")
+		if telemetry and telemetry.has_method("record_event"):
+			var ts: float = 0.0
+			if telemetry.get("_session_start_msec") != null and telemetry._session_start_msec > 0:
+				ts = (Time.get_ticks_msec() - telemetry._session_start_msec) / 1000.0
+			var patient_name: String = _patient.name if _patient else ""
+			telemetry.record_event({
+				"type": telemetry_name,
+				"target": patient_name,
+				"timestamp": ts,
+				"player_position": {"x": 0, "y": 0, "z": 0},
+				"details": result,
+			})
 
 
 # ==============================================================================
@@ -2075,11 +2810,22 @@ func _on_vital_pressed(key: String, action_id: int) -> void:
 	var result_lbl: Label = _vital_results.get(key)
 	if not result_lbl:
 		return
+	var v_btn: Button = _vital_buttons.get(key)
+	if not v_btn:
+		return
+	# Cooldown: 1.5s, 2 concurrent. Result appears AFTER delay.
+	if not _start_cooldown(v_btn, "vitals", _do_vital_action.bind(key, action_id)):
+		return
+
+
+## Deferred vital action — runs after cooldown completes.
+func _do_vital_action(key: String, action_id: int) -> void:
+	var result_lbl: Label = _vital_results.get(key)
+	if not result_lbl:
+		return
 
 	if not _assessment_manager:
 		result_lbl.text = "No assessment manager."
-		result_lbl.add_theme_color_override("font_color", Color(0.8, 0.5, 0.2))
-		# Still attempt a direct read
 		var fallback := _read_vital_from_patient(key)
 		if not fallback.is_empty():
 			_display_vital_result(key, fallback, result_lbl)
@@ -2091,7 +2837,9 @@ func _on_vital_pressed(key: String, action_id: int) -> void:
 
 	if result.has("error"):
 		result_lbl.text = result["error"]
-		result_lbl.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1))
+		var tm := _get_theme_medical()
+		if tm:
+			result_lbl.add_theme_color_override("font_color", tm.c("accent_yellow"))
 		return
 
 	if result.is_empty():
@@ -2099,9 +2847,10 @@ func _on_vital_pressed(key: String, action_id: int) -> void:
 
 	_display_vital_result(key, result, result_lbl)
 
-	# Keep button enabled for re-assessment — mark visually as completed
 	if _vital_buttons.has(key):
-		_vital_buttons[key].add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
+		var tm := _get_theme_medical()
+		if tm:
+			_vital_buttons[key].add_theme_color_override("font_color", tm.c("accent_green"))
 
 	_check_cpr_visibility()
 	assessment_action.emit(key)
@@ -2445,6 +3194,20 @@ func _on_secondary_region_pressed(region: String) -> void:
 	var region_btn: Button = _secondary_buttons.get(region)
 	if not result_lbl or not region_btn:
 		return
+	# Cooldown: 2s, 1 at a time. Result appears AFTER delay.
+	if not _start_cooldown(region_btn, "secondary", _do_secondary_action.bind(region)):
+		return
+	return  # Action deferred to callback
+
+
+## Deferred secondary survey action — runs after cooldown completes.
+func _do_secondary_action(region: String) -> void:
+	if not _patient:
+		return
+	var result_lbl: Label = _secondary_results.get(region)
+	var region_btn: Button = _secondary_buttons.get(region)
+	if not result_lbl or not region_btn:
+		return
 
 	# Get findings through SecondarySurveyManager.get_region_findings (locale-aware)
 	var finding_text := "No abnormalities found."
@@ -2585,6 +3348,20 @@ func _on_cpr_pressed() -> void:
 
 
 func _on_administer_drug_pressed() -> void:
+	if not _drug_name_btn or not _drug_route_btn or not _drug_dose_btn:
+		return
+	if not _patient:
+		return
+	# Cooldown: 5s, 1 at a time — with circular progress
+	if not _drug_admin_btn:
+		return
+	if not _start_cooldown(_drug_admin_btn, "drug", _do_drug_admin):
+		return
+	return  # Deferred to callback
+
+
+## Deferred drug administration — runs after 5s cooldown.
+func _do_drug_admin() -> void:
 	if not _drug_name_btn or not _drug_route_btn or not _drug_dose_btn:
 		return
 	if not _patient:
@@ -2788,11 +3565,39 @@ func _on_triage_color_selected(tag_name: String, qty_label: Label, deploy_btn: B
 		_drug_feedback_label.add_theme_color_override("font_color", color_map.get(tag_name, Color.WHITE))
 
 
+## Direct triage tag assignment from standalone buttons (not bag contents).
+func _on_triage_direct_pressed(tag_name: String) -> void:
+	if not _patient:
+		return
+	var triage_sys: Node = get_node_or_null("/root/TriageSystem")
+	if triage_sys and triage_sys.has_method("assign_tag"):
+		var tag_int_map := {"GREEN": 0, "YELLOW": 1, "RED": 2, "BLACK": 3}
+		var tag_int: int = tag_int_map.get(tag_name, 0)
+		triage_sys.assign_tag(_patient, tag_int)
+	var color_map := {"RED": Color(1, 0.2, 0.2), "YELLOW": Color(1, 0.9, 0.1), "GREEN": Color(0.2, 0.9, 0.2), "BLACK": Color(0.9, 0.9, 0.9)}
+	if _triage_feedback_label:
+		_triage_feedback_label.text = "Triage tag assigned: %s" % tag_name
+		_triage_feedback_label.add_theme_color_override("font_color", color_map.get(tag_name, Color.WHITE))
+
+
 # ==============================================================================
 # HANDLERS — Stabilize tab (equipment)
 # ==============================================================================
 
 func _on_equipment_pressed(equip_type: String) -> void:
+	if equip_type in _applied_equipment:
+		return
+	# Cooldown: 3s, 2 concurrent. Deploy happens AFTER delay.
+	var eq_btn: Button = _equipment_buttons.get(equip_type)
+	if not eq_btn:
+		return
+	if not _start_cooldown(eq_btn, "equipment", _do_equipment_deploy.bind(equip_type)):
+		return
+	return  # Deferred to callback
+
+
+## Deferred equipment deploy — runs after cooldown completes.
+func _do_equipment_deploy(equip_type: String) -> void:
 	if equip_type in _applied_equipment:
 		return
 
@@ -2878,11 +3683,14 @@ func _on_submit_diagnosis_pressed() -> void:
 	for diag in _selected_diagnoses:
 		diagnosis_selected.emit(diag)
 
-	# Score against correct diagnoses from scenario data
+	# Score against correct diagnoses — per-patient DDx (preferred) with scenario-level fallback
 	var correct_list: Array = []
-	var scenario_mgr: Node = get_node_or_null("/root/ScenarioManager")
-	if scenario_mgr and scenario_mgr.current_scenario:
-		correct_list = scenario_mgr.current_scenario.get("correct_diagnosis", [])
+	if _patient and _patient.has_meta("correct_diagnosis"):
+		correct_list = _patient.get_meta("correct_diagnosis")
+	if correct_list.is_empty():
+		var scenario_mgr: Node = get_node_or_null("/root/ScenarioManager")
+		if scenario_mgr and scenario_mgr.current_scenario:
+			correct_list = scenario_mgr.current_scenario.get("correct_diagnosis", [])
 
 	# Calculate match score
 	var matches: int = 0
@@ -2900,14 +3708,25 @@ func _on_submit_diagnosis_pressed() -> void:
 		_patient.set_meta("correct_diagnoses", correct_list)
 		_patient.set_meta("diagnosis_matches", matches)
 
-	# Log to telemetry
+	# Log to telemetry with proper timestamp and patient target
 	var telemetry: Node = get_node_or_null("/root/TelemetryCollector")
 	if telemetry and telemetry.has_method("record_event"):
+		var ts: float = 0.0
+		if telemetry.get("_session_start_msec") != null and telemetry._session_start_msec > 0:
+			ts = (Time.get_ticks_msec() - telemetry._session_start_msec) / 1000.0
+		var patient_name: String = ""
+		if _patient and "persona" in _patient and _patient.persona:
+			patient_name = _patient.persona.patient_name
 		telemetry.record_event({
 			"type": "diagnosis_submitted",
-			"selected": _selected_diagnoses,
-			"correct": correct_list,
-			"matches": matches,
+			"target": patient_name,
+			"timestamp": ts,
+			"player_position": {"x": 0, "y": 0, "z": 0},
+			"details": {
+				"diagnoses": _selected_diagnoses.duplicate(),
+				"correct": correct_list,
+				"matches": matches,
+			},
 		})
 
 	# Show scoring feedback
@@ -2925,15 +3744,17 @@ func _on_submit_diagnosis_pressed() -> void:
 		feedback_text = "No correct diagnoses. Correct: %s" % ", ".join(PackedStringArray(correct_list))
 
 	# Color matched buttons green, missed correct ones orange
+	var _tm_diag2 := _get_theme_medical()
 	for btn in _diagnosis_buttons:
 		if btn.text in matched_names:
-			btn.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3))
+			btn.add_theme_color_override("font_color", _tm_diag2.c("accent_green") if _tm_diag2 else Color(0.2, 1.0, 0.3))
 		elif btn.text in correct_list:
-			btn.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1))
+			btn.add_theme_color_override("font_color", _tm_diag2.c("accent_yellow") if _tm_diag2 else Color(1.0, 0.6, 0.1))
 
 	if _diagnosis_rank_label:
 		_diagnosis_rank_label.text = feedback_text
-		var feedback_color := Color(0.2, 1.0, 0.3) if score_pct >= 80 else (Color(1.0, 0.85, 0.2) if score_pct >= 40 else Color(1.0, 0.3, 0.3))
+		var _tm_fb := _get_theme_medical()
+		var feedback_color: Color = (_tm_fb.c("accent_green") if _tm_fb else Color(0.2, 1.0, 0.3)) if score_pct >= 80 else ((_tm_fb.c("accent_yellow") if _tm_fb else Color(1.0, 0.85, 0.2)) if score_pct >= 40 else (_tm_fb.c("accent_red") if _tm_fb else Color(1.0, 0.3, 0.3)))
 		_diagnosis_rank_label.add_theme_color_override("font_color", feedback_color)
 
 	# Auto-close UI and end scenario after a short delay
@@ -3033,6 +3854,28 @@ func _get_scripted_response(category: String) -> String:
 # ==============================================================================
 
 ## Builds a patient-specific finding dict for DRSABCDE primary survey steps.
+## Map UI exam action names to protocol-standard telemetry event names.
+func _map_exam_to_telemetry(action_name: String) -> String:
+	match action_name:
+		"check_danger":
+			return "scene_safety_check"
+		"check_response":
+			return "assess_consciousness"
+		"send_help":
+			return "call_for_help"
+		"check_airway":
+			return "assess_airway"
+		"check_breathing":
+			return "assess_breathing"
+		"check_circulation":
+			return "assess_pulse"
+		"check_disability":
+			return "assess_disability"
+		"check_exposure":
+			return "assess_exposure"
+	return ""
+
+
 ## AssessmentManager only handles vital sign enums — DRSABCDE steps (check_danger,
 ## check_response, check_airway, check_breathing, check_circulation, check_disability,
 ## check_exposure) are resolved here from MedicalStateComponent and PatientPersona.

@@ -31,11 +31,17 @@ var _retry_attempted: bool = false
 ## Stored request data for retry.
 var _last_request_body: String = ""
 
+## Whether Ollama was confirmed available on startup.
+var ollama_available: bool = false
+
 ## Discovered Ollama base URL (set by auto-discovery).
 var _discovered_url: String = ""
 
 ## Whether discovery is complete.
 var _discovery_done: bool = false
+
+## Total probes still pending (for detecting all-failed).
+var _probes_remaining: int = 0
 
 ## Queued review request args waiting for discovery to complete.
 var _queued_review_args: Array = []
@@ -94,20 +100,17 @@ func _setup_http() -> void:
 ## Auto-discover Ollama by probing candidate addresses in parallel.
 ## Checks: localhost, 127.0.0.1, and all local network IPs on port 11434.
 func _discover_ollama() -> void:
-	# If config explicitly sets a URL, use it directly
+	# Build candidate list: configured URL first (if set), then localhost, 127.0.0.1, then all local IPs
+	var candidates: Array[String] = []
+
 	var config_url: String = _config.get("ollama_url", "")
 	if config_url != "":
-		_discovered_url = config_url
-		_discovery_done = true
-		print("OllamaReviewClient: Using configured URL: %s" % config_url)
-		ollama_discovered.emit(config_url)
-		_flush_queued_reviews()
-		return
+		candidates.append(config_url)
 
-	# Build candidate list: localhost, 127.0.0.1, then all local IPs
-	var candidates: Array[String] = []
-	candidates.append("http://localhost:11434")
-	candidates.append("http://127.0.0.1:11434")
+	if "http://localhost:11434" not in candidates:
+		candidates.append("http://localhost:11434")
+	if "http://127.0.0.1:11434" not in candidates:
+		candidates.append("http://127.0.0.1:11434")
 
 	# Get all local network addresses from the OS
 	var local_addresses: PackedStringArray = IP.get_local_addresses()
@@ -125,6 +128,8 @@ func _discover_ollama() -> void:
 
 	print("OllamaReviewClient: Probing %d candidates: %s" % [candidates.size(), str(candidates)])
 
+	_probes_remaining = candidates.size()
+
 	# Probe each candidate in parallel with a lightweight GET /api/tags
 	for candidate_url in candidates:
 		var probe := HTTPRequest.new()
@@ -135,14 +140,17 @@ func _discover_ollama() -> void:
 		var err := probe.request(candidate_url + "/api/tags")
 		if err != OK:
 			probe.queue_free()
-		else:
-			# Track the probe node (typed as Node to avoid Godot append issues)
-			_queued_review_args.size()  # no-op; probes tracked via tree
+			_probes_remaining -= 1
+
+	# Safety: if no probes were sent, mark discovery done immediately
+	if _probes_remaining <= 0:
+		_mark_discovery_failed()
 
 
 ## Handle a discovery probe response.
 func _on_probe_completed(result: int, response_code: int, _headers: PackedStringArray, _body: PackedByteArray, probe: HTTPRequest, candidate_url: String) -> void:
 	probe.queue_free()
+	_probes_remaining -= 1
 
 	# If already discovered, ignore late probes
 	if _discovery_done:
@@ -151,9 +159,22 @@ func _on_probe_completed(result: int, response_code: int, _headers: PackedString
 	if result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
 		_discovered_url = candidate_url
 		_discovery_done = true
+		ollama_available = true
 		print("OllamaReviewClient: Discovered Ollama at %s" % candidate_url)
 		ollama_discovered.emit(candidate_url)
 		_flush_queued_reviews()
+		return
+
+	# All probes failed — mark Ollama unavailable
+	if _probes_remaining <= 0:
+		_mark_discovery_failed()
+
+
+## Mark discovery as complete with no Ollama found.
+func _mark_discovery_failed() -> void:
+	_discovery_done = true
+	ollama_available = false
+	print("OllamaReviewClient: All probes failed — Ollama unavailable.")
 
 
 ## Process any review requests that were queued during discovery.
@@ -194,11 +215,19 @@ func request_review(session_data: Dictionary, protocol_analysis: Dictionary, err
 	# Compose the user prompt with all analysis data
 	var user_prompt := _compose_user_prompt(session_data, protocol_analysis, errors, answer_sheet)
 
+	# Append language instruction based on user's locale preference
+	var locale: String = TranslationServer.get_locale()
+	var lang_instruction: String = ""
+	if locale.begins_with("th"):
+		lang_instruction = "\n\nIMPORTANT: You MUST respond entirely in Thai (ภาษาไทย). All section headers, feedback, and recommendations must be in Thai. Keep medical abbreviations (SpO2, HR, BP, GCS, CPR, AED, etc.) in English."
+	else:
+		lang_instruction = "\n\nRespond in English."
+
 	# Build Ollama API request body
 	var request_body := {
 		"model": _config.get("model", "llama3.1:8b"),
 		"prompt": user_prompt,
-		"system": _system_prompt,
+		"system": _system_prompt + lang_instruction,
 		"stream": false,
 		"options": {
 			"num_predict": _config.get("max_tokens", 1500),

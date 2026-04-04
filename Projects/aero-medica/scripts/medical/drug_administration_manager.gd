@@ -112,16 +112,8 @@ func administer(patient: Node, drug_key: String, dose: String, route: String) ->
 		return _log_error(patient, drug_key, dose, route, MedError.EXCEEDED_MAX_DOSE,
 			"Maximum dose exceeded (%.1f mg limit)." % max_mg)
 
-	# Check repeat interval
-	var interval_min: int = drug.get("repeat_interval_min", 0)
-	if interval_min > 0:
-		var last_time: float = _get_last_admin_time(patient_name, drug_key)
-		if last_time > 0.0:
-			var elapsed_min: float = (current_time - last_time) / 60.0
-			if elapsed_min < interval_min:
-				var wait: float = interval_min - elapsed_min
-				return _log_error(patient, drug_key, dose, route, MedError.TOO_SOON,
-					"Too soon — wait %.1f more minutes." % wait)
+	# Repeat interval check REMOVED — player takes full responsibility.
+	# AI reviewer will flag inappropriate re-dosing in the debrief.
 
 	# Administer successfully — apply effects
 	_record_administration(patient_name, drug_key, dose, route, current_time)

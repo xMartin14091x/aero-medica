@@ -9,7 +9,11 @@
 	"bag_tier": "ALS",
 	"patients": [
 		{
-			"position": { "x": 10.0, "y": 0.0, "z": 10.0 },
+			"position": {
+				"x": 10.0,
+				"y": 0.0,
+				"z": 10.0
+			},
 			"persona": {
 				"name": "Wichai",
 				"age": 58,
@@ -100,10 +104,14 @@
 				"extremities": "⚠ ผิวหนังเย็น เขียว ผิวลายบริเวณปลายมือปลายเท้า คลำชีพจรปลายมือปลายเท้าไม่ได้ ไม่มีความผิดรูป พบกล่องจัดยาในลิ้นชัก: Aspirin 81mg, Lisinopril 10mg, Metformin 500mg — BGL สูง 180 mg/dL สอดคล้องกับเบาหวาน"
 			},
 			"deterioration": {
-				"rate": 1.5,
+				"rate": 1.0,
 				"enabled": true,
-				"cardiac_to_dead": 30.0
+				"cardiac_to_dead": 60.0
 			},
+			"correct_diagnosis": [
+				"Cardiac Arrest",
+				"Ventricular Fibrillation"
+			],
 			"correct_protocol_sequence": [
 				"scene_safety_check",
 				"assess_consciousness",
@@ -113,12 +121,15 @@
 				"assess_pulse",
 				"cpr",
 				"aed",
-				"reassess"
+				"triage_assign"
 			]
 		}
 	],
 	"equipment": [],
-	"correct_diagnosis": ["Cardiac Arrest", "Ventricular Fibrillation"],
+	"correct_diagnosis": [
+		"Cardiac Arrest",
+		"Ventricular Fibrillation"
+	],
 	"hazards": [],
 	"random_events": [],
 	"passing_criteria": {

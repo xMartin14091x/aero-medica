@@ -40,6 +40,10 @@ func _process(_delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact") and current_target:
+		# Block interaction after scenario ends
+		var sm: Node = get_node_or_null("/root/ScenarioManager")
+		if sm and "_scenario_running" in sm and not sm._scenario_running:
+			return
 		_interact_with_target()
 
 

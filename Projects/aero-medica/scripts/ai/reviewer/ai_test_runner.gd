@@ -31,17 +31,21 @@ var _current_test: Dictionary = {}
 
 
 func _ready() -> void:
-	# Create pipeline components
-	_adherence_tracker = load("res://scripts/telemetry/protocol_adherence_tracker.gd").new()
+	# Create pipeline components (Node-based scripts require set_script pattern)
+	_adherence_tracker = Node.new()
+	_adherence_tracker.set_script(load("res://scripts/telemetry/protocol_adherence_tracker.gd"))
 	add_child(_adherence_tracker)
 
-	_error_detector = load("res://scripts/telemetry/error_detector.gd").new()
+	_error_detector = Node.new()
+	_error_detector.set_script(load("res://scripts/telemetry/error_detector.gd"))
 	add_child(_error_detector)
 
-	_review_parser = load("res://scripts/ai/claude/review_parser.gd").new()
+	_review_parser = Node.new()
+	_review_parser.set_script(load("res://scripts/ai/claude/review_parser.gd"))
 	add_child(_review_parser)
 
-	_demo_fallback = load("res://scripts/ai/reviewer/ai_demo_fallback.gd").new()
+	_demo_fallback = Node.new()
+	_demo_fallback.set_script(load("res://scripts/ai/reviewer/ai_demo_fallback.gd"))
 	add_child(_demo_fallback)
 
 

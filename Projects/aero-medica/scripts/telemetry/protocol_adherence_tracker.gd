@@ -127,29 +127,49 @@ func _map_event_to_protocol_action(event_type: String, event: Dictionary) -> Str
 	var details: Dictionary = event.get("details", {})
 
 	match event_type:
-		"assess_consciousness":
+		"scene_safety_check", "assess_danger":
+			return "scene_safety_check"
+		"assess_consciousness", "assess_response":
 			return "assess_consciousness"
+		"call_for_help", "send_for_help":
+			return "call_for_help"
+		"assess_airway":
+			return "assess_airway"
 		"assess_breathing":
 			return "assess_breathing"
-		"assess_pulse":
+		"assess_pulse", "assess_circulation":
 			return "assess_pulse"
-		"assess_airway":
-			return "head_tilt_chin_lift"  # Airway assessment implies checking airway
-		"assess_bleeding":
-			return "assess_bleeding"
+		"assess_bleeding", "control_bleeding":
+			return "control_bleeding"
+		"head_tilt_chin_lift":
+			return "head_tilt_chin_lift"
+		"jaw_thrust":
+			return "jaw_thrust"
+		"open_airway":
+			return "open_airway"
+		"reassess", "secondary_survey":
+			return "reassess"
 		"treatment_applied":
 			var equip_name: String = details.get("equipment_name", "")
 			if "AED" in equip_name.to_upper():
 				return "aed"
-			if "BANDAGE" in equip_name.to_upper():
-				return "apply_bandage"
+			if "CPR" in equip_name.to_upper():
+				return "cpr"
+			if "BANDAGE" in equip_name.to_upper() or "TOURNIQUET" in equip_name.to_upper():
+				return "control_bleeding"
 			if "OXYGEN" in equip_name.to_upper() or "MASK" in equip_name.to_upper():
 				return "oxygen_mask"
+			if "BAG" in equip_name.to_upper() or "BVM" in equip_name.to_upper():
+				return "bag_valve_mask"
 			return "treatment"
 		"triage_assign":
-			return "triage"
+			return "triage_assign"
+		"cpr_started":
+			return "cpr"
+		"aed_applied", "aed_shock":
+			return "aed"
 		"interact":
-			return ""  # Generic interaction, not a protocol step
+			return ""
 
 	return ""
 
@@ -209,11 +229,36 @@ func _validate_actions(player_actions: Array, protocol_id: String, patient_state
 
 
 ## Get expected protocol sequence based on patient state.
+## First checks if the patient has a correct_protocol_sequence in the scenario JSON.
+## Falls back to generic BCLS if not found.
 func _get_expected_sequence(protocol_id: String, patient_state: Dictionary) -> Array[String]:
+	# Prefer per-patient protocol sequence from scenario JSON
+	# Filter to only steps that generate telemetry events (UI-only steps excluded)
+	var json_seq: Array = patient_state.get("correct_protocol_sequence", [])
+	if not json_seq.is_empty():
+		var telemetry_steps: Array[String] = [
+			"scene_safety_check", "assess_consciousness", "call_for_help",
+			"assess_airway", "assess_breathing", "assess_pulse",
+			"control_bleeding", "head_tilt_chin_lift", "jaw_thrust", "open_airway",
+			"cpr", "aed", "oxygen_mask", "bag_valve_mask", "triage_assign",
+			"assess_bleeding", "assess_disability", "assess_exposure",
+		]
+		var seq: Array[String] = []
+		for step: Variant in json_seq:
+			var s: String = str(step)
+			if s in telemetry_steps:
+				seq.append(s)
+		if not seq.is_empty():
+			return seq
+
+	# Fallback: generic BCLS protocol
 	var seq: Array[String] = []
 
 	if protocol_id == "BCLS":
+		seq.append("scene_safety_check")
 		seq.append("assess_consciousness")
+		seq.append("call_for_help")
+		seq.append("assess_airway")
 		seq.append("assess_breathing")
 		seq.append("assess_pulse")
 
@@ -223,21 +268,35 @@ func _get_expected_sequence(protocol_id: String, patient_state: Dictionary) -> A
 			seq.append("cpr")
 			seq.append("aed")
 		if patient_state.get("bleeding", false):
-			seq.append("apply_bandage")
+			seq.append("control_bleeding")
 
 		seq.append("reassess")
 
 	return seq
 
 
-## Extract patient state info from telemetry events.
+## Extract patient state info from telemetry events + scenario JSON data.
 func _get_patient_state_from_events(patient_id: String, events: Array) -> Dictionary:
 	var info := {
 		"had_cardiac_arrest": false,
 		"no_pulse": false,
 		"airway_obstructed": false,
 		"bleeding": false,
+		"correct_protocol_sequence": [],
 	}
+
+	# Try to get per-patient protocol sequence from scenario data
+	var sm: Node = get_node_or_null("/root/ScenarioManager")
+	if sm and "current_scenario" in sm:
+		var scenario: Dictionary = sm.current_scenario
+		var patients: Array = scenario.get("patients", [])
+		for patient_def: Dictionary in patients:
+			var persona: Dictionary = patient_def.get("persona", {})
+			var p_name: String = persona.get("name", "")
+			# Match by name (patient_id in telemetry is the node name which contains the persona name)
+			if p_name != "" and p_name in patient_id:
+				info["correct_protocol_sequence"] = patient_def.get("correct_protocol_sequence", [])
+				break
 
 	for event: Dictionary in events:
 		if event.get("target", "") != patient_id:

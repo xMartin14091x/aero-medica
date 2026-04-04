@@ -51,8 +51,8 @@ const PALETTE := {
 		"border_hover":   Color(0.200, 0.467, 0.863),   # #3377DC
 		"border_active":  Color(0.200, 0.467, 0.863),   # #3377DC
 		"text_primary":   Color(0.129, 0.145, 0.196),   # #212532
-		"text_secondary": Color(0.400, 0.420, 0.490),   # #666B7D
-		"text_muted":     Color(0.600, 0.616, 0.680),   # #999DAD
+		"text_secondary": Color(0.330, 0.350, 0.420),   # #54596B
+		"text_muted":     Color(0.450, 0.465, 0.530),   # #737788
 		"accent_blue":    Color(0.200, 0.467, 0.863),   # #3377DC
 		"accent_green":   Color(0.173, 0.612, 0.424),   # #2C9C6C
 		"accent_yellow":  Color(0.878, 0.580, 0.000),   # #E09400
@@ -103,6 +103,32 @@ const SPACING := {
 
 func _ready() -> void:
 	_load_config()
+	current_mode = "dark"  # Force dark mode
+
+
+## Apply a global Theme to the project so ALL controls get readable defaults.
+func _apply_global_theme() -> void:
+	var global_theme := Theme.new()
+	# Button defaults
+	global_theme.set_color("font_color", "Button", c("text_primary"))
+	global_theme.set_color("font_hover_color", "Button", c("accent_blue"))
+	global_theme.set_color("font_pressed_color", "Button", c("accent_blue"))
+	global_theme.set_color("font_disabled_color", "Button", c("text_muted"))
+	global_theme.set_color("font_focus_color", "Button", c("text_primary"))
+	# Label defaults
+	global_theme.set_color("font_color", "Label", c("text_primary"))
+	# OptionButton defaults
+	global_theme.set_color("font_color", "OptionButton", c("text_primary"))
+	global_theme.set_color("font_hover_color", "OptionButton", c("accent_blue"))
+	global_theme.set_color("font_pressed_color", "OptionButton", c("text_primary"))
+	global_theme.set_color("font_focus_color", "OptionButton", c("text_primary"))
+	# PopupMenu defaults
+	global_theme.set_color("font_color", "PopupMenu", c("text_primary"))
+	global_theme.set_color("font_hovered_color", "PopupMenu", c("accent_blue"))
+	# Apply to tree root — all controls inherit from here
+	var root := get_tree().root
+	if root:
+		root.theme = global_theme
 
 
 ## ── Public API ───────────────────────────────────────────────────
@@ -114,17 +140,14 @@ func c(key: String) -> Color:
 
 ## Set the theme mode and notify all listeners.
 func set_mode(mode: String) -> void:
-	if mode not in ["dark", "light"]:
-		push_warning("ThemeMedical: Invalid mode '%s'. Use 'dark' or 'light'." % mode)
-		return
-	current_mode = mode
-	_save_config()
-	theme_changed.emit(mode)
+	# Dark mode only — light mode disabled for v1.0
+	current_mode = "dark"
 
 
 ## Toggle between dark and light.
 func toggle_mode() -> void:
-	set_mode("light" if current_mode == "dark" else "dark")
+	# Dark mode only — light mode disabled for v1.0
+	pass
 
 
 ## ── StyleBox Builders ────────────────────────────────────────────
@@ -286,7 +309,8 @@ func style_button(btn: Button, size: String = "normal") -> void:
 	btn.add_theme_stylebox_override("disabled", make_btn_disabled())
 	btn.add_theme_color_override("font_color", c("text_primary"))
 	btn.add_theme_color_override("font_hover_color", c("accent_blue"))
-	btn.add_theme_color_override("font_pressed_color", Color.WHITE if current_mode == "dark" else c("text_primary"))
+	btn.add_theme_color_override("font_pressed_color", c("accent_blue"))
+	btn.add_theme_color_override("font_focus_color", c("text_primary"))
 	btn.add_theme_color_override("font_disabled_color", c("text_muted"))
 	match size:
 		"small":
@@ -310,13 +334,67 @@ func style_input(input: LineEdit) -> void:
 	input.custom_minimum_size.y = SPACING.input_height
 
 
-## Apply themed styling to an OptionButton.
+## Apply themed styling to an OptionButton + its dropdown popup.
 func style_option_button(btn: OptionButton) -> void:
 	btn.add_theme_stylebox_override("normal", make_input())
 	btn.add_theme_stylebox_override("hover", make_input_focus())
 	btn.add_theme_stylebox_override("pressed", make_input_focus())
+	btn.add_theme_stylebox_override("disabled", make_btn_disabled())
 	btn.add_theme_color_override("font_color", c("text_primary"))
+	btn.add_theme_color_override("font_hover_color", c("accent_blue"))
+	btn.add_theme_color_override("font_pressed_color", c("text_primary"))
+	btn.add_theme_color_override("font_focus_color", c("text_primary"))
+	btn.add_theme_color_override("font_disabled_color", c("text_muted"))
 	btn.add_theme_font_size_override("font_size", FONT_SIZES.body)
+	# Style the dropdown popup to match theme
+	if btn.is_inside_tree():
+		_style_option_popup(btn)
+	else:
+		btn.ready.connect(_style_option_popup.bind(btn), CONNECT_ONE_SHOT)
+
+
+## Style the PopupMenu of an OptionButton.
+func _style_option_popup(btn: OptionButton) -> void:
+	var popup := btn.get_popup()
+	if not popup:
+		return
+	# Panel background
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = c("bg_card")
+	panel_style.border_width_left = 1
+	panel_style.border_width_right = 1
+	panel_style.border_width_top = 1
+	panel_style.border_width_bottom = 1
+	panel_style.border_color = c("border")
+	panel_style.corner_radius_top_left = SPACING.corner_radius
+	panel_style.corner_radius_top_right = SPACING.corner_radius
+	panel_style.corner_radius_bottom_left = SPACING.corner_radius
+	panel_style.corner_radius_bottom_right = SPACING.corner_radius
+	panel_style.shadow_color = c("shadow")
+	panel_style.shadow_size = 4
+	panel_style.shadow_offset = Vector2(0, 2)
+	panel_style.content_margin_left = 4
+	panel_style.content_margin_right = 4
+	panel_style.content_margin_top = 4
+	panel_style.content_margin_bottom = 4
+	popup.add_theme_stylebox_override("panel", panel_style)
+	# Item hover
+	var hover_style := StyleBoxFlat.new()
+	hover_style.bg_color = c("btn_hover")
+	hover_style.corner_radius_top_left = 4
+	hover_style.corner_radius_top_right = 4
+	hover_style.corner_radius_bottom_left = 4
+	hover_style.corner_radius_bottom_right = 4
+	hover_style.content_margin_left = 8
+	hover_style.content_margin_right = 8
+	hover_style.content_margin_top = 4
+	hover_style.content_margin_bottom = 4
+	popup.add_theme_stylebox_override("hover", hover_style)
+	# Text colors
+	popup.add_theme_color_override("font_color", c("text_primary"))
+	popup.add_theme_color_override("font_hovered_color", c("accent_blue"))
+	popup.add_theme_color_override("font_accelerator_color", c("text_muted"))
+	popup.add_theme_font_size_override("font_size", FONT_SIZES.body)
 
 
 ## Apply themed styling to a PanelContainer (card).
