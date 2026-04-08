@@ -4,256 +4,220 @@
 **Track:** การแพทย์
 **Team:** Ollama Paramedic
 **Total Time:** 10:00
+**Slides:** 15 (matching the slide deck)
 
 ---
 
 ## Slide 1 — Title (0:00 - 0:15) [15 sec]
 
-**Visual:** AeroMedica banner + team name + track + tagline + team member names
+**Visual:** Large title, subtitle, team name, event name
 
 **Script:**
 "สวัสดีครับ ทีม Ollama Paramedic นำเสนอ AeroMedica: Protocol Playground ระบบจำลองการฝึกอบรมแพทย์ฉุกเฉินแบบ 3 มิติ ที่ออกแบบมาเพื่อเปลี่ยนการเรียนรู้จากตำราเรียนแบบ Passive ให้เป็นการฝึกปฏิบัติแบบ Active สำหรับบุคลากรทางการแพทย์ฉุกเฉินครับ"
 
 ---
 
-## Slide 2 — Problem Statement (0:15 - 1:15) [60 sec]
+## Slide 2 — วิกฤตการถดถอยของทักษะ (0:15 - 1:05) [50 sec]
 
-**Visual:** Two charts side by side — skill degradation curve + pass rate timeline
+**Visual:** Survival curve graph, two research stat callouts, bottom text
 
 **Script:**
 "ก่อนอื่นขอเล่าถึงปัญหาที่เราต้องการแก้ไขครับ
 
-ในวงการแพทย์ฉุกเฉิน ทักษะที่ได้จากการฝึกอบรมเสื่อมถอยอย่างรวดเร็ว งานวิจัยของ Stept & Stross ตีพิมพ์ใน Annals of Emergency Medicine พบว่าทักษะ Paramedic ลดลงถึง 61% ภายใน 2 ปีหลังจบการฝึก และงานวิจัยของ Smith และคณะพบว่า ACLS pass rate ลดจากเกือบ 100% เหลือเพียง 14% ในเวลาเพียง 12 เดือน
+ในวงการแพทย์ฉุกเฉิน ทักษะที่ได้จากการฝึกอบรมเสื่อมถอยอย่างรวดเร็ว จากกราฟที่เห็น งานวิจัยของ Smith และคณะพบว่า ACLS pass rate ลดลง 86% เหลือเพียง 14% ในเวลาเพียง 12 เดือน และงานวิจัยของ Stept & Stross ใน Annals of Emergency Medicine พบว่าทักษะ Paramedic ลดลงถึง 61% ภายใน 2 ปี
 
-ปัจจุบันการฝึกซ้อมสถานการณ์จริงมีข้อจำกัดหลายประการ ต้องใช้หุ่นจำลองราคาแพง ต้องมีสถานที่และผู้ฝึกสอน จัดได้เพียงไม่กี่ครั้งต่อปี และที่สำคัญที่สุดคือทำซ้ำในสถานการณ์เดิมไม่ได้
-
-ผลลัพธ์คือ บุคลากรที่ผ่านการฝึกอบรมมาอย่างดี กลับสูญเสียทักษะวิกฤตไปก่อนที่จะได้ใช้งานจริง สิ่งที่ต้องการคือเครื่องมือที่ฝึกซ้ำได้ทุกวัน โดยไม่ต้องพึ่งพาทรัพยากรภายนอกครับ"
-
-**Key Points:**
-- 61% skill degradation in 2 years (Stept & Stross, 1980, Annals of Emergency Medicine)
-- ACLS pass rate drops to 14% at 12 months (Smith et al., 2008)
-- Real drill constraints: expensive mannequins, venue, instructors, low frequency
-- Non-repeatable scenarios — can't practice the same case twice
-- The gap: well-trained personnel losing critical skills before they're needed
+ทักษะที่สำคัญในเคสวิกฤตคือทักษะที่สูญเสียเร็วที่สุด แต่การฝึกอบรมซ้ำแบบเดิมมีราคาสูงและถูกจำกัดด้วยสถานที่ครับ"
 
 ---
 
-## Slide 3 — Solution Overview (1:15 - 2:00) [45 sec]
+## Slide 3 — เครื่องมือเสริมเพื่ออุดช่องโหว่ (1:05 - 1:40) [35 sec]
 
-**Visual:** Game screenshot (isometric view) + annotated feature callouts
+**Visual:** Hospital bed → "Supplement, Not Replace" arrow → Laptop + 3 feature boxes
 
 **Script:**
-"AeroMedica: Protocol Playground คือคำตอบของเราครับ เป็นเกมจำลองสถานการณ์ฉุกเฉินแบบ 3 มิติ มุมมอง Isometric พัฒนาด้วย Godot 4.6
+"AeroMedica คือเครื่องมือเสริมเพื่ออุดช่องโหว่นี้ครับ เราไม่ได้มาทดแทนการฝึกจริง แต่เป็น Supplement ที่ช่วยให้บุคลากรฝึกซ้ำได้ด้วยตนเอง ฟรี ทำได้ทุกที่
 
-ผู้เล่นรับบทเป็น EMT ที่ต้องประเมินผู้ป่วยตามมาตรฐานจริงทุกขั้นตอน ตั้งแต่ DRSABCDE Primary Survey 8 ขั้นตอน, วัด Vital Signs 8 ค่าโดยต้อง Deploy อุปกรณ์ก่อนอ่านค่า, อ่าน ECG 7 จังหวะหัวใจ, ประเมิน GCS, ตรวจร่างกาย Head-to-Toe 7 บริเวณพร้อมระบุความรุนแรง, ซักประวัติด้วย SAMPLE ผ่าน AI, ให้ยาตามขนาดและช่องทางที่ถูกต้อง, ทำ CPR + AED พร้อม ROSC Logic, คัดแยกด้วย START Triage 4 ระดับ, และวินิจฉัยแยกโรคจาก 47 อาการ
-
-ทั้งหมดนี้ทำงานออฟไลน์สมบูรณ์ ไม่ต้องพึ่งพาอินเทอร์เน็ต และรองรับ 2 ภาษาทั้งไทยและอังกฤษครับ"
-
-**Key Points:**
-- Godot 4.6, 3D isometric
-- Complete clinical workflow: DRSABCDE → Vitals → ECG → GCS → HtT → SAMPLE → Drug Admin → CPR/AED → Triage → DDx
-- 100% offline, bilingual TH/EN
+จุดเด่น 3 ข้อ: หนึ่ง — ทำงานออฟไลน์ 100% ทลายข้อจำกัดด้านสถานที่ สอง — AI ประเมินผลอัตโนมัติโดยไม่ต้องใช้ผู้สอน สาม — ฝึกซ้ำได้โดยไม่มีความเสี่ยงต่อผู้ป่วยจริงครับ"
 
 ---
 
-## Slide 4 — Live Demo Part 1: Tutorial (2:00 - 4:00) [120 sec]
+## Slide 4 — ภายใต้แรงกดดันของเวลา (1:40 - 2:15) [35 sec]
 
-**Visual:** Switch to live game OR pre-recorded video
+**Visual:** Circular gameplay loop (Spawn → Approach → Assess & Treat → AI Feedback), central timer, deterioration bar
 
 **Script:**
+"Gameplay Loop ของเราเป็นแบบนี้ครับ ผู้เล่นเข้าสู่สถานการณ์ 3 มิติ เข้าถึงตัวผู้ป่วยอย่างรวดเร็ว ประเมินอาการและให้การรักษา แล้วรับ AI Feedback หลังจบ
 
-"เพื่อให้เห็นภาพการทำงานจริง เราขอสาธิตผ่านฉาก Tutorial ครับ ในฉากนี้เราพบผู้ป่วย 1 ราย คือคุณสมชาย อายุ 28 ปี ประสบอุบัติเหตุหกล้ม
-
-**ขั้นตอนแรก — Primary Survey**
-เราเริ่มประเมินตามลำดับ DRSABCDE โดยกดปุ่มตามขั้นตอน ตั้งแต่ประเมินความปลอดภัยของที่เกิดเหตุ ระดับการรู้สึกตัว ทางเดินหายใจ การหายใจ ไปจนถึงระบบไหลเวียนเลือด สังเกตว่าปุ่มแต่ละปุ่มมี Cooldown ป้องกันการกดรัว — เหมือนในสถานการณ์จริงที่ต้องใช้เวลาทำแต่ละขั้นตอน ระบบจะบันทึกลำดับทุกขั้นตอนเพื่อนำไปเปรียบเทียบกับ Protocol ที่ถูกต้อง
-
-**ขั้นตอนที่สอง — Head-to-Toe**
-จากนั้นเราตรวจร่างกายทีละส่วน เมื่อคลิกที่ศีรษะ ระบบแสดงผลว่าพบแผลฉีกขนาดเล็กที่หน้าผาก GCS 15 สังเกตเครื่องหมายสีเหลืองที่บ่งบอกว่าเป็นอาการสำคัญ ส่วนเครื่องหมายสีแดงคืออาการวิกฤตที่ต้องรักษาทันที ข้อมูลทั้งหมดนี้ผ่านการตรวจสอบความถูกต้องทางคลินิกแล้วครับ
-
-**ขั้นตอนที่สาม — SAMPLE History**
-เราซักประวัติผู้ป่วยผ่านระบบ AI ออฟไลน์ คุณสมชายจะตอบกลับอย่างเป็นธรรมชาติ เช่น 'ผมลื่นล้มหัวฟาดราวครับ' พร้อมให้ข้อมูลประวัติแพ้ยา ยาที่ใช้ และโรคประจำตัว
-
-**ขั้นตอนที่สี่ — การรักษาเบื้องต้น**
-เราเปิดกระเป๋าพยาบาลเพื่อเลือกอุปกรณ์ กระเป๋ามี 2 ระดับ: BLS สำหรับฉากพื้นฐาน และ ALS สำหรับฉากขั้นสูงที่มียาฉีดและอุปกรณ์เพิ่มเติม อุปกรณ์แต่ละชิ้นมีจำนวนจำกัด โดยเฉพาะในฉาก Mass Casualty ที่มีผู้ป่วย 6 คนแต่อุปกรณ์เท่าเดิม ผู้เล่นต้องบริหารทรัพยากรเอง
-
-**ขั้นตอนสุดท้าย — Triage และ Diagnosis**
-เนื่องจากสัญญาณชีพคงที่และเดินได้ เราติดป้าย Triage สีเขียว และเลือกคำวินิจฉัยว่า Minor Bleeding และ Soft Tissue Injury ซึ่งตรงกับคำตอบที่ถูกต้องในฐานข้อมูลทางการแพทย์ ทำให้ได้คะแนนเต็มในหมวด Decision Quality ครับ"
-
-**Demo Flow:**
-1. Open Tutorial → walk to Somchai
-2. DRSABCDE → show cooldown rings on buttons
-3. Head-to-Toe → click Head → show severity marker (yellow)
-4. SAMPLE History → show chat bubbles with AI response
-5. Medical Bag → show BLS/ALS tier label → apply Bandage + Pressure Dressing
-6. Triage → GREEN tag → show tag applied
-7. DDx → search "Minor" → select correct → show score
+สิ่งที่สำคัญคือ ผู้ป่วยทรุดลงแบบ Real-time ตลอดเวลา ถ้าไม่รักษาทันเวลา ผู้ป่วยจะเปลี่ยนจาก Conscious ไปเป็น Unconscious ไปเป็น Cardiac Arrest จนเสียชีวิตได้จริง สร้างแรงกดดันเหมือนสถานการณ์จริงครับ"
 
 ---
 
-## Slide 5 — Scenarios & Difficulty Scaling (4:00 - 5:00) [60 sec]
+## Slide 5 — 4 แผงควบคุม, 1 ผู้ป่วย (2:15 - 3:10) [55 sec]
 
-**Visual:** 5 scenario cards with screenshots — difficulty progression
+**Visual:** 2x2 grid — TALK, EXAMINE, TREAT, DIAGNOSE panels
 
 **Script:**
-"นอกจาก Tutorial เรามี 5 สถานการณ์ที่ไล่ระดับความยากขึ้นครับ
+"สำหรับแต่ละผู้ป่วย ผู้เล่นใช้ 4 แผงควบคุมครับ
 
-**Tutorial** — 1 ผู้ป่วย ไม่จำกัดเวลา เหมาะสำหรับเรียนรู้ระบบ
+TALK — สนทนากับผู้ป่วยผ่าน AI ออฟไลน์ นี่คือ Exclusive Feature ที่ไม่มีในเกมจำลองอื่น ผู้ป่วยตอบกลับอย่างเป็นธรรมชาติตามข้อมูลทางการแพทย์ของตัวเอง
 
-**Road Traffic Accident** — อุบัติเหตุจราจร 3 ผู้ป่วยที่มีอาการต่างกัน ตั้งแต่คนที่เดินได้จนถึงคนที่หมดสติ ต้องตัดสินใจว่าจะรักษาใครก่อน
+EXAMINE — ประเมินตาม DRSABCDE 8 ขั้นตอน ตรวจวัด Vital Signs 8 ค่าโดยต้อง Deploy อุปกรณ์ก่อนอ่านค่า อ่าน ECG 7 จังหวะหัวใจ และประเมิน GCS
 
-**Cardiac Arrest** — หัวใจหยุดเต้น 1 ผู้ป่วย จำกัดเวลา 5 นาที ต้องทำ CPR กดหลังประเมิน Pulse เท่านั้น ใช้ AED ตรวจจังหวะหัวใจ ถ้าเป็น Shockable rhythm จะ Shock ได้ มีโอกาส ROSC 70% หลัง AED
+TREAT — กระเป๋ายา BLS หรือ ALS ทำ CPR ได้หลังประเมิน Pulse เท่านั้น ใช้ AED ตรวจจังหวะหัวใจ รองรับ ROSC Logic และให้ยาตามขนาดและช่องทาง
 
-**Building Fire** — อาคารไฟไหม้ 3 ผู้ป่วย พร้อม Hazard Zone ที่ไฟทำอันตรายผู้เล่นจริง ถ้ายืนในโซนไฟนาน 15 วินาที EMT จะ Incapacitated เล่นต่อไม่ได้
-
-**Mass Casualty Incident** — ระเบิดตลาด 6 ผู้ป่วยพร้อมกัน ตั้งแต่สีเขียวถึงสีดำ ต้องคัดแยกภายใต้แรงกดดันของเวลา อุปกรณ์จำกัด และมีผู้ป่วยรายใหม่เข้ามาระหว่างเล่น
-
-ผู้ป่วยทุกคนมี สัญญาณชีพ ประวัติ อาการ และ Deterioration Rate เฉพาะตัว — ถ้าไม่รักษาทันเวลา ผู้ป่วยจะเสื่อมถอยจาก Conscious ไปจนถึงเสียชีวิตได้จริงครับ"
-
-**Key Points:**
-- 5 scenarios: Tutorial → RTA → Cardiac → Fire → MCI
-- Difficulty 1/5 to 5/5
-- Patient deterioration: CONSCIOUS → UNCONSCIOUS → CARDIAC_ARREST → DEAD
-- Hazard zones (fire damage to EMT)
-- Resource management: limited equipment across multiple patients
-- Random events: new patient arrives mid-scenario in MCI
+DIAGNOSE — วินิจฉัยแยกโรคจาก 47 อาการ ใน 6 หมวดหมู่ แต่ละผู้ป่วยมีคำวินิจฉัยที่ถูกต้องเฉพาะตัวที่ผ่านการรับรองครับ"
 
 ---
 
-## Slide 6 — AI System Deep Dive (5:00 - 6:00) [60 sec]
+## Slide 6 — ความแม่นยำตามโปรโตคอลจริง (3:10 - 3:55) [45 sec]
 
-**Visual:** Architecture diagram: Ollama → 2 roles → Fallback path
+**Visual:** 4 verification badges + RTA case study with body diagram
 
 **Script:**
-"ระบบ AI ของเราใช้ Ollama กับ llama3.1:8b ทำงานบนเครื่องผู้เล่นโดยตรง ไม่ส่งข้อมูลออกนอกเครือข่าย เลือก Ollama เพราะทำงานออฟไลน์ได้ 100% ไม่ต้องพึ่งพา Cloud API
+"ข้อมูลทางการแพทย์ทุกชิ้นในเกมผ่านการตรวจสอบความถูกต้องทางคลินิกครับ ทั้ง DRSABCDE, START Triage, ACLS/BLS Protocol, และ GCS Scoring
 
-AI มี 2 บทบาทครับ
+ตัวอย่างเช่นฉากอุบัติเหตุจราจร มีผู้ป่วย 3 รายที่มีลักษณะอาการต่างกัน — คนที่หนึ่ง Head Injury GCS 8 คนที่สอง Chest Trauma SpO2 90% คนที่สาม Leg Fracture BP 100/50
 
-**บทบาทที่หนึ่ง — Patient Dialogue** AI รับบทเป็นผู้ป่วยจำลอง ตอบคำถามตามข้อมูลทางการแพทย์ของตัวเอง ชื่อ อายุ อาการ ประวัติ ยาที่ใช้ ทั้งหมดถูกกำหนดไว้ใน PatientPersona ทำให้ AI ตอบสอดคล้องกับสถานการณ์
-
-**บทบาทที่สอง — AI Reviewer** หลังจบสถานการณ์ AI วิเคราะห์ Telemetry ทั้งหมดที่ระบบบันทึกไว้ — ลำดับการประเมิน การใช้ยา เวลาที่ใช้ สถานะผู้ป่วยขณะให้ยา แล้วสร้าง Feedback เป็นภาษาไทยหรืออังกฤษ
-
-**ระบบ Auto-Discovery** เกมจะค้นหา Ollama อัตโนมัติบน localhost, 127.0.0.1, และ IP ทุกตัวในเครือข่าย LAN ไม่ต้องตั้งค่าใดๆ
-
-**Fallback** ตัวเกมรันได้บนทุกเครื่อง ส่วน AI แนะนำ RAM 8GB ขึ้นไป หากเครื่องไม่รองรับ ระบบจะใช้ Cached Review ที่เตรียมไว้ 70 รายการ ครอบคลุมทุกสถานการณ์ ทุกระดับผลงาน ทั้ง 2 ภาษา แทนโดยอัตโนมัติ ผู้เล่นได้รับ feedback ทุกกรณีครับ"
-
-**Key Points:**
-- Ollama llama3.1:8b — local, offline, no cloud dependency
-- Role 1: Patient dialogue grounded in PatientPersona data
-- Role 2: Post-scenario Telemetry analysis → structured feedback
-- Auto-discovery: localhost + 127.0.0.1 + all LAN IPs on port 11434
-- Cached fallback: 70 reviews (7 scenarios x 5 tiers x 2 languages)
-- Game works on any machine; AI is a bonus layer
+การวินิจฉัยแยกโรคตรงตามรอยโรคจริง ไม่ใช่การสุ่ม อัลกอริทึมและขนาดยาทั้งหมดอ้างอิงตามมาตรฐาน EMS สากลครับ"
 
 ---
 
-## Slide 7 — Scoring & Debrief (6:00 - 7:00) [60 sec]
+## Slide 7 — ระดับความรุนแรงของสถานการณ์ (3:55 - 4:50) [55 sec]
 
-**Visual:** Debrief screen (radar chart + AI text) + Dashboard (2 tabs)
+**Visual:** Left difficulty list (1/5 to 5/5) + right clinical timeline (CONSCIOUS → DEAD)
 
 **Script:**
-"เมื่อจบสถานการณ์ ระบบวิเคราะห์ผลงานผ่าน Scoring Engine ที่ให้คะแนน 5 แกนครับ
+"เรามี 5 สถานการณ์ที่ไล่ระดับความยากขึ้นครับ
 
-**Triage Speed** — ทำ triage แรกภายใน 1 นาทีได้คะแนนเต็ม ยิ่งช้าคะแนนยิ่งลด
-**Protocol Accuracy** — ระบบเปรียบเทียบลำดับการกระทำของผู้เล่นกับ Protocol ที่ถูกต้อง
-**Decision Quality** — ป้าย Triage ตรงกับสถานะผู้ป่วยหรือไม่ วินิจฉัยถูกต้องหรือไม่
-**Equipment Handling** — เลือกอุปกรณ์เหมาะสมกับอาการหรือไม่
-**Patient Outcome** — ผู้ป่วยรอดหรือเสียชีวิต สถานะสุดท้ายเทียบกับสถานะเริ่มต้น
+Tutorial — 1 ผู้ป่วย ไม่จำกัดเวลา เหมาะสำหรับเรียนรู้ระบบ
 
-ผลแสดงเป็น Radar Chart ให้เห็นจุดแข็งจุดอ่อนในทันที
+Road Traffic Accident — อุบัติเหตุจราจร 3 ผู้ป่วย จำกัด 10 นาที ต้องตัดสินใจว่าจะรักษาใครก่อน
 
-AI Reviewer ให้ Feedback ละเอียดเป็นภาษาธรรมชาติ วิเคราะห์ว่าทำอะไรถูก ทำอะไรพลาด และให้คำแนะนำเฉพาะเจาะจง
+Cardiac Arrest — หัวใจหยุดเต้น จำกัด 5 นาที ต้องทำ CPR + AED มีโอกาส ROSC 70% หลัง Shock
 
-Dashboard ติดตามพัฒนาการ มี 2 แท็บ: ผลงานของฉัน แสดงภาพรวมและแนวโน้ม กับ แยกตามสถานการณ์ ที่เจาะลึกแต่ละฉาก ส่งออกข้อมูลเป็น CSV หรือ JSON สำหรับสถาบันที่ต้องการวิเคราะห์เพิ่มเติมครับ"
+Building Fire — อาคารไฟไหม้ 3 ผู้ป่วย จำกัด 8 นาที มี Hazard Zone ไฟทำอันตราย EMT จริง ยืน 15 วินาทีหมดสภาพ
 
-**Key Points:**
-- 5 axes explained with what each measures
-- Radar chart for visual strength/weakness identification
-- AI natural language feedback — specific, actionable
-- Dashboard 2 tabs: My Performance + Scenario Breakdown
-- Trend graphs + CSV/JSON export for institutional analysis
+Mass Casualty — ระเบิดตลาด 6 ผู้ป่วย บวกอีก 1 คนที่เข้ามาระหว่างเล่น จำกัด 15 นาที อุปกรณ์จำกัด ต้องคัดแยกภายใต้แรงกดดันของเวลา
+
+ทุกสถานการณ์ผู้ป่วย Deteriorate ตามเวลาจริง จาก Conscious จนถึงเสียชีวิตได้ ตามที่เห็นใน Clinical Timeline ครับ"
 
 ---
 
-## Slide 8 — Business Model & Target (7:00 - 7:40) [40 sec]
+## Slide 8 — Privacy by Design, 100% Offline (4:50 - 5:35) [45 sec]
 
-**Visual:** B2B model diagram + target customer list
+**Visual:** Architecture diagram — Local Device box, AI Engine, crossed-out internet, Offline Cache
 
 **Script:**
-"กลุ่มเป้าหมายของเราคือ B2B ครับ สถาบันฝึกอบรมแพทย์ฉุกเฉิน โรงพยาบาล สถาบันการศึกษาทางการแพทย์ และหน่วยงาน EMS
+"ระบบ AI ของเราใช้ Ollama กับ llama3.1:8b ทำงานบนเครื่องผู้เล่นโดยตรง ข้อมูลผู้ป่วยไม่เคยหลุดออกจากเครื่อง ไม่มีการส่งข้อมูลไปยัง Server ภายนอกใดๆ ทั้งสิ้น
 
-จุดขายหลักคือ Zero Infrastructure Cost — ไม่ต้องมี server ไม่ต้องมี subscription ไม่มีข้อมูลนักเรียนออกนอกอาคาร ทุกอย่างทำงานบนเครื่องในห้องเรียน
+เลือก Ollama เพราะทำงานออฟไลน์ได้ 100% AI มี 2 บทบาท: เป็นผู้ป่วยจำลองที่ตอบคำถาม และเป็นผู้ตรวจประเมินที่วิเคราะห์ผลงาน
 
-สถาบันสามารถติดตั้งบนเครื่องคอมพิวเตอร์ในห้องแล็บ เปิดให้นักเรียนฝึกซ้ำได้ไม่จำกัดจำนวนครั้ง โดยไม่ต้องจ่ายค่าใช้จ่ายรายเดือน ข้อมูลทั้งหมดอยู่ในเครื่อง สอดคล้องกับนโยบายความปลอดภัยข้อมูลของสถาบันการศึกษาครับ"
-
-**Key Points:**
-- B2B: EMT training institutions, hospitals, medical schools, EMS agencies
-- Zero infrastructure: no server, no subscription, no recurring cost
-- Data stays on-premises — privacy compliant
-- Unlimited practice sessions per student
-- Cross-platform via Godot export
+ตัวเกมรันได้บนทุกเครื่อง ส่วน AI แนะนำ RAM 8GB ขึ้นไป หากเครื่องไม่รองรับ ระบบจะใช้ Cached Review 70 รายการ ครอบคลุมทุกสถานการณ์ ทุกระดับผลงาน ทั้ง 2 ภาษา แทนโดยอัตโนมัติ ผู้เล่นได้รับ feedback ทุกกรณีครับ"
 
 ---
 
-## Slide 9 — Development Process (7:40 - 8:20) [40 sec]
+## Slide 9 — วัดผล, ติดตาม, พัฒนา (5:35 - 6:20) [45 sec]
 
-**Visual:** Timeline graphic (Phase 0-8) + key numbers
+**Visual:** 5-axis radar chart + improvement trend graph + Silent Telemetry + Data Export boxes
 
 **Script:**
-"AeroMedica พัฒนาใน 25 วัน 86 เซสชัน ตั้งแต่วันที่ 7 ถึง 31 มีนาคม 2569
+"เมื่อจบสถานการณ์ ระบบให้คะแนน 5 แกนอัตโนมัติครับ
 
-ใช้กระบวนการ Agile Iterative แบบ Phase-based 9 เฟส ตั้งแต่โครงสร้างพื้นฐาน ระบบ Gameplay หลัก ระบบทางการแพทย์ AI Pipeline สภาพแวดล้อม UI ขั้นสูง Scoring Bug Fixing จนถึง Polish สุดท้าย
+Triage Speed — ทำ triage แรกภายใน 1 นาทีได้เต็ม Protocol Accuracy — ลำดับการกระทำเทียบกับ Protocol ที่ถูกต้อง Decision Quality — ป้าย Triage และวินิจฉัยถูกต้องหรือไม่ Equipment Handling — เลือกอุปกรณ์เหมาะสมกับอาการ Patient Outcome — ผู้ป่วยรอดหรือเสียชีวิต
 
-ทุกการเปลี่ยนแปลงโค้ดต้องมี Ticket ก่อน ทุกเซสชันถูกบันทึกใน Development Log AI ที่ใช้ในกระบวนการพัฒนาเปิดเผยทั้งหมดใน CONTRIBUTION.md — ทีมเป็นผู้ตัดสินใจ ออกแบบ และควบคุมทุกจุด AI เป็นเครื่องมือเฉพาะทางครับ"
-
-**Key Points:**
-- 25 days, 86 sessions (7-31 March 2026)
-- 9 phases: Infrastructure → Gameplay → Medical → AI → Environment → UI → Scoring → Bug Fixing → Polish
-- Ticket-driven: no code without ticket
-- Full development log documented
-- AI tools disclosed transparently in CONTRIBUTION.md
+Dashboard ติดตามพัฒนาการตามเวลา มีกราฟแสดงแนวโน้มคะแนน และส่งออกข้อมูลเป็น CSV หรือ JSON สำหรับสถาบันที่ต้องการวิเคราะห์เพิ่มเติมครับ"
 
 ---
 
-## Slide 10 — Future Roadmap (8:20 - 9:00) [40 sec]
+## Slide 10 — การเปลี่ยนกระบวนทัศน์ (6:20 - 6:45) [25 sec]
 
-**Visual:** Roadmap timeline — v1.0 (now) → v2.0 features
+**Visual:** 3-row comparison table: Traditional Training vs AeroMedica
 
 **Script:**
-"สำหรับแผนพัฒนาต่อไปครับ
-
-**Instructor Web Dashboard** — ระบบเว็บสำหรับผู้สอนดูข้อมูลนักเรียนแบบ real-time ผ่าน LAN ผู้สอนเปิด browser เห็นว่านักเรียนคนไหนกำลังเล่นฉากอะไร คะแนนเท่าไหร่ ติดขัดตรงไหน โดยไม่ต้องเดินไปดูทุกเครื่อง แผนนี้ได้รับการอนุมัติแล้วและพร้อมดำเนินการ
-
-**v2.0 Features** ตามคำแนะนำจากอาจารย์ที่ปรึกษา ได้แก่ Step-Up Timer ที่ผู้ป่วยที่ยังไม่ถูกประเมินจะเสื่อมถอยเร็วขึ้น บังคับให้ต้อง Triage จริงๆ, Adverse Drug Effects ที่ให้ยาผิดแล้วเห็นผลเสียบนจอ, และ Simplified Mode สำหรับผู้ที่ไม่ใช่บุคลากรทางการแพทย์
-
-สถานการณ์ใหม่เพิ่มได้ง่ายเพราะทุกอย่างขับเคลื่อนด้วย JSON ไม่ต้องแก้โค้ดครับ"
-
-**Key Points:**
-- Instructor Web Dashboard: FastAPI + SQLite + WebSocket, browser-based, LAN, approved and ready
-- v2.0 mentor-recommended features: Step-Up Timer, Adverse Drug Effects, Simplified Mode
-- JSON-driven scenario system — new scenarios without code changes
-- Scalable to more conditions, more patients, more hazard types
+"เมื่อเปรียบเทียบกับการฝึกแบบเดิม AeroMedica เปลี่ยน 3 สิ่ง: ความสมจริง — จากตำราภาพนิ่งเป็น 3 มิติโต้ตอบกับ AI, การประเมินผล — จากต้องใช้ผู้สอนเป็น AI วิเคราะห์ทันที, การเข้าถึง — จากต้องเดินทางไปศูนย์ฝึกเป็นรันออฟไลน์ได้ทุกที่ ไม่มีค่าใช้จ่ายต่อเซสชันครับ"
 
 ---
 
-## Slide 11 — Closing (9:00 - 10:00) [60 sec]
+## Slide 11 — เทคโนโลยี Open Source (6:45 - 7:10) [25 sec]
 
-**Visual:** Impact statement + key numbers + download QR/link + team
+**Visual:** Diamond layout — Godot, Ollama, JSON/CSV, Kenney CC0, Git + Ethical AI banner
 
 **Script:**
-"สรุปครับ AeroMedica: Protocol Playground ไม่ใช่แค่เกม แต่คือสะพานเชื่อมระหว่างห้องเรียนกับสถานการณ์ฉุกเฉินจริง
+"ทุกอย่างในโครงการเป็น Open Source ครับ Godot ไม่มีค่าลิขสิทธิ์, Ollama รัน Local AI ฟรี, ข้อมูลเป็น JSON/CSV รองรับกว่า 300 keys สองภาษา, Assets จาก Kenney ใช้งานฟรี 100%
 
-เราสร้างระบบที่ครอบคลุม Protocol ทางการแพทย์ฉุกเฉินตั้งแต่ DRSABCDE จนถึงการวินิจฉัยแยกโรค มี AI ที่ทำงานออฟไลน์สมบูรณ์ มี 5 สถานการณ์ที่ไล่ระดับความยาก ผู้ป่วย 14 คนที่แต่ละคนมีอาการเฉพาะตัว ระบบ Scoring 5 แกนพร้อม AI Feedback และ Dashboard ติดตามพัฒนาการ
+การใช้เครื่องมือ AI ในกระบวนการพัฒนา ทั้ง Claude Code และ Gemini มีการเปิดเผยอย่างโปร่งใสในไฟล์ CONTRIBUTION.md ครับ"
 
-ทั้งหมดนี้ไม่ต้องใช้อินเทอร์เน็ต ไม่ต้องมี server ข้อมูลไม่ออกนอกอาคาร พร้อมใช้งานได้ทันที
+---
 
-พัฒนาใน 25 วัน 86 เซสชัน พร้อมให้ดาวน์โหลดทดลองใช้ได้แล้ววันนี้ที่ Google Drive
+## Slide 12 — ระบบนิเวศ B2B (7:10 - 7:45) [35 sec]
+
+**Visual:** 3 columns: Hospitals, Institutions, Medical Schools + impact banner
+
+**Script:**
+"กลุ่มเป้าหมายของเราคือ B2B ครับ
+
+โรงพยาบาล — ทบทวนทักษะพนักงาน ER ได้ที่หน้างาน ลดต้นทุนหุ่นจำลองและผู้สอน สถาบันฝึกอบรม EMT — เป็นเครื่องมือเสริมสำหรับภาคปฏิบัติ โรงเรียนแพทย์ — นักศึกษาฝึกฝนได้ไม่จำกัดรอบ ทลายคอขวดด้านตารางเรียน
+
+ผลกระทบคือลดต้นทุนมหาศาล ขยายการเข้าถึงการฝึกอบรมระดับประเทศ โดยไม่มีความเสี่ยงต่อผู้ป่วยจริงครับ"
+
+---
+
+## Slide 13 — Instructor Web Dashboard (7:45 - 8:20) [35 sec]
+
+**Visual:** Flow: Game Clients → FastAPI + WebSocket Server → LAN Dashboard + Offline Queue box
+
+**Script:**
+"สำหรับแผนพัฒนาต่อไป Instructor Web Dashboard ครับ ผู้สอนเปิด browser บนอุปกรณ์ใดก็ได้ในเครือข่าย LAN เดียวกัน เห็นว่านักเรียนคนไหนกำลังเล่นฉากอะไร คะแนนเท่าไหร่ ติดขัดตรงไหน โดยไม่ต้องเดินไปดูทุกเครื่อง
+
+ใช้ FastAPI กับ SQLite ส่งข้อมูลเรียลไทม์ หากเน็ตเวิร์คหลุด ข้อมูลจะ queue ไว้แล้วซิงค์อัตโนมัติเมื่อเชื่อมต่อใหม่ แผนนี้เขียน Ticket ครบ 8 ใบ ได้รับการอนุมัติแล้วรอดำเนินการครับ"
+
+---
+
+## Slide 14 — ผลลัพธ์และวิสัยทัศน์ (8:20 - 9:05) [45 sec]
+
+**Visual:** Three large numbers [25] [86] [22+] + emotional quote + EMT background
+
+**Script:**
+"AeroMedica พัฒนาใน 25 วัน 86 เซสชัน แก้ไข 22 Bugs ขึ้นไป ทดสอบ End-to-End ครบทุกสถานการณ์
+
+(pause)
+
+AeroMedica ไม่ใช่แค่เกม แต่มันคือเครื่องมือสำหรับสังคม ทุกชั่วโมงของการฝึกฝนในระบบจำลองนี้ คือความพร้อมที่อาจช่วยชีวิตคนได้จริงในอนาคต
+
+โครงการเป็น Open Source สมบูรณ์แบบบน GitHub ครับ"
+
+---
+
+## Slide 15 — ทดลองใช้งานทันที (9:05 - 9:25) [20 sec]
+
+**Visual:** 2 QR codes (GitHub + Google Drive) + 3-step flow + optional Ollama note
+
+**Script:**
+"ท่านกรรมการสามารถทดลองใช้งานได้ทันทีครับ ดาวน์โหลดจาก Google Drive แตกไฟล์ แล้วรัน AeroMedica.exe เท่านั้น
+
+ถ้าต้องการระบบ AI เต็มรูปแบบ ติดตั้ง Ollama เพิ่มเติม แต่ไม่มีก็เล่นได้ ระบบใช้ Cached feedback แทนอัตโนมัติ
 
 ขอบคุณครับ"
 
-**Key Points:**
-- Restate the impact: bridge between classroom and real emergency
-- Numbers: 5 scenarios, 14 patients, 47 DDx, 5-axis scoring, 70 cached reviews, bilingual
-- Offline, no server, no subscription, data stays local
-- 25 days / 86 sessions
-- Available now — Google Drive link + QR code
-- Thank you + open for Q&A
+---
+
+## Timing Summary
+
+| Slide | Topic | Time | Cumulative |
+|-------|-------|------|-----------|
+| 1 | Title | 0:15 | 0:15 |
+| 2 | Skill Decay Crisis | 0:50 | 1:05 |
+| 3 | The Missing Link | 0:35 | 1:40 |
+| 4 | Gameplay Loop | 0:35 | 2:15 |
+| 5 | Four Panels | 0:55 | 3:10 |
+| 6 | Real Protocols | 0:45 | 3:55 |
+| 7 | Escalation Matrix | 0:55 | 4:50 |
+| 8 | Privacy / Offline | 0:45 | 5:35 |
+| 9 | Scoring | 0:45 | 6:20 |
+| 10 | Paradigm Shift | 0:25 | 6:45 |
+| 11 | Open Source Stack | 0:25 | 7:10 |
+| 12 | B2B Ecosystem | 0:35 | 7:45 |
+| 13 | Instructor Dashboard | 0:35 | 8:20 |
+| 14 | Traction & Vision | 0:45 | 9:05 |
+| 15 | Deploy / CTA | 0:20 | 9:25 |
+| — | Buffer / pauses | 0:35 | 10:00 |
