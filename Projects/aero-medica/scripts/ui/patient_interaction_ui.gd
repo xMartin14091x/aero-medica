@@ -2667,7 +2667,17 @@ func _on_chat_submitted(text: String) -> void:
 			_ai_status_label.text = "Waiting for response..."
 		_dialogue_client.ask_patient(text)
 	else:
-		_add_chat_bubble("I'm not feeling well...", false)
+		# Without AI, pull a contextual response from persona symptoms/events
+		var fallback_text := "..."
+		if _patient and "persona" in _patient and _patient.persona:
+			var persona: PatientPersona = _patient.persona
+			if not persona.history_symptoms.is_empty():
+				var first_key: String = persona.history_symptoms.keys()[0]
+				fallback_text = str(persona.history_symptoms[first_key])
+			elif not persona.history_events.is_empty():
+				var first_key: String = persona.history_events.keys()[0]
+				fallback_text = str(persona.history_events[first_key])
+		_add_chat_bubble(fallback_text, false)
 
 
 func _on_talk_button_pressed() -> void:
@@ -3838,15 +3848,49 @@ func _get_sample_question(category: String) -> String:
 
 
 func _get_scripted_response(category: String) -> String:
+	# Read per-patient SAMPLE data from PatientPersona (loaded from scenario JSON).
+	# Only falls back to generic text if persona has no data for this category.
+	if _patient and "persona" in _patient and _patient.persona:
+		var persona: PatientPersona = _patient.persona
+		var category_map := {
+			"signs_symptoms": "symptoms",
+			"allergies": "allergies",
+			"medications": "medications",
+			"past_history": "past_history",
+			"last_oral_intake": "last_meal",
+			"events": "events",
+			"opqrst": "opqrst",
+		}
+		var persona_category: String = category_map.get(category, "")
+		if persona_category != "":
+			var history_dict: Dictionary = {}
+			match persona_category:
+				"symptoms": history_dict = persona.history_symptoms
+				"allergies": history_dict = persona.history_allergies
+				"medications": history_dict = persona.history_medications
+				"past_history": history_dict = persona.history_past
+				"last_meal": history_dict = persona.history_last_meal
+				"events": history_dict = persona.history_events
+				"opqrst": history_dict = persona.history_opqrst
+			if not history_dict.is_empty():
+				# Concatenate all responses in the category into a natural reply
+				var parts: PackedStringArray = []
+				for key in history_dict:
+					var val: String = str(history_dict[key])
+					if val != "":
+						parts.append(val)
+				if parts.size() > 0:
+					return " ".join(parts)
+	# Last resort generic fallback (should rarely hit if JSON has SAMPLE data)
 	match category:
-		"signs_symptoms":  return "I have chest pain and I feel short of breath."
-		"allergies":       return "I'm allergic to penicillin."
-		"medications":     return "I take aspirin and metformin daily."
-		"past_history":    return "I have type 2 diabetes and hypertension."
-		"last_oral_intake": return "I had breakfast about 3 hours ago."
-		"events":          return "I was walking to the shops when I suddenly felt unwell."
-		"opqrst":          return "The pain is in my chest, a crushing feeling. Started about 20 minutes ago. 7 out of 10. No radiation."
-	return "I'm not feeling well..."
+		"signs_symptoms":  return "I'm not feeling well..."
+		"allergies":       return "I don't have any allergies that I know of."
+		"medications":     return "I don't take any regular medication."
+		"past_history":    return "Nothing significant."
+		"last_oral_intake": return "I ate a while ago..."
+		"events":          return "I'm not sure what happened..."
+		"opqrst":          return "It hurts..."
+	return "..."
 
 
 # ==============================================================================

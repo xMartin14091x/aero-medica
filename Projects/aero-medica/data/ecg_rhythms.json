@@ -2,63 +2,63 @@
 	"NORMAL_SINUS": {
 		"display_name": "Normal Sinus Rhythm",
 		"heart_rate_range": [60, 100],
-		"image_path": "res://assets/textures/ecg/normal_sinus.png",
+		"image_path": "res://assets/textures/ecg/NORMAL_SINUS.png",
 		"description": "Regular rhythm, P wave before each QRS, HR 60-100 bpm.",
 		"clinical_note": "Normal adult rhythm."
 	},
 	"SINUS_TACHYCARDIA": {
 		"display_name": "Sinus Tachycardia",
 		"heart_rate_range": [101, 180],
-		"image_path": "res://assets/textures/ecg/sinus_tachycardia.png",
+		"image_path": "res://assets/textures/ecg/SINUS_TACHYCARDIA.png",
 		"description": "Regular rhythm, P wave before each QRS, HR >100 bpm.",
 		"clinical_note": "Common in pain, blood loss, anxiety, fever."
 	},
 	"SINUS_BRADYCARDIA": {
 		"display_name": "Sinus Bradycardia",
 		"heart_rate_range": [30, 59],
-		"image_path": "res://assets/textures/ecg/sinus_bradycardia.png",
+		"image_path": "res://assets/textures/ecg/SINUS_BRADYCARDIA.png",
 		"description": "Regular rhythm, P wave before each QRS, HR <60 bpm.",
 		"clinical_note": "Can indicate cardiac conduction disease or vagal response."
 	},
 	"ATRIAL_FIBRILLATION": {
 		"display_name": "Atrial Fibrillation",
 		"heart_rate_range": [60, 150],
-		"image_path": "res://assets/textures/ecg/atrial_fibrillation.png",
+		"image_path": "res://assets/textures/ecg/ATRIAL_FIBRILLATION.png",
 		"description": "Irregularly irregular rhythm. No distinct P waves. Fibrillatory baseline.",
 		"clinical_note": "Most common arrhythmia. Risk of stroke and thromboembolism."
 	},
 	"SVT": {
 		"display_name": "Supraventricular Tachycardia",
 		"heart_rate_range": [150, 250],
-		"image_path": "res://assets/textures/ecg/svt.png",
+		"image_path": "res://assets/textures/ecg/SVT.png",
 		"description": "Regular narrow-complex tachycardia, HR 150-250 bpm. P waves hidden.",
 		"clinical_note": "Vagal maneuvers or adenosine may terminate SVT."
 	},
 	"VENTRICULAR_TACHYCARDIA": {
 		"display_name": "Ventricular Tachycardia",
 		"heart_rate_range": [120, 250],
-		"image_path": "res://assets/textures/ecg/ventricular_tachycardia.png",
+		"image_path": "res://assets/textures/ecg/VENTRICULAR_TACHYCARDIA.png",
 		"description": "Wide-complex regular tachycardia. Rate 120-250 bpm. No P waves.",
 		"clinical_note": "Life-threatening. Prepare for cardioversion or defibrillation."
 	},
 	"VENTRICULAR_FIBRILLATION": {
 		"display_name": "Ventricular Fibrillation",
 		"heart_rate_range": [0, 0],
-		"image_path": "res://assets/textures/ecg/ventricular_fibrillation.png",
+		"image_path": "res://assets/textures/ecg/VENTRICULAR_FIBRILLATION.png",
 		"description": "Chaotic, irregular waveform. No organised rhythm. No cardiac output.",
 		"clinical_note": "SHOCKABLE. Immediate defibrillation required."
 	},
 	"ASYSTOLE": {
 		"display_name": "Asystole",
 		"heart_rate_range": [0, 0],
-		"image_path": "res://assets/textures/ecg/asystole.png",
+		"image_path": "res://assets/textures/ecg/ASYSTOLE.png",
 		"description": "Flat line. No electrical activity.",
 		"clinical_note": "NOT shockable. Confirm in 2 leads. Continue CPR. Consider reversible causes."
 	},
 	"PEA": {
 		"display_name": "Pulseless Electrical Activity",
 		"heart_rate_range": [0, 120],
-		"image_path": "res://assets/textures/ecg/pea.png",
+		"image_path": "res://assets/textures/ecg/PULSELESS_ELECTRICAL_ACTIVITY.png",
 		"description": "Organised electrical activity on monitor but no palpable pulse.",
 		"clinical_note": "NOT shockable. Identify and treat reversible causes (5Hs and 5Ts)."
 	}
